@@ -1,0 +1,37 @@
+# ---- Java / Maven ----
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/timing.properties
+
+# ---- Node / Frontend ----
+**/node_modules/
+**/dist/
+**/.parcel-cache/
+**/.vite/
+**/coverage/
+
+# ---- IDE / Editor ----
+.vscode/
+.idea/
+*.iml
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Env files ----
+.env
+**/.env
+.env.local
+.env.*.local
+
+# ---- Misc ----
+*.swp
+*.swo
