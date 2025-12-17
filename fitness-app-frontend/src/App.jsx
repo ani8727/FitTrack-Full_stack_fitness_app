@@ -29,48 +29,32 @@ function App() {
 
   return (
     <Router>
-      {!token ? (
-      <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-      }}
-    >
-      <Typography variant="h4" gutterBottom>
-        Welcome to the Fitness Tracker App
-      </Typography>
-      <Typography variant="subtitle1" sx={{ mb: 3 }}>
-        Please login to access your activities
-      </Typography>
-      <Button variant="contained" color="primary" size="large" onClick={() => {
-                logIn();
-              }}>
-        LOGIN
-      </Button>
-    </Box>
-            ) : (
-
-              // <div>
-              //   <pre>{JSON.stringify(tokenData, null, 2)}</pre>
-              //   <pre>{JSON.stringify(token, null, 2)}</pre>
-              // </div>
-
-              <Box sx={{ p: 2, border: '1px dashed grey' }}>
-                 <Button variant="contained" color="secondary" onClick={logOut}>
-                  Logout
-                </Button>
-              <Routes>
-                <Route path="/activities" element={<ActvitiesPage />}/>
-                <Route path="/activities/:id" element={<ActivityDetail />}/>
-
-                <Route path="/" element={token ? <Navigate to="/activities" replace/> : <div>Welcome! Please Login.</div>} />
-              </Routes>
-            </Box>
-            )}
+      <div className="app-shell">
+        <div className="app-container">
+          {!token ? (
+            <div className="max-w-xl mx-auto text-center py-24 px-6 bg-black/30 rounded-xl shadow-lg backdrop-blur-sm">
+              <h1 className="text-3xl font-semibold mb-3">Welcome to FitTrack</h1>
+              <p className="text-sm text-gray-300 mb-6">Securely track workouts, get AI-driven recommendations, and manage your profile.</p>
+              <div className="flex justify-center">
+                <button onClick={() => logIn()} className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-6 py-3">Sign in</button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <button onClick={logOut} className="bg-neutral-800 text-white px-3 py-1 rounded">Logout</button>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4">
+                <Routes>
+                  <Route path="/activities" element={<ActvitiesPage />}/>
+                  <Route path="/activities/:id" element={<ActivityDetail />}/>
+                  <Route path="/" element={token ? <Navigate to="/activities" replace/> : <div>Welcome! Please Login.</div>} />
+                </Routes>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </Router>
   )
 }
