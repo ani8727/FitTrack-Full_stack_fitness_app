@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import { getActivityDetail } from '../services/api';
-import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
+import { getActivityDetail } from '../services/api'
 
 const ActivityDetail = () => {
   const { id } = useParams();
@@ -23,51 +22,65 @@ const ActivityDetail = () => {
   }, [id]);
 
   if (!activity) {
-    return <Typography>Loading...</Typography>
+    return <div className="text-gray-300">Loading...</div>
   }
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 2 }}>
-            <Card sx={{ mb: 2 }}>
-                <CardContent>
-                    <Typography variant="h5" gutterBottom>Activity Details</Typography>
-                    <Typography>Type: {activity.type}</Typography>
-                    <Typography>Duration: {activity.duration} minutes</Typography>
-                    <Typography>Calories Burned: {activity.caloriesBurned}</Typography>
-                    <Typography>Date: {new Date(activity.createdAt).toLocaleString()}</Typography>
-                </CardContent>
-            </Card>
+    <div className="max-w-3xl mx-auto p-4 space-y-4">
+      <div className="bg-black/30 backdrop-blur-sm rounded-xl p-5 border border-white/5">
+        <h2 className="text-xl font-semibold mb-2">Activity Details</h2>
+        <div className="text-sm text-gray-300 space-y-1">
+          <div>Type: {activity.type}</div>
+          <div>Duration: {activity.duration} minutes</div>
+          <div>Calories Burned: {activity.caloriesBurned}</div>
+          <div>Date: {new Date(activity.createdAt).toLocaleString()}</div>
+        </div>
+      </div>
 
-            {recommendation && (
-                <Card>
-                    <CardContent>
-                        <Typography variant="h5" gutterBottom>AI Recommendation</Typography>
-                        <Typography variant="h6">Analysis</Typography>
-                        <Typography paragraph>{activity.recommendation}</Typography>
-                        
-                        <Divider sx={{ my: 2 }} />
-                        
-                        <Typography variant="h6">Improvements</Typography>
-                        {activity?.improvements?.map((improvement, index) => (
-                            <Typography key={index} paragraph>• {activity.improvements}</Typography>
-                        ))}
-                        
-                        <Divider sx={{ my: 2 }} />
-                        
-                        <Typography variant="h6">Suggestions</Typography>
-                        {activity?.suggestions?.map((suggestion, index) => (
-                            <Typography key={index} paragraph>• {suggestion}</Typography>
-                        ))}
-                        
-                        <Divider sx={{ my: 2 }} />
-                        
-                        <Typography variant="h6">Safety Guidelines</Typography>
-                        {activity?.safety?.map((safety, index) => (
-                            <Typography key={index} paragraph>• {safety}</Typography>
-                        ))}
-                    </CardContent>
-                </Card>
-            )}
-        </Box>
+      {recommendation && (
+        <div className="bg-black/30 backdrop-blur-sm rounded-xl p-5 border border-white/5">
+          <h3 className="text-lg font-semibold mb-3">AI Recommendation</h3>
+          {activity?.recommendation && (
+            <div className="mb-4">
+              <div className="text-xs uppercase tracking-wide text-gray-400 mb-1">Analysis</div>
+              <p className="text-gray-200">{activity.recommendation}</p>
+            </div>
+          )}
+
+          {activity?.improvements?.length > 0 && (
+            <div className="mb-4">
+              <div className="text-xs uppercase tracking-wide text-gray-400 mb-1">Improvements</div>
+              <ul className="list-disc list-inside text-gray-200 space-y-1">
+                {activity.improvements.map((improvement, idx) => (
+                  <li key={idx}>{improvement}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {activity?.suggestions?.length > 0 && (
+            <div className="mb-4">
+              <div className="text-xs uppercase tracking-wide text-gray-400 mb-1">Suggestions</div>
+              <ul className="list-disc list-inside text-gray-200 space-y-1">
+                {activity.suggestions.map((s, idx) => (
+                  <li key={idx}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {activity?.safety?.length > 0 && (
+            <div>
+              <div className="text-xs uppercase tracking-wide text-gray-400 mb-1">Safety Guidelines</div>
+              <ul className="list-disc list-inside text-gray-200 space-y-1">
+                {activity.safety.map((s, idx) => (
+                  <li key={idx}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

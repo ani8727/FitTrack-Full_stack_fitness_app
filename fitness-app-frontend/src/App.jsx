@@ -1,4 +1,3 @@
-import { Box, Button, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "react-oauth2-code-pkce";
 import { useDispatch } from "react-redux";
@@ -7,12 +6,25 @@ import { setCredentials } from "./store/authSlice";
 import ActivityForm from "./components/ActivityForm";
 import ActivityList from "./components/ActivityList";
 import ActivityDetail from "./components/ActivityDetail";
+import SiteLayout from "./components/SiteLayout";
+import ActivitySummary from "./components/ActivitySummary";
+import ActivityChart from "./components/ActivityChart";
 
 const ActvitiesPage = () => {
-  return (<Box sx={{ p: 2, border: '1px dashed grey' }}>
-    <ActivityForm onActivitiesAdded = {() => window.location.reload()} />
-    <ActivityList />
-  </Box>);
+  const location = useLocation()
+  useEffect(() => {
+    if (location.hash === '#add-activity') {
+      const el = document.getElementById('add-activity')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [location])
+
+  return (
+    <div className="space-y-4">
+      <ActivityForm onActivityAdded={() => window.location.reload()} />
+      <ActivityList />
+    </div>
+  )
 }
 
 function App() {
@@ -29,32 +41,29 @@ function App() {
 
   return (
     <Router>
-      <div className="app-shell">
-        <div className="app-container">
-          {!token ? (
-            <div className="max-w-xl mx-auto text-center py-24 px-6 bg-black/30 rounded-xl shadow-lg backdrop-blur-sm">
-              <h1 className="text-3xl font-semibold mb-3">Welcome to FitTrack</h1>
-              <p className="text-sm text-gray-300 mb-6">Securely track workouts, get AI-driven recommendations, and manage your profile.</p>
-              <div className="flex justify-center">
-                <button onClick={() => logIn()} className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-6 py-3">Sign in</button>
-              </div>
+      {!token ? (
+        <SiteLayout isAuthenticated={false}>
+          <div className="max-w-3xl mx-auto text-center py-24 px-6 bg-black/30 rounded-xl shadow-lg backdrop-blur-sm">
+            <h1 className="text-4xl font-semibold mb-3">Welcome to FitTrack</h1>
+            <p className="text-base text-gray-300 mb-6">Track workouts, get AI recommendations, and monitor progress across devices.</p>
+            <div className="flex justify-center">
+              <button onClick={() => logIn()} className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-6 py-3">Sign in</button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <button onClick={logOut} className="bg-neutral-800 text-white px-3 py-1 rounded">Logout</button>
-              </div>
-              <div className="bg-black/20 rounded-lg p-4">
-                <Routes>
-                  <Route path="/activities" element={<ActvitiesPage />}/>
-                  <Route path="/activities/:id" element={<ActivityDetail />}/>
-                  <Route path="/" element={token ? <Navigate to="/activities" replace/> : <div>Welcome! Please Login.</div>} />
-                </Routes>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </SiteLayout>
+      ) : (
+        <SiteLayout isAuthenticated={true} onLogout={logOut}>
+          <div className="space-y-6">
+            <ActivitySummary />
+            <ActivityChart />
+            <Routes>
+              <Route path="/activities" element={<ActvitiesPage />}/>
+              <Route path="/activities/:id" element={<ActivityDetail />}/>
+              <Route path="/" element={<Navigate to="/activities" replace/>} />
+            </Routes>
+          </div>
+        </SiteLayout>
+      )}
     </Router>
   )
 }
