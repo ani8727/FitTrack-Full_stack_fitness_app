@@ -7,8 +7,10 @@ import ActivityForm from "./components/ActivityForm";
 import ActivityList from "./components/ActivityList";
 import ActivityDetail from "./components/ActivityDetail";
 import SiteLayout from "./components/SiteLayout";
-import ActivitySummary from "./components/ActivitySummary";
-import ActivityChart from "./components/ActivityChart";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Recommendations from "./pages/Recommendations";
+import LoginPage from "./pages/LoginPage";
 
 const ActvitiesPage = () => {
   const location = useLocation()
@@ -43,25 +45,19 @@ function App() {
     <Router>
       {!token ? (
         <SiteLayout isAuthenticated={false}>
-          <div className="max-w-3xl mx-auto text-center py-24 px-6 bg-black/30 rounded-xl shadow-lg backdrop-blur-sm">
-            <h1 className="text-4xl font-semibold mb-3">Welcome to FitTrack</h1>
-            <p className="text-base text-gray-300 mb-6">Track workouts, get AI recommendations, and monitor progress across devices.</p>
-            <div className="flex justify-center">
-              <button onClick={() => logIn()} className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-6 py-3">Sign in</button>
-            </div>
-          </div>
+          <LoginPage onLogin={logIn} />
         </SiteLayout>
       ) : (
         <SiteLayout isAuthenticated={true} onLogout={logOut}>
-          <div className="space-y-6">
-            <ActivitySummary />
-            <ActivityChart />
-            <Routes>
-              <Route path="/activities" element={<ActvitiesPage />}/>
-              <Route path="/activities/:id" element={<ActivityDetail />}/>
-              <Route path="/" element={<Navigate to="/activities" replace/>} />
-            </Routes>
-          </div>
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/activities" element={<ActvitiesPage />} />
+            <Route path="/activities/:id" element={<ActivityDetail />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/profile" element={<Profile user={tokenData} />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace/>} />
+            <Route path="*" element={<Navigate to="/dashboard" replace/>} />
+          </Routes>
         </SiteLayout>
       )}
     </Router>

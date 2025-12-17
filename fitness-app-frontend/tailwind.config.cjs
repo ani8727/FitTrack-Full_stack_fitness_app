@@ -14,10 +14,22 @@ module.exports = {
           500: '#646cff',
           700: '#535bf2'
         },
+        secondary: {
+          50: '#f3fbff',
+          100: '#e6f6ff',
+          500: '#06b6d4',
+          700: '#0891b2'
+        },
         accent: {
           50: '#fff8f3',
           100: '#fff0e6',
           500: '#ff7a59'
+        },
+        success: {
+          500: '#22c55e'
+        },
+        warning: {
+          500: '#f59e0b'
         },
         neutral: {
           50: '#f7f7fb',
