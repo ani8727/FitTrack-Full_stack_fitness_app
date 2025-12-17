@@ -16,12 +16,11 @@ import java.util.List;
 
 public class ActivityController {
 
-
     private ActivityService activityService;
 
     @PostMapping
     public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request,
-                                                          @RequestHeader(value = "X-User-ID", required = false) @Nullable String userId) {
+            @RequestHeader(value = "X-User-ID", required = false) @Nullable String userId) {
         if (userId != null) {
             request.setUserId(userId);
         }
@@ -29,12 +28,13 @@ public class ActivityController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader(value = "X-User-ID", required = false) @Nullable String userId){
+    public ResponseEntity<List<ActivityResponse>> getUserActivities(
+            @RequestHeader(value = "X-User-ID", required = false) @Nullable String userId) {
         return ResponseEntity.ok(activityService.getUserActivities(userId));
     }
 
     @GetMapping("/{activityId}")
-    public ResponseEntity<ActivityResponse> getActivity(@PathVariable String activityId){
+    public ResponseEntity<ActivityResponse> getActivity(@PathVariable String activityId) {
         return ResponseEntity.ok(activityService.getActivityBYId(activityId));
     }
 
