@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { addActivity } from '../services/api'
+import { addActivity } from '../shared/api/api'
 import Toast from './Toast'
 
 const ActivityForm = ({ onActivityAdded }) => {

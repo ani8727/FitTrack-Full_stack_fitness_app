@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { getActivities } from '../services/api'
+import { getActivities } from '../shared/api/api'
 
 const StatCard = ({ label, value, accent }) => (
   <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/5">

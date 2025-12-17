@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { getActivities } from '../services/api'
+import { getActivities } from '../shared/api/api'
 
 const ActivityList = () => {
   const [activities, setActivities] = useState([])

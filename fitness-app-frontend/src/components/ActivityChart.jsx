@@ -11,7 +11,7 @@ import {
   Filler,
   TimeScale
 } from 'chart.js'
-import { getActivities } from '../services/api'
+import { getActivities } from '../shared/api/api'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler)
 
