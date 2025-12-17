@@ -36,6 +36,7 @@ const groupByDay = (items) => {
 const ActivityChart = () => {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [range, setRange] = useState('30') // '7' | '30' | 'all'
 
   useEffect(() => {
     (async () => {
@@ -51,7 +52,12 @@ const ActivityChart = () => {
   }, [])
 
   const data = useMemo(() => {
-    const grouped = groupByDay(items)
+    let grouped = groupByDay(items)
+    if (range !== 'all') {
+      const days = Number(range)
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days)
+      grouped = grouped.filter(([d]) => new Date(d) >= cutoff)
+    }
     const labels = grouped.map(([d]) => d)
     const minutes = grouped.map(([,v]) => v.minutes)
     const calories = grouped.map(([,v]) => v.calories)
@@ -96,7 +102,14 @@ const ActivityChart = () => {
 
   return (
     <div className="bg-black/30 rounded-xl border border-white/5 p-4">
-      <div className="text-sm text-gray-300 mb-2">Progress</div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-sm text-gray-300">Progress</div>
+        <div className="flex gap-2 text-xs">
+          <button onClick={() => setRange('7')} className={"px-2 py-1 rounded border " + (range==='7' ? 'bg-primary-500/20 border-primary-500/50' : 'border-white/10')}>7d</button>
+          <button onClick={() => setRange('30')} className={"px-2 py-1 rounded border " + (range==='30' ? 'bg-primary-500/20 border-primary-500/50' : 'border-white/10')}>30d</button>
+          <button onClick={() => setRange('all')} className={"px-2 py-1 rounded border " + (range==='all' ? 'bg-primary-500/20 border-primary-500/50' : 'border-white/10')}>All</button>
+        </div>
+      </div>
       <Line data={data} options={options} height={80} />
     </div>
   )

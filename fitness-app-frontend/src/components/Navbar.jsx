@@ -20,6 +20,7 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme }) => {
             <button className={"px-2 py-1 hover:text-white " + (isActive('/activities') ? 'text-white' : '')} onClick={() => navigate('/activities')}>Activities</button>
             <button className={"px-2 py-1 hover:text-white " + (isActive('/recommendations') ? 'text-white' : '')} onClick={() => navigate('/recommendations')}>Recommendations</button>
             <button className={"px-2 py-1 hover:text-white " + (isActive('/profile') ? 'text-white' : '')} onClick={() => navigate('/profile')}>Profile</button>
+            <button className="bg-secondary-500/20 text-secondary-300 hover:bg-secondary-500/30 px-3 py-1 rounded" onClick={() => navigate('/dashboard#quick-add')}>Quick Add</button>
             <button className="bg-primary-500/20 text-primary-300 hover:bg-primary-500/30 px-3 py-1 rounded" onClick={() => navigate('/activities#add-activity')}>Add Activity</button>
           </nav>
         )}
@@ -40,6 +41,7 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme }) => {
             <button onClick={() => { setOpen(false); navigate('/activities') }} className="text-left">Activities</button>
             <button onClick={() => { setOpen(false); navigate('/recommendations') }} className="text-left">Recommendations</button>
             <button onClick={() => { setOpen(false); navigate('/profile') }} className="text-left">Profile</button>
+            <button onClick={() => { setOpen(false); navigate('/dashboard#quick-add') }} className="text-left">Quick Add</button>
             <button onClick={() => { setOpen(false); navigate('/activities#add-activity') }} className="text-left">Add Activity</button>
           </div>
         </div>
