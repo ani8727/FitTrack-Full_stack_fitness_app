@@ -25,6 +25,13 @@ public class ActivityMessageListener {
         // log.info("Generate Recommendation: {}
         // ",aiService.generateRecommendation(activity));
         Recommendation recommendation = aiService.generateRecommendation(activity);
-        Objects.requireNonNull(recommendationRepository.save(recommendation));
+        if (recommendation == null) {
+            log.warn("AI service returned null recommendation for activity: {}", activity.getId());
+            return;
+        }
+        Recommendation saved = recommendationRepository.save(recommendation);
+        if (saved == null) {
+            log.warn("Failed to save recommendation for activity: {}", activity.getId());
+        }
     }
 }

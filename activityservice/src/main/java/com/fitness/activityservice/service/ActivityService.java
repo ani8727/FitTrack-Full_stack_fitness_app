@@ -46,7 +46,10 @@ public class ActivityService {
                 .additionalMetrics(request.getAdditionalMetrics())
                 .build();
 
-        Activity savedActivity = Objects.requireNonNull(activityRepository.save(activity));
+        Activity savedActivity = activityRepository.save(activity);
+        if (savedActivity == null) {
+            throw new RuntimeException("Failed to save activity for user: " + request.getUserId());
+        }
 
         // publish to RabbitMQ for AI Processing
         try {

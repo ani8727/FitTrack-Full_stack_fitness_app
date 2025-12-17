@@ -6,6 +6,7 @@ import com.fitness.activityservice.service.ActivityService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -19,7 +20,8 @@ public class ActivityController {
     private ActivityService activityService;
 
     @PostMapping
-    public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request, @RequestHeader("X-User-ID") String userId){
+    public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request,
+                                                          @RequestHeader(value = "X-User-ID", required = false) @Nullable String userId) {
         if (userId != null) {
             request.setUserId(userId);
         }
@@ -27,7 +29,7 @@ public class ActivityController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader("X-User-ID") String userId){
+    public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader(value = "X-User-ID", required = false) @Nullable String userId){
         return ResponseEntity.ok(activityService.getUserActivities(userId));
     }
 

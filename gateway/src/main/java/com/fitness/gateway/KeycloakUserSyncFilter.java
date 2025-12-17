@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -26,7 +27,7 @@ public class KeycloakUserSyncFilter implements WebFilter {
         String userId = exchange.getRequest().getHeaders().getFirst("X-User-ID");
         RegisterRequest registerRequest = getUserDetails(token);
 
-        if (userId == null) {
+        if (userId == null && registerRequest != null) {
             userId = registerRequest.getKeycloakId();
         }
 
@@ -58,7 +59,10 @@ public class KeycloakUserSyncFilter implements WebFilter {
         return chain.filter(exchange);
     }
 
-    private RegisterRequest getUserDetails(String token) {
+    private @Nullable RegisterRequest getUserDetails(String token) {
+        if (token == null) {
+            return null;
+        }
         try {
             String tokenWithoutBearer = token.replace("Bearer ", "").trim();
             SignedJWT signedJWT = SignedJWT.parse(tokenWithoutBearer);
@@ -72,7 +76,7 @@ public class KeycloakUserSyncFilter implements WebFilter {
             registerRequest.setLastName(claims.getStringClaim("family_name"));
             return registerRequest;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Failed to parse token for user details: {}", e.getMessage());
             return null;
         }
     }

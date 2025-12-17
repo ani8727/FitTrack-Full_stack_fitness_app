@@ -29,7 +29,6 @@ public class GeminiService {
                         })
                 });
 
-        @SuppressWarnings("nullness")
         String response = webClient.post()
                 .uri(geminiApiUrl + geminiApiKey)
                 .header("Content-Type", "application/json")
@@ -38,6 +37,6 @@ public class GeminiService {
                 .bodyToMono(String.class)
                 .block();
 
-        return response;
+        return response == null ? "" : response;
     }
 }
