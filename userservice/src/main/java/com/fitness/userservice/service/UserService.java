@@ -6,6 +6,7 @@ import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,7 @@ public class UserService {
 
     public UserResponse register(RegisterRequest request) {
 
-        if(repository.existsByEmail(request.getEmail())){
+        if (repository.existsByEmail(request.getEmail())) {
             User existingUser = repository.findByEmail(request.getEmail());
             UserResponse userResponse = new UserResponse();
             userResponse.setId(existingUser.getId());
@@ -55,10 +56,9 @@ public class UserService {
 
     }
 
-    public UserResponse getUserProfile(String userId) {
+    public UserResponse getUserProfile(@NonNull String userId) {
         User user = repository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
 
         UserResponse userResponse = new UserResponse();
 

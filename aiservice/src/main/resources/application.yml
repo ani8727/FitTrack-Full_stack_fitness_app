@@ -3,7 +3,30 @@ spring:
     name: ai-service
   config:
     import: optional:configserver:http://localhost:8888
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/fitness_ai
 
+server:
+  port: 8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+rabbitmq:
+  exchange:
+    name: activity.exchange
+  queue:
+    name: activity.queue
+  routing:
+    key: activity.routing.key
 
 # GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=;
 #  GEMINI_API_KEY=AIzaSyBeZbCLJb7CtKfnW1DznLweoI-56Fe7C_s;

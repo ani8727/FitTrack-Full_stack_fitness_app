@@ -6,6 +6,7 @@ import com.fitness.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,7 +18,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId){
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable @NonNull String userId){
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
@@ -27,7 +28,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/validate")
-    public ResponseEntity<Boolean> validateUser(@PathVariable String userId){
+    public ResponseEntity<Boolean> validateUser(@PathVariable @NonNull String userId){
         return ResponseEntity.ok(userService.existByUserId(userId));
     }
 

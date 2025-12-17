@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,11 +30,11 @@ public class ActivityService {
     @Value("${rabbitmq.routing.key}")
     private String routingKey;
 
-    public ActivityResponse trackActivity(ActivityRequest request){
+    public ActivityResponse trackActivity(ActivityRequest request) {
 
         boolean isValidUser = userValidationService.validateUser(request.getUserId());
-        if(!isValidUser){
-            throw new RuntimeException("Invalid User: "+ request.getUserId());
+        if (!isValidUser) {
+            throw new RuntimeException("Invalid User: " + request.getUserId());
         }
 
         Activity activity = Activity.builder()
@@ -44,9 +46,9 @@ public class ActivityService {
                 .additionalMetrics(request.getAdditionalMetrics())
                 .build();
 
-        Activity savedActivity = activityRepository.save(activity);
+        Activity savedActivity = Objects.requireNonNull(activityRepository.save(activity));
 
-        //publish to RabbitMQ for AI Processing
+        // publish to RabbitMQ for AI Processing
         try {
             rabbitTemplate.convertAndSend(exchange, routingKey, savedActivity);
             log.info("Message published to RabbitMQ: {}", savedActivity);
@@ -57,18 +59,18 @@ public class ActivityService {
         return mapToResponse(savedActivity);
     }
 
-    private ActivityResponse mapToResponse(Activity activity){
-         ActivityResponse response = new ActivityResponse();
-         response.setId(activity.getId());
-         response.setUserId(activity.getUserId());
-         response.setType(activity.getType());
-         response.setDuration(activity.getDuration());
-         response.setCaloriesBurned(activity.getCaloriesBurned());
-         response.setStartTime(activity.getStartTime());
-         response.setAdditionalMetrics(activity.getAdditionalMetrics());
-         response.setCreatedAt(activity.getCreatedAt());
-         response.setUpdateAt(activity.getUpdateAt());
-         return response;
+    private ActivityResponse mapToResponse(Activity activity) {
+        ActivityResponse response = new ActivityResponse();
+        response.setId(activity.getId());
+        response.setUserId(activity.getUserId());
+        response.setType(activity.getType());
+        response.setDuration(activity.getDuration());
+        response.setCaloriesBurned(activity.getCaloriesBurned());
+        response.setStartTime(activity.getStartTime());
+        response.setAdditionalMetrics(activity.getAdditionalMetrics());
+        response.setCreatedAt(activity.getCreatedAt());
+        response.setUpdateAt(activity.getUpdateAt());
+        return response;
 
     }
 
@@ -80,9 +82,9 @@ public class ActivityService {
 
     }
 
-    public ActivityResponse getActivityBYId(String activityId) {
+    public ActivityResponse getActivityBYId(@NonNull String activityId) {
         return activityRepository.findById(activityId)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new RuntimeException("Activity not found with id: "+ activityId));
+                .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
     }
 }

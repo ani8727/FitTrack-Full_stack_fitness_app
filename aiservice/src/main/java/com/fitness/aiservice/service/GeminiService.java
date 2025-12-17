@@ -18,18 +18,18 @@ public class GeminiService {
     private String geminiApiKey;
 
     public GeminiService(WebClient.Builder webClientBuilder) {
-        this.webClient=webClientBuilder.build();
+        this.webClient = webClientBuilder.build();
     }
 
     public String getAnswer(String question) {
         Map<String, Object> requestBody = Map.of(
-          "contents", new Object[] {
-                  Map.of("parts", new Object[]{
-                          Map.of("text", question)
-                  })
-                }
-        );
+                "contents", new Object[] {
+                        Map.of("parts", new Object[] {
+                                Map.of("text", question)
+                        })
+                });
 
+        @SuppressWarnings("nullness")
         String response = webClient.post()
                 .uri(geminiApiUrl + geminiApiKey)
                 .header("Content-Type", "application/json")
