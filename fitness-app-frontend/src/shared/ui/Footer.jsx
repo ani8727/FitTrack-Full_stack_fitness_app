@@ -1,6 +1,6 @@
 import React from 'react'
 import { Logo, GitHubIcon, LinkedInIcon, XIcon, MailIcon } from './Icons'
-import { site } from '../config/site'
+import { site } from '../../config/site'
 
 const Footer = () => {
   return (

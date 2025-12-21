@@ -1,8 +1,8 @@
 import React, { useContext, useMemo, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Logo, MenuIcon, ChevronDownIcon } from './Icons'
 import { AuthContext } from 'react-oauth2-code-pkce'
-import { site } from '../config/site'
+import { site } from '../../config/site'
 
 const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme }) => {
   const navigate = useNavigate()

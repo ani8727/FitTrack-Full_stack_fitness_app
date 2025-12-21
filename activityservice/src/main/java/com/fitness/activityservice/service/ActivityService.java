@@ -1,19 +1,23 @@
 package com.fitness.activityservice.service;
 
-import com.fitness.activityservice.ActivityRepository;
-import com.fitness.activityservice.dto.ActivityRequest;
-import com.fitness.activityservice.dto.ActivityResponse;
-import com.fitness.activityservice.modal.Activity;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.fitness.activityservice.dto.ActivityRequest;
+import com.fitness.activityservice.dto.ActivityResponse;
+import com.fitness.activityservice.exception.InvalidUserException;
+import com.fitness.activityservice.exception.ResourceNotFoundException;
+import com.fitness.activityservice.modal.Activity;
+import com.fitness.activityservice.repository.ActivityRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +35,15 @@ public class ActivityService {
     private String routingKey;
 
     public ActivityResponse trackActivity(ActivityRequest request) {
+        if (!StringUtils.hasText(request.getUserId())) {
+            throw new InvalidUserException("User ID is required");
+        }
 
+        log.info("Tracking activity for user: {}", request.getUserId());
+        
         boolean isValidUser = userValidationService.validateUser(request.getUserId());
         if (!isValidUser) {
-            throw new RuntimeException("Invalid User: " + request.getUserId());
+            throw new InvalidUserException("Invalid User: " + request.getUserId());
         }
 
         Activity activity = Activity.builder()
@@ -47,9 +56,6 @@ public class ActivityService {
                 .build();
 
         Activity savedActivity = activityRepository.save(activity);
-        if (savedActivity == null) {
-            throw new RuntimeException("Failed to save activity for user: " + request.getUserId());
-        }
 
         // publish to RabbitMQ for AI Processing
         try {
@@ -57,6 +63,7 @@ public class ActivityService {
             log.info("Message published to RabbitMQ: {}", savedActivity);
         } catch (Exception e) {
             log.error("Failed to publish activity to RabbitMQ: ", e);
+            throw new RuntimeException("Error while publishing to RabbitMQ", e);
         }
 
         return mapToResponse(savedActivity);
@@ -74,20 +81,24 @@ public class ActivityService {
         response.setCreatedAt(activity.getCreatedAt());
         response.setUpdateAt(activity.getUpdateAt());
         return response;
-
     }
 
     public List<ActivityResponse> getUserActivities(String userId) {
+        if (!StringUtils.hasText(userId)) {
+            throw new InvalidUserException("User ID is required");
+        }
+        
+        log.info("Fetching activities for user: {}", userId);
         List<Activity> activities = activityRepository.findByUserId(userId);
         return activities.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-
     }
 
-    public ActivityResponse getActivityBYId(@NonNull String activityId) {
+    public ActivityResponse getActivityById(@NonNull String activityId) {
+        log.info("Fetching activity with id: {}", activityId);
         return activityRepository.findById(activityId)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
+                .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id: " + activityId));
     }
 }

@@ -1,23 +1,29 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "react-oauth2-code-pkce";
 import { useDispatch } from "react-redux";
-import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from "react-router";
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { setCredentials } from "./store/authSlice";
-import ActivityForm from "./components/ActivityForm";
-import ActivityList from "./components/ActivityList";
-import ActivityDetail from "./components/ActivityDetail";
-import SiteLayout from "./components/SiteLayout";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import Recommendations from "./pages/Recommendations";
-import LoginPage from "./pages/LoginPage";
+import ActivityForm from "./features/activities/ActivityForm";
+import ActivityList from "./features/activities/ActivityList";
+import ActivityDetail from "./features/activities/ActivityDetail";
+import SiteLayout from "./shared/ui/SiteLayout";
+import Dashboard from "./features/dashboard/Dashboard";
+import Profile from "./features/profile/Profile";
+import Recommendations from "./features/recommendations/Recommendations";
+import LoginPage from "./features/auth/LoginPage";
+import Terms from "./features/legal/Terms";
+import Privacy from "./features/legal/Privacy";
 
 const ActvitiesPage = () => {
   const location = useLocation()
   useEffect(() => {
     if (location.hash === '#add-activity') {
-      const el = document.getElementById('add-activity')
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      requestAnimationFrame(() => {
+        const el = document.getElementById('add-activity')
+        if (el && el.isConnected) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      })
     }
   }, [location])
 
@@ -55,6 +61,8 @@ function App() {
             <Route path="/activities/:id" element={<ActivityDetail />} />
             <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/profile" element={<Profile user={tokenData} />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/" element={<Navigate to="/dashboard" replace/>} />
             <Route path="*" element={<Navigate to="/dashboard" replace/>} />
           </Routes>

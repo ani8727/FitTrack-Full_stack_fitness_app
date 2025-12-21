@@ -7,5 +7,5 @@ server:
 
 eureka:
   client:
-    register-with-eureka: false   # ❗ Do not register the Eureka server as a client
-    fetch-registry: false         # ❗ This is the registry itself, no need to fetch others
+    register-with-eureka: false   # Do not register the Eureka server as a client
+    fetch-registry: false         # This is the registry itself, no need to fetch others

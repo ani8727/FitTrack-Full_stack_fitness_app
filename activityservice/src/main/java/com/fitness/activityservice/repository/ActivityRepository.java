@@ -1,4 +1,4 @@
-package com.fitness.activityservice;
+package com.fitness.activityservice.repository;
 
 
 import com.fitness.activityservice.modal.Activity;

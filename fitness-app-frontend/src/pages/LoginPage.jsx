@@ -9,7 +9,7 @@ const LoginPage = ({ onLogin }) => {
           Track workouts, visualize your progress, and get AI-driven recommendations. Responsive UI for all devices.
         </p>
         <div className="flex gap-3">
-          <button onClick={onLogin} className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-6 py-3">Sign in</button>
+          <button onClick={() => onLogin()} className="bg-primary-500 hover:bg-primary-600 text-white rounded-md px-6 py-3">Sign in</button>
           <button className="bg-secondary-500/20 text-secondary-500 hover:bg-secondary-500/30 rounded-md px-6 py-3">Learn more</button>
         </div>
       </div>

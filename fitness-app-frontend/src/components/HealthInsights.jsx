@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { getActivities } from '../services/api'
+import { getActivities } from '../shared/api/api'
 
 const chip = (level, text) => {
   const base = 'px-3 py-1 rounded-full text-xs border inline-block'

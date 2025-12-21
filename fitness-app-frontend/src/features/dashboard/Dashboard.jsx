@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import ActivitySummary from './ActivitySummary'
 import ActivityChart from './ActivityChart'
 import QuickAdd from './QuickAdd'
-import { useLocation } from 'react-router'
+import { useLocation } from 'react-router-dom'
 import { AuthContext } from 'react-oauth2-code-pkce'
 import HealthInsights from './HealthInsights'
 import Achievements from './Achievements'
@@ -16,8 +16,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (location.hash === '#quick-add') {
-      const el = document.getElementById('quick-add')
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      requestAnimationFrame(() => {
+        const el = document.getElementById('quick-add')
+        if (el && el.isConnected) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      })
     }
   }, [location])
 
