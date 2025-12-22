@@ -1,17 +1,19 @@
 package com.fitness.userservice.service;
 
-import com.fitness.userservice.dto.RegisterRequest;
-import com.fitness.userservice.dto.UserResponse;
-import com.fitness.userservice.model.User;
-import com.fitness.userservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
+
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import com.fitness.userservice.dto.RegisterRequest;
+import com.fitness.userservice.dto.UserResponse;
+import com.fitness.userservice.model.User;
+import com.fitness.userservice.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -50,7 +52,7 @@ public class UserService {
     /**
      * Get user profile by database ID
      */
-    public UserResponse getUserProfile(@NonNull Long userId) {
+    public UserResponse getUserProfile(@NonNull String userId) {
         User user = repository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 

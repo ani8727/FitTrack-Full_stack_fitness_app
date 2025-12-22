@@ -24,10 +24,14 @@ spring:
 #     password: guest
 
 
-# eureka:
-#   client:
-#     service-url:
-#       defaultZone: http://localhost:8761/eureka/
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    instance:
+      prefer-ip-address: true
+      lease-renewal-interval-in-seconds: 30
+      lease-expiration-duration-in-seconds: 90
 
 
 # rabbitmq:
@@ -40,16 +44,24 @@ spring:
 
 
 
-# gemini:
-#   api:
-#     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
-#     key: AIzaSyCRkRKMT2Ufve5zMuYuM2wrN0xL6tEHtsk
+gemini:
+  api-key: YOUR_NEW_API_KEY
+  endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 
-
-
-# # GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent;
-
-# #GEMINI_API_KEY=AIzaSyCRkRKMT2Ufve5zMuYuM2wrN0xL6tEHtsk;
+resilience4j:
+  retry:
+    instances:
+      geminiServiceRetry:
+        max-attempts: 3
+        wait-duration: 1000ms
+  circuitbreaker:
+    instances:
+      geminiServiceCircuitBreaker:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000ms
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
 
 
 
