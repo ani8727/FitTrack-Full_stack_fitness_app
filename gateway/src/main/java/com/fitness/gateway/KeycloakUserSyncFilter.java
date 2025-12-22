@@ -15,8 +15,6 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import java.text.ParseException;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -39,15 +37,16 @@ public class KeycloakUserSyncFilter implements WebFilter {
                     .flatMap(exist -> {
                         if (!exist) {
                             // Register User
+
                             if (registerRequest != null) {
                                 return userService.registerUser(registerRequest)
-                                        .then(nonNullMono());
+                                        .then(Mono.empty());
                             } else {
-                                return nonNullMono();
+                                return Mono.empty();
                             }
                         } else {
-                            log.info("User already exists, skipping sync.");
-                            return nonNullMono();
+                            log.info("User already exist, Skipping sync.");
+                            return Mono.empty();
                         }
                     })
                     .then(Mono.defer(() -> {
@@ -76,13 +75,9 @@ public class KeycloakUserSyncFilter implements WebFilter {
             registerRequest.setFirstName(claims.getStringClaim("given_name"));
             registerRequest.setLastName(claims.getStringClaim("family_name"));
             return registerRequest;
-        } catch (ParseException e) {
+        } catch (Exception e) {
             log.warn("Failed to parse token for user details: {}", e.getMessage());
             return null;
         }
-    }
-
-    private @NonNull Mono<Void> nonNullMono() {
-        return Mono.defer(() -> Mono.empty());
     }
 }

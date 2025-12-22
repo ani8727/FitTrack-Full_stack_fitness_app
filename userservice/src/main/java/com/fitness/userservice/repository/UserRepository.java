@@ -4,12 +4,23 @@ import com.fitness.userservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, String> {
+import java.util.Optional;
 
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    /**
+     * Check if a user exists by email
+     */
     boolean existsByEmail(String email);
 
-    boolean existsByKeycloakId(String userId);
+    /**
+     * Check if a user exists by Keycloak ID
+     */
+    boolean existsByKeycloakId(String keycloakId);
 
-    User findByEmail(String email);
+    /**
+     * Find user by email
+     */
+    Optional<User> findByEmail(String email);
 }
