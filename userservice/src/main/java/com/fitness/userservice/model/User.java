@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @Data
-
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -35,5 +34,4 @@ public class User {
 
     @UpdateTimestamp
     private LocalDateTime updateAt;
-
 }

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.amqp.support.converter.MessageConverter;
 
 @Configuration
-public class RabbitMQConfig {
+public class RabbitMqConfig {
 
     @Value("${rabbitmq.exchange.name}")
     private String exchange;

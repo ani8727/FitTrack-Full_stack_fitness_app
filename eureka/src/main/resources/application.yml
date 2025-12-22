@@ -9,9 +9,3 @@ eureka:
   client:
     register-with-eureka: false   # Do not register the Eureka server as a client
     fetch-registry: false         # This is the registry itself, no need to fetch others
-  server:
-    peer-node-read-timeout-ms: 5000 # Increase the timeout to 5 seconds
-
-spring:
-  cache:
-    type: caffeine

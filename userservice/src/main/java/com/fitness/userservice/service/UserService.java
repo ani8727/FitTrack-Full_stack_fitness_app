@@ -1,84 +1,75 @@
 package com.fitness.userservice.service;
 
-import java.util.Optional;
-
-import org.springframework.lang.NonNull;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UserResponse;
 import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository repository;
 
-    /**
-     * Register user or return existing user if email already exists
-     */
-    @Transactional
     public UserResponse register(RegisterRequest request) {
 
-        Optional<User> existingUserOpt = repository.findByEmail(request.getEmail());
-
-        if (existingUserOpt.isPresent()) {
-            log.info("User already exists with email: {}", request.getEmail());
-            return mapToResponse(existingUserOpt.get());
+        if (repository.existsByEmail(request.getEmail())) {
+            User existingUser = repository.findByEmail(request.getEmail());
+            UserResponse userResponse = new UserResponse();
+            userResponse.setId(existingUser.getId());
+            userResponse.setKeycloakId(existingUser.getKeycloakId());
+            userResponse.setPassword(existingUser.getPassword());
+            userResponse.setEmail(existingUser.getEmail());
+            userResponse.setFirstName(existingUser.getFirstName());
+            userResponse.setLastName(existingUser.getLastName());
+            userResponse.setCreateAt(existingUser.getCreateAt());
+            userResponse.setUpdateAt(existingUser.getUpdateAt());
+            return userResponse;
         }
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(request.getPassword());
         user.setKeycloakId(request.getKeycloakId());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
 
         User savedUser = repository.save(user);
-        log.info("New user registered with id: {}", savedUser.getId());
+        UserResponse userResponse = new UserResponse();
+        userResponse.setKeycloakId(savedUser.getKeycloakId());
+        userResponse.setId(savedUser.getId());
+        userResponse.setPassword(savedUser.getPassword());
+        userResponse.setEmail(savedUser.getEmail());
+        userResponse.setFirstName(savedUser.getFirstName());
+        userResponse.setLastName(savedUser.getLastName());
+        userResponse.setCreateAt(savedUser.getCreateAt());
+        userResponse.setUpdateAt(savedUser.getUpdateAt());
 
-        return mapToResponse(savedUser);
+        return userResponse;
     }
 
-    /**
-     * Get user profile by database ID
-     */
-    public UserResponse getUserProfile(@NonNull String userId) {
+    public UserResponse getUserProfile(String userId) {
         User user = repository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        return mapToResponse(user);
+        UserResponse userResponse = new UserResponse();
+        userResponse.setId(user.getId());
+        userResponse.setPassword(user.getPassword());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setFirstName(user.getFirstName());
+        userResponse.setLastName(user.getLastName());
+        userResponse.setCreateAt(user.getCreateAt());
+        userResponse.setUpdateAt(user.getUpdateAt());
+
+        return userResponse;
     }
 
-    /**
-     * Validate user existence using Keycloak ID
-     */
-    public Boolean existByUserId(String keycloakId) {
-        log.info("Validating user existence for keycloakId: {}", keycloakId);
-        return repository.existsByKeycloakId(keycloakId);
-    }
-
-    /**
-     * Maps User entity to UserResponse DTO
-     */
-    private UserResponse mapToResponse(User user) {
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setKeycloakId(user.getKeycloakId());
-        response.setEmail(user.getEmail());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setCreateAt(user.getCreateAt());
-        response.setUpdateAt(user.getUpdateAt());
-        return response;
+    public Boolean existByUserId(String userId) {
+        log.info("Calling User Validation API for userId: {}", userId);
+        return repository.existsByKeycloakId(userId);
     }
 }

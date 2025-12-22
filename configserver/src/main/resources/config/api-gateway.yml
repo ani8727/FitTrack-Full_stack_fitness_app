@@ -12,29 +12,23 @@ spring:
             jwk-set-uri: http://127.0.0.1:8181/realms/fitness-oauth2/protocol/openid-connect/certs
   cloud:
     gateway:
-      server:
-        webflux:
-          routes:
-            - id: user-service
-              uri: lb://USER-SERVICE
-              predicates:
-                - Path=/api/users/**
+      routes:
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/users/**
 
-            - id: activity-service
-              uri: lb://ACTIVITY-SERVICE
-              predicates:
-                - Path=/api/activities/**
+        - id: activity-service
+          uri: lb://ACTIVITY-SERVICE
+          predicates:
+            - Path=/api/activities/**
 
-            - id: ai-service
-              uri: lb://AI-SERVICE
-              predicates:
-                - Path=/api/recommendations/**
-
+        - id: ai-service
+          uri: lb://AI-SERVICE
+          predicates:
+            - Path=/api/recommendations/**
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-  instance:
-    hostname: localhost
-    prefer-ip-address: true

@@ -1,4 +1,4 @@
-package com.fitness.activityservice.modal;
+package com.fitness.activityservice.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,9 +18,7 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Activity {
-
     @Id
     private String id;
     private String userId;
@@ -36,6 +34,5 @@ public class Activity {
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    private LocalDateTime updateAt;
-
+    private LocalDateTime updatedAt;
 }

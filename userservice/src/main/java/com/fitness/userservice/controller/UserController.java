@@ -6,7 +6,6 @@ import com.fitness.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,31 +13,29 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private UserService userService;
 
     /**
      * Get user profile by DATABASE ID
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserProfile(@PathVariable @NonNull Long id) {
-        return ResponseEntity.ok(userService.getUserProfile(id.toString()));
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId){
+        return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
     /**
      * Register a new user
      */
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok(userService.register(request));
     }
 
     /**
      * Validate user existence by KEYCLOAK ID
      */
-    @GetMapping("/{keycloakId}/validate")
-    public ResponseEntity<Boolean> validateUser(
-            @PathVariable @NonNull String keycloakId) {
-        return ResponseEntity.ok(userService.existByUserId(keycloakId));
+    @GetMapping("/{userId}/validate")
+    public ResponseEntity<Boolean> validateUser(@PathVariable String userId){
+        return ResponseEntity.ok(userService.existByUserId(userId));
     }
 }

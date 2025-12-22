@@ -1,4 +1,4 @@
-package com.fitness.activityservice.modal;
+package com.fitness.activityservice.model;
 
 public enum ActivityType {
     RUNNING,
@@ -11,5 +11,4 @@ public enum ActivityType {
     CARDIO,
     STRETCHING,
     OTHER
-
 }
