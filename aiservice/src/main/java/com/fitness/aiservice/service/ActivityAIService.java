@@ -7,75 +7,70 @@ import com.fitness.aiservice.model.Recommendation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-
 public class ActivityAIService {
 
     private final GeminiService geminiService;
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    public Recommendation generateRecommendation(Activity activity) {
+    public Mono<Recommendation> generateRecommendation(Activity activity) {
         String prompt = createPromptForActivity(activity);
-        String aiResponse = geminiService.getAnswer(prompt);
-        log.info("RESPONSE FROM AI: {} ", aiResponse);
-        return processAiResponse(activity, aiResponse);
+        return geminiService.getAnswer(prompt)
+                .map(aiResponse -> processAiResponse(activity, aiResponse))
+                .doOnNext(rec -> log.info("RESPONSE FROM AI: {}", rec.getRecommendation()))
+                .onErrorReturn(createDefaultRecommendation(activity)); // fallback in case of error
     }
 
-    private  Recommendation processAiResponse(Activity activity, String aiResponse){
-         try {
-             ObjectMapper mapper = new ObjectMapper();
-             JsonNode rootNode = mapper.readTree(aiResponse);
+    private Recommendation processAiResponse(Activity activity, String aiResponse){
+        try {
+            JsonNode rootNode = mapper.readTree(aiResponse);
+            JsonNode textNode = rootNode.path("candidates")
+                    .get(0)
+                    .path("content")
+                    .path("parts")
+                    .get(0)
+                    .path("text");
 
-             JsonNode textNode = rootNode.path("candidates")
-                     .get(0)
-                     .path("content")
-                     .path("parts")
-                     .get(0)
-                     .path("text");
+            String jsonContent = textNode.asText()
+                    .replaceAll("```json\\n", "")
+                    .replaceAll("\\n```", "")
+                    .trim();
 
-             String jsonContent = textNode.asText()
-                     .replaceAll("```json\\n", "")
-                     .replaceAll("\\n```", "")
-                     .trim();
+            JsonNode analysisJson = mapper.readTree(jsonContent);
+            JsonNode analysisNode = analysisJson.path("analysis");
 
-//             log.info("PARSED RESPONSE FROM AI: {} ", jsonContent);
+            StringBuilder fullAnalysis = new StringBuilder();
+            addAnalysisSection(fullAnalysis, analysisNode, "overall", "Overall: ");
+            addAnalysisSection(fullAnalysis, analysisNode, "pace", "Pace:");
+            addAnalysisSection(fullAnalysis, analysisNode, "heartRate", "Heart Rate:");
+            addAnalysisSection(fullAnalysis, analysisNode, "caloriesBurned", "Calories:");
 
-             JsonNode analysisJson = mapper.readTree(jsonContent);
-             JsonNode analysisNode = analysisJson.path("analysis");
+            List<String> improvements = extractImprovements(analysisJson.path("improvements"));
+            List<String> suggestions = extractSuggestions(analysisJson.path("suggestions"));
+            List<String> safety = extractSafetyGuidelines(analysisJson.path("safety"));
 
-             StringBuilder fullAnalysis = new StringBuilder();
-             addAnalysisSection(fullAnalysis,analysisNode, "overall", "Overall: ");
-             addAnalysisSection(fullAnalysis, analysisNode, "pace", "Pace:");
-             addAnalysisSection(fullAnalysis, analysisNode, "heartRate", "Heart Rate:");
-             addAnalysisSection(fullAnalysis, analysisNode, "caloriesBurned", "Calories:");
+            return Recommendation.builder()
+                    .activityId(activity.getId())
+                    .userId(activity.getUserId())
+                    .activityType(activity.getType())
+                    .recommendation(fullAnalysis.toString().trim())
+                    .improvements(improvements)
+                    .suggestions(suggestions)
+                    .safety(safety)
+                    .createdAt(LocalDateTime.now())
+                    .build();
 
-             List<String> improvements = extractImprovements(analysisJson.path("improvements"));
-             List<String> suggestions = extractSuggestions(analysisJson.path("suggestions"));
-             List<String> safety = extractSafetyGuidelines(analysisJson.path("safety"));
-
-             return Recommendation.builder()
-                     .activityId(activity.getId())
-                     .userId(activity.getUserId())
-                     .activityType(activity.getType())
-                     .recommendation(fullAnalysis.toString().trim())
-                     .improvements(improvements)
-                     .suggestions(suggestions)
-                     .safety(safety)
-                     .createdAt(LocalDateTime.now())
-                     .build();
-
-         } catch (Exception e){
-             e.printStackTrace();
-             return createDefaultRecommendation(activity);
-         }
+        } catch (Exception e){
+            e.printStackTrace();
+            return createDefaultRecommendation(activity);
+        }
     }
 
     private Recommendation createDefaultRecommendation(Activity activity) {
@@ -184,5 +179,4 @@ public class ActivityAIService {
                 activity.getAdditionalMetrics()
         );
     }
-
 }

@@ -3,7 +3,9 @@ package com.fitness.aiservice.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Service
@@ -21,23 +23,22 @@ public class GeminiService {
                 this.webClient = webClientBuilder.build();
         }
 
-        public String getAnswer(String question) {
+        public Mono<String> getAnswer(String question) {
+
                 Map<String, Object> requestBody = Map.of(
-                        "contents", new Object[] {
+                        "contents", new Object[]{
                                 Map.of("parts", new Object[]{
                                         Map.of("text", question)
                                 })
                         }
                 );
 
-                String response = webClient.post()
+                return webClient.post()
                         .uri(geminiApiUrl + geminiApiKey)
                         .header("Content-Type", "application/json")
                         .bodyValue(requestBody)
                         .retrieve()
                         .bodyToMono(String.class)
-                        .block();
-
-                return response;
+                        .timeout(Duration.ofSeconds(10)); // prevents hanging
         }
 }

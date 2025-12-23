@@ -1,5 +1,21 @@
+server:
+  port: 8083
+
 spring:
   application:
     name: ai-service
   config:
     import: optional:configserver:http://localhost:8888
+
+rabbitmq:
+  exchange:
+    name: ai.exchange
+  queue:
+    name: ai.queue
+  routing:
+    key: ai.tracking
+
+gemini:
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+    key: AIzaSyD1nQ5l4LUcB3pUyMZ-Q9rSdrhlzScZZAA

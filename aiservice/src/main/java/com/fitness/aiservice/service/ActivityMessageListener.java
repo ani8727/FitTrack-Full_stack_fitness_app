@@ -19,8 +19,14 @@ public class ActivityMessageListener {
     @RabbitListener(queues = "activity.queue")
     public void processActivity(Activity activity) {
         log.info("Received activity for processing: {}", activity.getId());
-//        log.info("Generated Recommendation: {}", aiService.generateRecommendation(activity));
-        Recommendation recommendation = aiService.generateRecommendation(activity);
-        recommendationRepository.save(recommendation);
+
+        // Reactive / non-blocking processing
+        aiService.generateRecommendation(activity)
+                .doOnNext(recommendation -> {
+                    log.info("Generated Recommendation for activity {}: {}", activity.getId(), recommendation.getRecommendation());
+                    recommendationRepository.save(recommendation);
+                })
+                .doOnError(error -> log.error("Error generating recommendation for activity {}: {}", activity.getId(), error.getMessage()))
+                .subscribe(); // Trigger execution
     }
 }
