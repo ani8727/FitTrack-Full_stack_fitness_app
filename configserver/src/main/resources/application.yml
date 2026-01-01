@@ -12,9 +12,20 @@ spring:
         native:
           search-locations: classpath:/config
 
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "*" # Expose all actuator endpoints
+  endpoint:
+    health:
+      show-details: "always"
 

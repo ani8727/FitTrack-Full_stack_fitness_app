@@ -1,12 +1,20 @@
 package com.fitness.userservice.service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UserResponse;
 import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -14,6 +22,9 @@ public class UserService {
 
     @Autowired
     private UserRepository repository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public UserResponse register(RegisterRequest request) {
 
@@ -33,7 +44,7 @@ public class UserService {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash password
         user.setKeycloakId(request.getKeycloakId());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -70,6 +81,53 @@ public class UserService {
 
     public Boolean existByUserId(String userId) {
         log.info("Calling User Validation API for userId: {}", userId);
-        return repository.existsByKeycloakId(userId);
+        try {
+            return repository.existsByKeycloakId(userId);
+        } catch (Exception e) {
+            log.error("Error checking if user exists: {}", e.getMessage());
+            return false; // Return false if there's a database error
+        }
+    }
+
+    // ADMIN METHODS
+    
+    public List<UserResponse> getAllUsers() {
+        return repository.findAll().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> getUserStats() {
+        long totalUsers = repository.count();
+        long activeUsers = repository.findAll().stream()
+                .filter(user -> user.getRole() != null)
+                .count();
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalUsers", totalUsers);
+        stats.put("activeUsers", activeUsers);
+        stats.put("adminUsers", repository.findAll().stream()
+                .filter(user -> "ADMIN".equals(user.getRole().toString()))
+                .count());
+        return stats;
+    }
+
+    public UserResponse updateUserStatus(String userId, String status) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+        // Here you can add status field to User model if needed
+        return convertToResponse(repository.save(user));
+    }
+
+    private UserResponse convertToResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setKeycloakId(user.getKeycloakId());
+        response.setEmail(user.getEmail());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setCreateAt(user.getCreateAt());
+        response.setUpdateAt(user.getUpdateAt());
+        return response;
     }
 }

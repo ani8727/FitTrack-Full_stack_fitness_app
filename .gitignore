@@ -1,37 +1,64 @@
-# ---- Java / Maven ----
-**/target/
-*.class
+# Build outputs
+target/
 *.jar
 *.war
 *.ear
-.mvn/timing.properties
+*.class
 
-# ---- Node / Frontend ----
-**/node_modules/
-**/dist/
-**/.parcel-cache/
-**/.vite/
-**/coverage/
-
-# ---- IDE / Editor ----
-.vscode/
+# IDE
 .idea/
+.vscode/
 *.iml
-
-# ---- OS files ----
+*.ipr
+*.iws
 .DS_Store
-Thumbs.db
 
-# ---- Logs ----
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Node
+node_modules/
+dist/
+.cache/
 *.log
-logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# ---- Env files ----
+# Environment
 .env
-**/.env
 .env.local
-.env.*.local
+.env.production
+*.local
 
-# ---- Misc ----
+# OS
+Thumbs.db
+.DS_Store
+
+# Test
+coverage/
+*.test.js
+
+# Temporary
+*.tmp
+*.temp
+*.bak
 *.swp
-*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Database
+*.sql.bak
+*.db
+
+# Docker
+.dockerignore
+
+# Documentation - Exclude all .md files except README.md
+*.md
+!README.md

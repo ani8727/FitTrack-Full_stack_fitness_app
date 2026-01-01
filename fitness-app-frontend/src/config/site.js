@@ -1,13 +1,10 @@
 export const site = {
   name: 'FitTrack',
-  tagline: 'Microservices Fitness App',
+  tagline: 'Your Personal Fitness Companion',
   year: new Date().getFullYear(),
   links: {
     terms: '/terms',
     privacy: '/privacy',
-    support: 'mailto:support@example.com',
-    github: 'https://github.com/your-handle',
-    linkedin: 'https://www.linkedin.com/in/your-handle/',
-    twitter: 'https://x.com/your-handle',
+    linkedin: 'http://www.linkedin.com/in/aniket8727',
   },
 }

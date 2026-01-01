@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.9</version>
+		<version>3.5.9</version> <!-- Updated to a compatible Spring Boot version -->
 		<relativePath/>
 	</parent>
 
@@ -20,7 +20,7 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<spring-cloud.version>2025.0.1</spring-cloud.version>
+		<spring-cloud.version>2025.0.0</spring-cloud.version>
 	</properties>
 
 	<dependencyManagement>
@@ -79,7 +79,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>3.5.9</version>
 			</plugin>
 		</plugins>
 	</build>

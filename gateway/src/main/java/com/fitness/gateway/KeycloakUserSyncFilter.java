@@ -1,16 +1,18 @@
 package com.fitness.gateway;
 
-import com.fitness.gateway.user.RegisterRequest;
-import com.fitness.gateway.user.UserService;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+
+import com.fitness.gateway.user.RegisterRequest;
+import com.fitness.gateway.user.UserService;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -25,27 +27,29 @@ public class KeycloakUserSyncFilter implements WebFilter {
         String userId = exchange.getRequest().getHeaders().getFirst("X-User-ID");
         RegisterRequest registerRequest = getUserDetails(token);
 
-        if (userId == null) {
+        if (userId == null && registerRequest != null) {
             userId = registerRequest.getKeycloakId();
         }
 
         if (userId != null && token != null){
             String finalUserId = userId;
+            
+            // Validate and auto-register user
             return userService.validateUser(userId)
                     .flatMap(exist -> {
-                        if (!exist) {
-                            // Register User
-
-                            if (registerRequest != null) {
-                                return userService.registerUser(registerRequest)
-                                        .then(Mono.empty());
-                            } else {
-                                return Mono.empty();
-                            }
+                        if (!exist && registerRequest != null) {
+                            log.info("User not found, auto-registering: {}", finalUserId);
+                            return userService.registerUser(registerRequest)
+                                    .doOnSuccess(user -> log.info("User registered successfully: {}", finalUserId))
+                                    .then(Mono.empty());
                         } else {
-                            log.info("User already exist, Skipping sync.");
+                            log.info("User exists, continuing: {}", finalUserId);
                             return Mono.empty();
                         }
+                    })
+                    .onErrorResume(error -> {
+                        log.error("Error during user sync, continuing anyway: {}", error.getMessage());
+                        return Mono.empty();
                     })
                     .then(Mono.defer(() -> {
                         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
@@ -59,6 +63,10 @@ public class KeycloakUserSyncFilter implements WebFilter {
 
     private RegisterRequest getUserDetails(String token) {
         try {
+            if (token == null || !token.startsWith("Bearer ")) {
+                log.warn("Invalid or missing token");
+                return null;
+            }
             String tokenWithoutBearer = token.replace("Bearer ", "").trim();
             SignedJWT signedJWT = SignedJWT.parse(tokenWithoutBearer);
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
@@ -69,9 +77,10 @@ public class KeycloakUserSyncFilter implements WebFilter {
             registerRequest.setPassword("dummy@123123");
             registerRequest.setFirstName(claims.getStringClaim("given_name"));
             registerRequest.setLastName(claims.getStringClaim("family_name"));
+            log.info("Extracted user details - sub: {}, email: {}", registerRequest.getKeycloakId(), registerRequest.getEmail());
             return registerRequest;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to parse JWT token: {}", e.getMessage());
             return null;
         }
     }

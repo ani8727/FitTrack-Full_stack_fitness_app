@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = 'http://localhost:9090/api';
+const API_URL = 'http://localhost:8085/api'; // Updated to use the gateway port (8085) for routing requests
 
 const api = axios.create({
     baseURL:API_URL

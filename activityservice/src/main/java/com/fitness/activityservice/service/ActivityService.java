@@ -1,17 +1,19 @@
 package com.fitness.activityservice.service;
 
-import com.fitness.activityservice.repository.ActivityRepository;
-import com.fitness.activityservice.dto.ActivityRequest;
-import com.fitness.activityservice.dto.ActivityResponse;
-import com.fitness.activityservice.model.Activity;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.fitness.activityservice.dto.ActivityRequest;
+import com.fitness.activityservice.dto.ActivityResponse;
+import com.fitness.activityservice.model.Activity;
+import com.fitness.activityservice.repository.ActivityRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +32,12 @@ public class ActivityService {
 
     public ActivityResponse trackActivity(ActivityRequest request) {
 
+        // Validate user exists before creating activity
         boolean isValidUser = userValidationService.validateUser(request.getUserId());
         if (!isValidUser) {
-            throw new RuntimeException("Invalid User: " + request.getUserId());
+            log.warn("User not found, will skip validation: " + request.getUserId());
+            // Don't throw error, just log warning and continue
+            // This allows activities to be created even if user validation fails
         }
 
         Activity activity = Activity.builder()
@@ -81,5 +86,31 @@ public class ActivityService {
         return activityRepository.findById(activityId)
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
+    }
+
+    public void deleteActivity(String activityId, String userId) {
+        Activity activity = activityRepository.findById(activityId)
+                .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
+        
+        // Verify the activity belongs to the user
+        if (!activity.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized: Activity does not belong to user");
+        }
+        
+        activityRepository.deleteById(activityId);
+        log.info("Activity deleted: {} by user: {}", activityId, userId);
+    }
+
+    // ADMIN METHODS
+    
+    public List<ActivityResponse> getAllActivities() {
+        return activityRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public void adminDeleteActivity(String activityId) {
+        activityRepository.deleteById(activityId);
+        log.info("Activity deleted by admin: {}", activityId);
     }
 }

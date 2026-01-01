@@ -3,30 +3,127 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #0f1724; /* neutral-900 */
-  --color-surface: #0b1220;
-  --color-text: #e6eef6;
-  --color-primary: #646cff;
-  --color-primary-600: #535bf2;
-  --color-accent: #ff7a59;
+  /* Light theme (default) */
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #0ea5e9;
+  --color-primary-hover: #0284c7;
+  --color-accent: #f97316;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Dark theme */
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-primary: #38bdf8;
+  --color-primary-hover: #0ea5e9;
+  --color-accent: #fb923c;
+  --color-shadow: rgba(0, 0, 0, 0.3);
 }
 
 @layer base {
   html, body, #root {
     height: 100%;
     margin: 0;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: radial-gradient(1000px 600px at 10% 10%, rgba(100,108,255,0.06), transparent), var(--color-bg);
+    background-color: var(--color-bg);
     color: var(--color-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  a { color: var(--color-primary); }
-  button { @apply rounded-md px-4 py-2 font-medium; }
+  * {
+    @apply border-[var(--color-border)];
+  }
+
+  a { 
+    color: var(--color-primary);
+    @apply transition-colors hover:opacity-80;
+  }
+  
+  button { 
+    @apply rounded-lg px-4 py-2 font-medium transition-all duration-200;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
 }
 
-/* small helpers for layout */
-.app-shell { @apply min-h-screen flex flex-col items-center justify-start p-4 bg-gradient-to-b from-[#071025] to-[#071428]; }
-.app-container { @apply container mx-auto; }
+@layer components {
+  /* Card component */
+  .card {
+    @apply rounded-xl border border-[var(--color-border)] bg-white dark:bg-neutral-800 shadow-soft;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-500 hover:bg-secondary-600 text-white shadow-sm hover:shadow-md;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20;
+  }
+
+  /* Input fields */
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-white dark:bg-neutral-800 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+  }
+
+  /* Layout helpers */
+  .app-shell { 
+    @apply min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-neutral-50 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800;
+  }
+
+  .app-container { 
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section styling */
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold text-[var(--color-text)] mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-[var(--color-text-muted)] mb-6;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-neutral-100 dark:bg-neutral-800 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-neutral-300 dark:bg-neutral-600 rounded-full hover:bg-neutral-400 dark:hover:bg-neutral-500;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply backdrop-blur-md bg-white/70 dark:bg-neutral-900/70 border border-white/20 dark:border-neutral-700/50;
+  }
+}
 
