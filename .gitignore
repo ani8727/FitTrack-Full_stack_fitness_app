@@ -46,6 +46,9 @@ coverage/
 *~
 run-all.bat
 
+# Local documentation bundle (kept locally, not in git)
+Guide/
+
 # Logs
 logs/
 Logs/
