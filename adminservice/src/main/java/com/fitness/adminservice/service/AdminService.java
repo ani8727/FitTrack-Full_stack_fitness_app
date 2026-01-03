@@ -40,14 +40,22 @@ public class AdminService {
             .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public UserDTO getUserById(String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         return convertToDTO(user);
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public UserDTO updateUserRole(String id, UserRole role) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         user.setRole(role);
@@ -57,7 +65,11 @@ public class AdminService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public void deleteUser(String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("User not found with id: " + id);
         }

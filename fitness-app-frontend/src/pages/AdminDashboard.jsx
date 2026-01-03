@@ -3,19 +3,22 @@ import { FiUsers, FiActivity, FiTrendingUp, FiAward, FiArrowRight } from 'react-
 import { getDashboardStats, getAllUsers, getAllActivities } from '../services/api'
 import { useNavigate } from 'react-router-dom'
 
-const StatCard = ({ icon: Icon, title, value, color, gradient }) => (
-  <div className={`card p-6 hover:shadow-lg transition-all cursor-pointer ${gradient}`}>
-    <div className="flex items-center gap-4">
-      <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center shadow-sm`}>
-        <Icon className="w-7 h-7 text-white" />
-      </div>
-      <div>
-        <p className="text-sm text-[var(--color-text-muted)] mb-1">{title}</p>
-        <p className="text-3xl font-bold text-[var(--color-text)]">{value}</p>
+const StatCard = ({ icon, title, value, color, gradient }) => {
+  const Icon = icon
+  return (
+    <div className={`card p-6 hover:shadow-lg transition-all cursor-pointer ${gradient}`}>
+      <div className="flex items-center gap-4">
+        <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center shadow-sm`}>
+          <Icon className="w-7 h-7 text-white" />
+        </div>
+        <div>
+          <p className="text-sm text-[var(--color-text-muted)] mb-1">{title}</p>
+          <p className="text-3xl font-bold text-[var(--color-text)]">{value}</p>
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 const AdminDashboard = () => {
   const navigate = useNavigate()

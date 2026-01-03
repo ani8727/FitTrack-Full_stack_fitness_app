@@ -29,18 +29,22 @@ spring:
           uri: lb://ADMINSERVICE
           predicates:
             - Path=/api/admin/**
-        - id: ai-service
+        - id: ai-service-recommendations
           uri: lb://AI-SERVICE
           predicates:
             - Path=/api/recommendations/**
+        - id: ai-service-daily-plans
+          uri: lb://AI-SERVICE
+          predicates:
+            - Path=/api/daily-plans/**
 
   # OAuth2 Resource Server Configuration
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8181/realms/fitness-oauth2
-          jwk-set-uri: http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8181/realms/fitness-oauth2}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/certs}
 
 eureka:
   instance:

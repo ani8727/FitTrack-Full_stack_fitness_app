@@ -4,9 +4,9 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:mysql://localhost:3307/fitness_users_db
-    username: fitnessuser
-    password: fitness123
+    url: ${ADMIN_DB_URL:jdbc:mysql://localhost:3307/fitness_users_db}
+    username: ${ADMIN_DB_USERNAME:fitnessuser}
+    password: ${ADMIN_DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -18,8 +18,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8181/realms/fitness-realm
-          jwk-set-uri: http://localhost:8181/realms/fitness-realm/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8181/realms/fitness-oauth2}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/certs}
 
 server:
   port: 8083

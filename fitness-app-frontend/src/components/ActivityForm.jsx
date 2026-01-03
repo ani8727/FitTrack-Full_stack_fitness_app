@@ -14,11 +14,22 @@ const ActivityForm = ({ onActivityAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        
+        // Validate inputs
+        if (!activity.duration || activity.duration <= 0) {
+            setToast({ type: 'error', message: 'Please enter a valid duration' })
+            return
+        }
+        if (!activity.caloriesBurned || activity.caloriesBurned <= 0) {
+            setToast({ type: 'error', message: 'Please enter calories burned' })
+            return
+        }
+        
         try {
             await addActivity({
                 ...activity,
-                duration: Number(activity.duration || 0),
-                caloriesBurned: Number(activity.caloriesBurned || 0)
+                duration: Number(activity.duration),
+                caloriesBurned: Number(activity.caloriesBurned)
             })
             if (onActivityAdded) onActivityAdded()
             setActivity({ type: 'RUNNING', duration: '', caloriesBurned: '' })
@@ -45,25 +56,27 @@ const ActivityForm = ({ onActivityAdded }) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm mb-1">Duration (minutes)</label>
+                    <label className="block text-sm mb-1">Duration (minutes) <span className="text-red-500">*</span></label>
                     <input
                         type="number"
-                        min="0"
+                        min="1"
                         value={activity.duration}
                         onChange={(e) => setActivity({ ...activity, duration: e.target.value })}
                         className="w-full bg-neutral-900 text-white border border-white/10 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="e.g. 30"
+                        required
                     />
                 </div>
                 <div>
-                    <label className="block text-sm mb-1">Calories Burned</label>
+                    <label className="block text-sm mb-1">Calories Burned <span className="text-red-500">*</span></label>
                     <input
                         type="number"
-                        min="0"
+                        min="1"
                         value={activity.caloriesBurned}
                         onChange={(e) => setActivity({ ...activity, caloriesBurned: e.target.value })}
                         className="w-full bg-neutral-900 text-white border border-white/10 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="e.g. 250"
+                        required
                     />
                 </div>
             </div>

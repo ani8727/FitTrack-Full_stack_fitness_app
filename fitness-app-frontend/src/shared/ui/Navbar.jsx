@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Logo, MenuIcon, ChevronDownIcon } from './Icons'
 import { AuthContext } from 'react-oauth2-code-pkce'
 import { site } from '../../config/site'
@@ -7,10 +7,13 @@ import { FiSun, FiMoon, FiX, FiHome, FiActivity, FiTrendingUp, FiUser, FiMenu, F
 
 const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate()
-  const location = useLocation()
   const [userMenu, setUserMenu] = useState(false)
-  const isActive = (path) => location.pathname === path
   const { tokenData } = useContext(AuthContext)
+
+  const isAdmin = useMemo(() => {
+    const roles = tokenData?.realm_access?.roles || tokenData?.roles || []
+    return Array.isArray(roles) && roles.includes('ADMIN')
+  }, [tokenData])
   
   const initials = useMemo(() => {
     const n = tokenData?.name || tokenData?.preferred_username || ''
@@ -22,25 +25,27 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen,
   }, [tokenData])
 
   return (
-    <header className="sticky top-0 z-50 glass border-b shadow-sm">
+    <header className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'color-mix(in srgb, var(--color-surface) 94%, transparent)' }}>
       <div className="app-container">
         <div className="h-16 flex items-center justify-between">
           {/* Left - Logo only */}
           <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate('/')}>
-            <Logo className="w-8 h-8 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform" />
+            <Logo className="w-9 h-9 group-hover:scale-105 transition-transform" />
+            <span className="text-lg font-semibold text-[var(--color-text)] hidden sm:inline">{site.name}</span>
           </div>
 
           {/* Center - Project Name */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <span className="text-xl font-bold gradient-text">{site.name}</span>
+          <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
+            <span className="text-xl font-bold gradient-text drop-shadow-sm">{site.name}</span>
           </div>
           {/* Right side - Menu button + Theme toggle + User menu */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Menu Button */}
             {isAuthenticated && (
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg text-[var(--color-text)] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                className="p-2 rounded-full text-[var(--color-text)] bg-white/70 dark:bg-neutral-900/50 hover:bg-white dark:hover:bg-neutral-800 transition-all shadow-[0_4px_14px_rgba(0,0,0,0.06)] border"
+                style={{ borderColor: 'color-mix(in srgb, var(--color-border) 90%, transparent)' }}
                 aria-label="Toggle sidebar"
               >
                 <FiMenu className="w-6 h-6" />
@@ -50,7 +55,8 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen,
             {/* Theme Toggle */}
             <button
               onClick={onToggleTheme}
-              className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+              className="p-2 rounded-full text-[var(--color-text-muted)] bg-white/60 dark:bg-neutral-900/40 hover:text-[var(--color-text)] hover:bg-white dark:hover:bg-neutral-800 transition-all shadow-[0_4px_14px_rgba(0,0,0,0.06)] border"
+              style={{ borderColor: 'color-mix(in srgb, var(--color-border) 90%, transparent)' }}
               aria-label="Toggle theme"
             >
               {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
@@ -61,12 +67,13 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen,
               <div className="relative">
                 <button
                   onClick={() => setUserMenu(!userMenu)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                  className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-white/80 dark:bg-neutral-900/50 border hover:border-[var(--color-primary)] transition-all shadow-[0_8px_28px_rgba(0,0,0,0.08)]"
+                  style={{ borderColor: 'color-mix(in srgb, var(--color-border) 80%, transparent)' }}
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 grid place-items-center text-white text-sm font-semibold shadow-sm">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] grid place-items-center text-white text-sm font-semibold shadow-sm">
                     {initials}
                   </div>
-                  <ChevronDownIcon className={`w-4 h-4 transition-transform hidden sm:block ${userMenu ? 'rotate-180' : ''}`} />
+                  <ChevronDownIcon className={`w-4 h-4 text-[var(--color-text-muted)] transition-transform hidden sm:block ${userMenu ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {userMenu && (
@@ -86,26 +93,28 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen,
                       </div>
                       <button
                         onClick={() => { setUserMenu(false); navigate('/profile') }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-[color-mix(in_srgb,var(--color-surface-muted)70%,var(--color-surface))] dark:hover:bg-neutral-700 transition-colors"
                       >
                         Profile Settings
                       </button>
-                      <button
-                        onClick={() => { setUserMenu(false); navigate('/admin') }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-                      >
-                        Admin Dashboard
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => { setUserMenu(false); navigate('/admin') }}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-[color-mix(in_srgb,var(--color-surface-muted)70%,var(--color-surface))] dark:hover:bg-neutral-700 transition-colors"
+                        >
+                          Admin Dashboard
+                        </button>
+                      )}
                       <div className="border-t border-[var(--color-border)] my-1"></div>
                       <button
                         onClick={() => { setUserMenu(false); navigate('/privacy') }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-[color-mix(in_srgb,var(--color-surface-muted)70%,var(--color-surface))] dark:hover:bg-neutral-700 transition-colors"
                       >
                         Privacy Policy
                       </button>
                       <button
                         onClick={() => { setUserMenu(false); navigate('/terms') }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-[color-mix(in_srgb,var(--color-surface-muted)70%,var(--color-surface))] dark:hover:bg-neutral-700 transition-colors"
                       >
                         Terms of Service
                       </button>

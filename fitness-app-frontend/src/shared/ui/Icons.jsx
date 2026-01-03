@@ -1,11 +1,18 @@
 import React from 'react'
 
-export const Logo = ({ className = 'w-7 h-7' }) => (
-	<svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-		<rect x="4" y="4" width="40" height="40" rx="10" className="fill-primary-500/20" />
-		<path d="M14 30c6-2 8-10 10-14 2 6 4 12 10 16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-primary-400"/>
-		<circle cx="14" cy="30" r="2.5" className="fill-secondary-400"/>
-		<circle cx="34" cy="32" r="2.5" className="fill-accent-400"/>
+export const Logo = ({ className = 'w-8 h-8' }) => (
+	<svg className={className} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+		<defs>
+			<linearGradient id="fit-gradient" x1="4" y1="6" x2="44" y2="42" gradientUnits="userSpaceOnUse">
+				<stop offset="0" stopColor="var(--color-primary)" stopOpacity="0.95" />
+				<stop offset="1" stopColor="var(--color-accent)" stopOpacity="0.9" />
+			</linearGradient>
+		</defs>
+		<rect x="4" y="4" width="40" height="40" rx="12" fill="color-mix(in srgb, var(--color-surface-muted) 80%, transparent)" />
+		<path d="M12.5 32.5c7-2.2 8.8-10.1 11.5-17 2.3 6.4 4.6 13.5 11.5 17.8" fill="none" stroke="url(#fit-gradient)" strokeWidth="3.3" strokeLinecap="round" />
+		<circle cx="13" cy="31" r="3" fill="var(--color-primary)" />
+		<circle cx="35" cy="33" r="3" fill="var(--color-accent)" />
+		<circle cx="24" cy="15" r="3.4" fill="url(#fit-gradient)" stroke="var(--color-surface)" strokeWidth="1.6" />
 	</svg>
 )
 

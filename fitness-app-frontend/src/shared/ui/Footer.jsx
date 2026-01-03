@@ -5,7 +5,7 @@ import { FiLinkedin } from 'react-icons/fi'
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t border-[var(--color-border)] bg-[var(--color-bg)]/95 backdrop-blur-sm mt-auto">
+    <footer className="w-full border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 backdrop-blur-sm shadow-[0_-8px_30px_rgba(15,23,42,0.06)] mt-auto">
       <div className="w-full px-6 py-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Left: Logo + Copyright */}

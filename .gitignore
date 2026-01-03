@@ -1,45 +1,42 @@
 # Build outputs
 target/
+**/target/
 *.jar
 *.war
 *.ear
 *.class
 
-# IDE
+# IDE / tooling
 .idea/
 .vscode/
 *.iml
 *.ipr
 *.iws
-.DS_Store
 
-# Maven
-.mvn/
-mvnw
-mvnw.cmd
-
-# Node
+# Node / frontend
 node_modules/
 dist/
+build/
+out/
 .cache/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment
-.env
-.env.local
-.env.production
-*.local
+# Maven wrapper cache (keep wrapper scripts tracked)
+.mvn/wrapper/maven-wrapper.jar
 
-# OS
+# Environment files
+.env
+.env.*
+
+# OS artifacts
 Thumbs.db
 .DS_Store
+desktop.ini
 
-# Test
+# Test / coverage
 coverage/
-*.test.js
 
 # Temporary
 *.tmp
@@ -47,23 +44,13 @@ coverage/
 *.bak
 *.swp
 *~
+run-all.bat
 
 # Logs
 logs/
+Logs/
 *.log
 
-# Database
+# Database dumps
 *.sql.bak
 *.db
-
-# Docker
-.dockerignore
-
-# Documentation - Exclude all .md files except README.md
-*.md
-!README.md
-
-# Specific files to exclude
-DEVELOPMENT_GUIDE.md
-USER_GUIDE.md
-start-all.bat

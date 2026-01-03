@@ -26,6 +26,9 @@ public class User {
     private String firstName;
     private String lastName;
 
+    @Column(unique = true)
+    private String username;
+
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -37,10 +40,82 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+    
+    // Account Status
+    @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+    
+    private Boolean emailVerified = false;
+    
+    private Boolean onboardingCompleted = false;
+    
+    private LocalDateTime lastLoginAt;
+    
+    private LocalDateTime deactivatedAt;
+    
+    private String deactivationReason;
+    
+    // Extended Profile Information
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+    
+    private Integer age;
+    
+    private String location;
+    
+    @Column(length = 1000)
+    private String fitnessGoals;
+    
+    @Column(length = 1000)
+    private String areasToImprove;
+    
+    @Column(length = 1000)
+    private String weaknesses;
+    
+    @Column(length = 1000)
+    private String healthIssues;
+    
+    private Double height; // in cm
+    
+    private Double weight; // in kg
+    
+    private String activityLevel; // SEDENTARY, LIGHT, MODERATE, ACTIVE, VERY_ACTIVE
+    
+    @Column(length = 500)
+    private String dietaryPreferences;
+    
+    private Integer targetWeeklyWorkouts;
 
     @CreationTimestamp
     private LocalDateTime createAt;
 
     @UpdateTimestamp
     private LocalDateTime updateAt;
+    
+    // Helper methods
+    public boolean isActive() {
+        return AccountStatus.ACTIVE.equals(accountStatus);
+    }
+    
+    public boolean canLogin() {
+        return isActive() && Boolean.TRUE.equals(emailVerified);
+    }
+    
+    public void markAsDeleted(String reason) {
+        this.accountStatus = AccountStatus.DELETED;
+        this.deactivatedAt = LocalDateTime.now();
+        this.deactivationReason = reason;
+    }
+    
+    public void deactivate(String reason) {
+        this.accountStatus = AccountStatus.DEACTIVATED;
+        this.deactivatedAt = LocalDateTime.now();
+        this.deactivationReason = reason;
+    }
+    
+    public void reactivate() {
+        this.accountStatus = AccountStatus.ACTIVE;
+        this.deactivatedAt = null;
+        this.deactivationReason = null;
+    }
 }

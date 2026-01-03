@@ -19,6 +19,7 @@ public class RegisterRequest {
 
     private String keycloakId;
 
+    private String username;
     private String firstName;
     private String lastName;
 }

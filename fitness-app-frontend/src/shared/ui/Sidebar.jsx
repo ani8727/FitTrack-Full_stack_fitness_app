@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { FiHome, FiActivity, FiTrendingUp, FiUser, FiX } from 'react-icons/fi'
+import { FiHome, FiActivity, FiTrendingUp, FiUser, FiX, FiCalendar, FiSettings, FiEdit3 } from 'react-icons/fi'
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate()
@@ -11,7 +11,10 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/dashboard', label: 'Dashboard', icon: FiHome },
     { path: '/activities', label: 'Activities', icon: FiActivity },
     { path: '/recommendations', label: 'Recommendations', icon: FiTrendingUp },
-    { path: '/profile', label: 'Profile', icon: FiUser }
+    { path: '/daily-plan', label: 'Daily Plan', icon: FiCalendar },
+    { path: '/profile', label: 'Profile', icon: FiUser },
+    { path: '/profile/edit', label: 'Edit Profile', icon: FiEdit3 },
+    { path: '/settings/account', label: 'Settings', icon: FiSettings }
   ]
 
   const handleNavigation = (path) => {
@@ -34,13 +37,13 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:fixed top-0 left-0 h-screen z-50 glass border-r border-[var(--color-border)] transition-transform duration-300 ease-in-out flex flex-col
+        className={`fixed lg:fixed top-0 left-0 h-screen z-50 transition-transform duration-300 ease-in-out flex flex-col bg-white/92 dark:bg-[#111827]/95 border-r border-[var(--color-border)] shadow-[0_18px_48px_rgba(15,23,42,0.12)] backdrop-blur-md
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
         style={{ width: '260px', top: '64px', height: 'calc(100vh - 64px)' }}
       >
         {/* Close button (mobile only) */}
-        <div className="lg:hidden flex justify-end items-center p-4 border-b border-[var(--color-border)]">
+        <div className="lg:hidden flex justify-end items-center p-4 border-b border-[var(--color-border)] bg-white/90 dark:bg-transparent">
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -62,8 +65,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                   onClick={() => handleNavigation(item.path)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${
                     active
-                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-semibold shadow-sm'
-                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-semibold shadow-sm'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-muted)] dark:hover:bg-neutral-800'
                   }`}
                 >
                   <Icon 

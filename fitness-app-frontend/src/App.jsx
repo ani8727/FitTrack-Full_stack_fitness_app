@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { Suspense, lazy, useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "react-oauth2-code-pkce";
 import { useDispatch } from "react-redux";
 import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -7,17 +7,22 @@ import ActivityForm from "./features/activities/ActivityForm";
 import ActivityList from "./features/activities/ActivityList";
 import ActivityDetail from "./features/activities/ActivityDetail";
 import SiteLayout from "./shared/ui/SiteLayout";
-import Dashboard from "./pages/DashboardEnhanced";
-import Profile from "./features/profile/Profile";
 import Recommendations from "./features/recommendations/Recommendations";
-import LoginPage from "./features/auth/LoginPage";
-import Terms from "./features/legal/Terms";
-import Privacy from "./features/legal/Privacy";
-import HomePage from "./pages/HomePage";
-import RegisterPage from "./pages/RegisterPage";
-import ProfileUpdatePage from "./pages/ProfileUpdatePage";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsersPage from "./pages/AdminUsersPage";
+import Profile from "./features/profile/Profile";
+
+const Dashboard = lazy(() => import("./pages/DashboardEnhanced"));
+const LoginPage = lazy(() => import("./features/auth/LoginPage"));
+const Terms = lazy(() => import("./features/legal/Terms"));
+const Privacy = lazy(() => import("./features/legal/Privacy"));
+const HomePage = lazy(() => import("./pages/HomePage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const ProfileUpdatePage = lazy(() => import("./pages/ProfileUpdatePage"));
+const DailyPlanPage = lazy(() => import("./pages/DailyPlanPage"));
+const OnboardingWizard = lazy(() => import("./pages/OnboardingWizard"));
+const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 
 const ActvitiesPage = () => {
   const location = useLocation()
@@ -41,25 +46,50 @@ const ActvitiesPage = () => {
 }
 
 function App() {
-  const { token, tokenData, logIn, logOut, isAuthenticated } = useContext(AuthContext);
+  const { token, tokenData, logIn, logOut } = useContext(AuthContext);
   const dispatch = useDispatch();
-  const [authReady, setAuthReady] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showHome, setShowHome] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+
+  const isAdmin = useMemo(() => {
+    const roles = tokenData?.realm_access?.roles || tokenData?.roles || [];
+    return Array.isArray(roles) && roles.includes('ADMIN');
+  }, [tokenData]);
   
   useEffect(() => {
     if (token) {
+      // Store token in localStorage for API interceptor
+      localStorage.setItem('token', token);
+      if (tokenData?.sub) {
+        localStorage.setItem('userId', tokenData.sub);
+      }
+      
       dispatch(setCredentials({token, user: tokenData}));
-      setAuthReady(true);
       setShowHome(false);
+      checkOnboarding();
     }
   }, [token, tokenData, dispatch]);
+
+  const checkOnboarding = async () => {
+    // Check if user has completed onboarding
+    // You can implement this by checking user profile completeness
+    // For now, we'll assume first-time users need onboarding
+    setCheckingOnboarding(false);
+    // setNeedsOnboarding(true); // Uncomment to enable onboarding for all users
+  };
 
   // Show register page
   if (showRegister && !token) {
     return (
       <Router>
-        <RegisterPage onSuccess={() => setShowRegister(false)} />
+        <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+          <RegisterPage onSuccess={() => {
+            setShowRegister(false)
+            setShowHome(true)
+          }} />
+        </Suspense>
       </Router>
     )
   }
@@ -68,41 +98,56 @@ function App() {
   if (!token && showHome) {
     return (
       <Router>
-        <HomePage onLogin={() => {
-          setShowHome(false);
-          logIn();
-        }} />
+        <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+          <HomePage onLogin={() => {
+            setShowHome(false);
+            logIn();
+          }} />
+        </Suspense>
       </Router>
+    )
+  }
+
+  // Show onboarding wizard for new users
+  if (token && needsOnboarding && !checkingOnboarding) {
+    return (
+      <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+        <OnboardingWizard onComplete={() => setNeedsOnboarding(false)} />
+      </Suspense>
     )
   }
 
   return (
     <Router>
-      {!token ? (
-        <SiteLayout isAuthenticated={false}>
-          <LoginPage 
-            onLogin={logIn} 
-            onRegister={() => setShowRegister(true)}
-          />
-        </SiteLayout>
-      ) : (
-        <SiteLayout isAuthenticated={true} onLogout={logOut}>
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/activities" element={<ActvitiesPage />} />
-            <Route path="/activities/:id" element={<ActivityDetail />} />
-            <Route path="/recommendations" element={<Recommendations />} />
-            <Route path="/profile" element={<Profile user={tokenData} />} />
-            <Route path="/profile/edit" element={<ProfileUpdatePage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace/>} />
-            <Route path="*" element={<Navigate to="/dashboard" replace/>} />
-          </Routes>
-        </SiteLayout>
-      )}
+      <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+        {!token ? (
+          <SiteLayout isAuthenticated={false}>
+            <LoginPage 
+              onLogin={logIn} 
+              onRegister={() => setShowRegister(true)}
+            />
+          </SiteLayout>
+        ) : (
+          <SiteLayout isAuthenticated={true} onLogout={logOut}>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/activities" element={<ActvitiesPage />} />
+              <Route path="/activities/:id" element={<ActivityDetail />} />
+              <Route path="/recommendations" element={<Recommendations />} />
+              <Route path="/daily-plan" element={<DailyPlanPage />} />
+              <Route path="/profile" element={<Profile user={tokenData} />} />
+              <Route path="/profile/edit" element={<ProfilePage />} />
+              <Route path="/settings/account" element={<AccountSettingsPage />} />
+              <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/dashboard" replace/>} />
+              <Route path="/admin/users" element={isAdmin ? <AdminUsersPage /> : <Navigate to="/dashboard" replace/>} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace/>} />
+              <Route path="*" element={<Navigate to="/dashboard" replace/>} />
+            </Routes>
+          </SiteLayout>
+        )}
+      </Suspense>
     </Router>
   )
 }

@@ -2,11 +2,13 @@ package com.fitness.aiservice.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fitness.aiservice.dto.UserProfile;
 import com.fitness.aiservice.model.Activity;
 import com.fitness.aiservice.model.Recommendation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -18,14 +20,34 @@ import java.util.*;
 public class ActivityAIService {
 
     private final GeminiService geminiService;
+    private final WebClient.Builder webClientBuilder;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public Mono<Recommendation> generateRecommendation(Activity activity) {
-        String prompt = createPromptForActivity(activity);
-        return geminiService.getAnswer(prompt)
-                .map(aiResponse -> processAiResponse(activity, aiResponse))
-                .doOnNext(rec -> log.info("RESPONSE FROM AI: {}", rec.getRecommendation()))
-                .onErrorReturn(createDefaultRecommendation(activity)); // fallback in case of error
+        return fetchUserProfile(activity.getUserId())
+                .flatMap(userProfile -> {
+                    String prompt = createPromptForActivity(activity, userProfile);
+                    return geminiService.getAnswer(prompt)
+                            .map(aiResponse -> processAiResponse(activity, aiResponse))
+                            .doOnNext(rec -> log.info("RESPONSE FROM AI: {}", rec.getRecommendation()))
+                            .onErrorReturn(createDefaultRecommendation(activity));
+                })
+                .onErrorResume(e -> {
+                    log.error("Error fetching user profile, using basic recommendation: {}", e.getMessage());
+                    String prompt = createPromptForActivity(activity, null);
+                    return geminiService.getAnswer(prompt)
+                            .map(aiResponse -> processAiResponse(activity, aiResponse))
+                            .onErrorReturn(createDefaultRecommendation(activity));
+                });
+    }
+
+    private Mono<UserProfile> fetchUserProfile(String userId) {
+        return webClientBuilder.build()
+                .get()
+                .uri("http://USER-SERVICE/api/users/" + userId)
+                .retrieve()
+                .bodyToMono(UserProfile.class)
+                .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));
     }
 
     private Recommendation processAiResponse(Activity activity, String aiResponse){
@@ -136,47 +158,67 @@ public class ActivityAIService {
         }
     }
 
-    private String createPromptForActivity(Activity activity) {
-        return String.format("""
-        Analyze this fitness activity and provide detailed recommendations in the following EXACT JSON format:
-        {
-          "analysis": {
-            "overall": "Overall analysis here",
-            "pace": "Pace analysis here",
-            "heartRate": "Heart rate analysis here",
-            "caloriesBurned": "Calories analysis here"
-          },
-          "improvements": [
-            {
-              "area": "Area name",
-              "recommendation": "Detailed recommendation"
+    private String createPromptForActivity(Activity activity, UserProfile userProfile) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Analyze this fitness activity and provide detailed recommendations in the following EXACT JSON format:\n");
+        prompt.append("{\n");
+        prompt.append("  \"analysis\": {\n");
+        prompt.append("    \"overall\": \"Overall analysis here\",\n");
+        prompt.append("    \"pace\": \"Pace analysis here\",\n");
+        prompt.append("    \"heartRate\": \"Heart rate analysis here\",\n");
+        prompt.append("    \"caloriesBurned\": \"Calories analysis here\"\n");
+        prompt.append("  },\n");
+        prompt.append("  \"improvements\": [\n");
+        prompt.append("    {\n");
+        prompt.append("      \"area\": \"Area name\",\n");
+        prompt.append("      \"recommendation\": \"Detailed recommendation\"\n");
+        prompt.append("    }\n");
+        prompt.append("  ],\n");
+        prompt.append("  \"suggestions\": [\n");
+        prompt.append("    {\n");
+        prompt.append("      \"workout\": \"Workout name\",\n");
+        prompt.append("      \"description\": \"Detailed workout description\"\n");
+        prompt.append("    }\n");
+        prompt.append("  ],\n");
+        prompt.append("  \"safety\": [\n");
+        prompt.append("    \"Safety point 1\",\n");
+        prompt.append("    \"Safety point 2\"\n");
+        prompt.append("  ]\n");
+        prompt.append("}\n\n");
+
+        prompt.append("Activity Details:\n");
+        prompt.append("Type: ").append(activity.getType()).append("\n");
+        prompt.append("Duration: ").append(activity.getDuration()).append(" minutes\n");
+        prompt.append("Calories Burned: ").append(activity.getCaloriesBurned()).append("\n");
+        prompt.append("Additional Metrics: ").append(activity.getAdditionalMetrics()).append("\n\n");
+
+        if (userProfile != null) {
+            prompt.append("User Profile Context:\n");
+            prompt.append("Name: ").append(userProfile.getFirstName()).append(" ").append(userProfile.getLastName()).append("\n");
+            if (userProfile.getAge() != null) prompt.append("Age: ").append(userProfile.getAge()).append("\n");
+            if (userProfile.getGender() != null) prompt.append("Gender: ").append(userProfile.getGender()).append("\n");
+            if (userProfile.getHeight() != null && userProfile.getWeight() != null) {
+                double bmi = userProfile.getWeight() / Math.pow(userProfile.getHeight() / 100, 2);
+                prompt.append("Height: ").append(userProfile.getHeight()).append(" cm\n");
+                prompt.append("Weight: ").append(userProfile.getWeight()).append(" kg (BMI: ").append(String.format("%.1f", bmi)).append(")\n");
             }
-          ],
-          "suggestions": [
-            {
-              "workout": "Workout name",
-              "description": "Detailed workout description"
-            }
-          ],
-          "safety": [
-            "Safety point 1",
-            "Safety point 2"
-          ]
+            if (userProfile.getActivityLevel() != null) prompt.append("Activity Level: ").append(userProfile.getActivityLevel()).append("\n");
+            if (userProfile.getFitnessGoals() != null) prompt.append("Fitness Goals: ").append(userProfile.getFitnessGoals()).append("\n");
+            if (userProfile.getAreasToImprove() != null) prompt.append("Areas to Improve: ").append(userProfile.getAreasToImprove()).append("\n");
+            if (userProfile.getWeaknesses() != null) prompt.append("Known Weaknesses: ").append(userProfile.getWeaknesses()).append("\n");
+            if (userProfile.getHealthIssues() != null) prompt.append("Health Issues to Consider: ").append(userProfile.getHealthIssues()).append("\n");
+            if (userProfile.getDietaryPreferences() != null) prompt.append("Dietary Preferences: ").append(userProfile.getDietaryPreferences()).append("\n");
+            if (userProfile.getTargetWeeklyWorkouts() != null) prompt.append("Target Weekly Workouts: ").append(userProfile.getTargetWeeklyWorkouts()).append("\n");
         }
 
-        Analyze this activity:
-        Activity Type: %s
-        Duration: %d minutes
-        Calories Burned: %d
-        Additional Metrics: %s
-        
-        Provide detailed analysis focusing on performance, improvements, next workout suggestions, and safety guidelines.
-        Ensure the response follows the EXACT JSON format shown above.
-        """,
-                activity.getType(),
-                activity.getDuration(),
-                activity.getCaloriesBurned(),
-                activity.getAdditionalMetrics()
-        );
+        prompt.append("\nProvide detailed analysis focusing on:\n");
+        prompt.append("- Performance evaluation based on activity metrics\n");
+        prompt.append("- Personalized improvements considering user's goals and weaknesses\n");
+        prompt.append("- Next workout suggestions aligned with fitness goals\n");
+        prompt.append("- Safety guidelines especially considering any health issues\n");
+        prompt.append("- Specific advice based on user's activity level and areas to improve\n\n");
+        prompt.append("Ensure the response follows the EXACT JSON format shown above.");
+
+        return prompt.toString();
     }
 }

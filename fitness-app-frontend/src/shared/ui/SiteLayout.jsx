@@ -1,36 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import Footer from './Footer'
+import { useTheme } from '../../context/ThemeContext'
 
 const SiteLayout = ({ children, isAuthenticated, onLogout }) => {
-  const [isDark, setIsDark] = useState(() => {
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme) return savedTheme === 'dark'
-    // Default to light theme for better appearance
-    return false
-  })
-  
+  const { theme, toggleTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  useEffect(() => {
-    const root = document.documentElement
-    if (isDark) {
-      root.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      root.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDark])
 
   return (
     <div className="min-h-screen app-shell">
       <Navbar 
         isAuthenticated={isAuthenticated} 
         onLogout={onLogout} 
-        isDark={isDark} 
-        onToggleTheme={() => setIsDark(!isDark)}
+        isDark={theme === 'dark'} 
+        onToggleTheme={toggleTheme}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />

@@ -34,11 +34,12 @@ public class GeminiService {
                 );
 
                 return webClient.post()
-                        .uri(geminiApiUrl + geminiApiKey)
+                        .uri(geminiApiUrl + "?key=" + geminiApiKey)
                         .header("Content-Type", "application/json")
-                        .bodyValue(requestBody)
+                        .bodyValue((Object)(requestBody != null ? requestBody : Map.of()))
                         .retrieve()
                         .bodyToMono(String.class)
-                        .timeout(Duration.ofSeconds(10)); // prevents hanging
+                        .timeout(Duration.ofSeconds(30)) // increased timeout for AI response
+                        .doOnError(e -> System.err.println("Gemini API Error: " + e.getMessage()));
         }
 }

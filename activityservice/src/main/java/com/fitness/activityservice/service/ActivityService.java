@@ -50,6 +50,9 @@ public class ActivityService {
                 .build();
 
         Activity savedActivity = activityRepository.save(activity);
+        if (savedActivity == null) {
+            throw new RuntimeException("Failed to save activity");
+        }
 
         // Publish to RabbitMQ for AI Processing
         try {
@@ -82,13 +85,21 @@ public class ActivityService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public ActivityResponse getActivityById(String activityId) {
+        if (activityId == null) {
+            throw new IllegalArgumentException("Activity ID cannot be null");
+        }
         return activityRepository.findById(activityId)
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
     }
 
+    @SuppressWarnings("null")
     public void deleteActivity(String activityId, String userId) {
+        if (activityId == null) {
+            throw new IllegalArgumentException("Activity ID cannot be null");
+        }
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
         
@@ -109,7 +120,11 @@ public class ActivityService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public void adminDeleteActivity(String activityId) {
+        if (activityId == null) {
+            throw new IllegalArgumentException("Activity ID cannot be null");
+        }
         activityRepository.deleteById(activityId);
         log.info("Activity deleted by admin: {}", activityId);
     }

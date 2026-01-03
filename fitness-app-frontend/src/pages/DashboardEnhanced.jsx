@@ -47,25 +47,25 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-primary-500/20 to-secondary-500/20 border border-white/10 rounded-2xl p-8">
+      <div className="bg-white/90 border border-[var(--color-border)] rounded-2xl p-8 shadow-[0_26px_70px_rgba(15,23,42,0.10)]">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome back, {displayName}!</h2>
-            <p className="text-gray-300">Here's your fitness activity snapshot and insights.</p>
+            <h2 className="text-3xl font-bold text-[var(--color-text)] mb-2">Welcome back, {displayName}!</h2>
+            <p className="text-[var(--color-text-muted)]">Here's your fitness activity snapshot and insights.</p>
           </div>
           <div className="flex gap-3">
             <button 
               onClick={() => navigate('/activities#add-activity')}
-              className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 flex items-center gap-2"
+              className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white px-6 py-3 rounded-lg font-semibold transition-all hover:-translate-y-[1px] flex items-center gap-2 shadow-[0_18px_36px_rgba(37,99,235,0.20)]"
             >
               <FiActivity />
-              Add Activity
+              Add activity
             </button>
             <button 
               onClick={() => navigate('/profile/edit')}
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+              className="border border-[var(--color-border)] bg-white/85 hover:bg-white text-[var(--color-text)] px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-sm"
             >
-              View Profile
+              View profile
             </button>
           </div>
         </div>
@@ -74,56 +74,56 @@ const Dashboard = () => {
       {/* Stats Grid */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 rounded-xl p-6 hover:border-primary-500/50 transition-all">
+          <div className="bg-white/90 border border-[var(--color-border)] rounded-xl p-6 hover:shadow-[0_18px_38px_rgba(37,99,235,0.12)] hover:-translate-y-[1px] transition-all">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                <FiActivity className="w-6 h-6 text-primary-400" />
+              <div className="w-12 h-12 rounded-lg bg-primary-500/12 flex items-center justify-center text-primary-700">
+                <FiActivity className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Total Activities</p>
-                <p className="text-3xl font-bold text-white">{stats.count || 0}</p>
+                <p className="text-sm text-[var(--color-text-muted)]">Total activities</p>
+                <p className="text-3xl font-bold text-[var(--color-text)]">{stats.count || 0}</p>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mt-2">All time</div>
+            <div className="text-xs text-[var(--color-text-muted)] mt-2">All time</div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 rounded-xl p-6 hover:border-secondary-500/50 transition-all">
+          <div className="bg-white/90 border border-[var(--color-border)] rounded-xl p-6 hover:shadow-[0_18px_38px_rgba(249,115,22,0.12)] hover:-translate-y-[1px] transition-all">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-lg bg-secondary-500/20 flex items-center justify-center">
-                <FiTrendingUp className="w-6 h-6 text-secondary-400" />
+              <div className="w-12 h-12 rounded-lg bg-secondary-500/12 flex items-center justify-center text-secondary-700">
+                <FiTrendingUp className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Total Duration</p>
-                <p className="text-3xl font-bold text-white">{stats.totalDurationMinutes || 0}</p>
+                <p className="text-sm text-[var(--color-text-muted)]">Total duration</p>
+                <p className="text-3xl font-bold text-[var(--color-text)]">{stats.totalDurationMinutes || 0}</p>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mt-2">Minutes</div>
+            <div className="text-xs text-[var(--color-text-muted)] mt-2">Minutes</div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 rounded-xl p-6 hover:border-accent-500/50 transition-all">
+          <div className="bg-white/90 border border-[var(--color-border)] rounded-xl p-6 hover:shadow-[0_18px_38px_rgba(249,115,22,0.10)] hover:-translate-y-[1px] transition-all">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-lg bg-accent-500/20 flex items-center justify-center">
-                <FiAward className="w-6 h-6 text-accent-400" />
+              <div className="w-12 h-12 rounded-lg bg-accent-500/12 flex items-center justify-center text-accent-600">
+                <FiAward className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Calories Burned</p>
-                <p className="text-3xl font-bold text-white">{stats.totalCaloriesBurned || 0}</p>
+                <p className="text-sm text-[var(--color-text-muted)]">Calories burned</p>
+                <p className="text-3xl font-bold text-[var(--color-text)]">{stats.totalCaloriesBurned || 0}</p>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mt-2">Total burned</div>
+            <div className="text-xs text-[var(--color-text-muted)] mt-2">Total burned</div>
           </div>
 
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 rounded-xl p-6 hover:border-green-500/50 transition-all">
+          <div className="bg-white/90 border border-[var(--color-border)] rounded-xl p-6 hover:shadow-[0_18px_38px_rgba(34,197,94,0.14)] hover:-translate-y-[1px] transition-all">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <FiCalendar className="w-6 h-6 text-green-400" />
+              <div className="w-12 h-12 rounded-lg bg-green-500/12 flex items-center justify-center text-green-700">
+                <FiCalendar className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Avg Calories</p>
-                <p className="text-3xl font-bold text-white">{Math.round(stats.avgCaloriesPerActivity || 0)}</p>
+                <p className="text-sm text-[var(--color-text-muted)]">Avg calories</p>
+                <p className="text-3xl font-bold text-[var(--color-text)]">{Math.round(stats.avgCaloriesPerActivity || 0)}</p>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mt-2">Per activity</div>
+            <div className="text-xs text-[var(--color-text-muted)] mt-2">Per activity</div>
           </div>
         </div>
       )}
@@ -132,26 +132,26 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActivitySummary />
-        <div className="bg-gray-800/50 border border-white/10 rounded-2xl p-6">
+        <div className="bg-white/90 border border-[var(--color-border)] rounded-2xl p-6 shadow-[0_18px_48px_rgba(15,23,42,0.10)]">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-white">Recent Activities</h3>
+            <h3 className="text-xl font-semibold text-[var(--color-text)]">Recent activities</h3>
             <button 
               onClick={() => navigate('/activities')}
-              className="text-primary-400 hover:text-primary-300 text-sm flex items-center gap-1"
+              className="text-primary-600 hover:text-primary-700 text-sm font-semibold flex items-center gap-1"
             >
               View All
               <FiArrowRight className="w-4 h-4" />
             </button>
           </div>
           {loading ? (
-            <div className="text-center text-gray-400 py-8">Loading...</div>
+            <div className="text-center text-[var(--color-text-muted)] py-8">Loading...</div>
           ) : recentActivities.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">
-              <FiActivity className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No activities yet</p>
+            <div className="text-center text-[var(--color-text-muted)] py-8">
+              <FiActivity className="w-12 h-12 mx-auto mb-3 opacity-60 text-primary-500" />
+              <p className="text-[var(--color-text)]">No activities yet</p>
               <button 
                 onClick={() => navigate('/activities#add-activity')}
-                className="text-primary-400 hover:text-primary-300 text-sm mt-2"
+                className="text-primary-600 hover:text-primary-700 text-sm font-semibold mt-2"
               >
                 Add your first activity
               </button>
@@ -161,22 +161,22 @@ const Dashboard = () => {
               {recentActivities.map((activity) => (
                 <div 
                   key={activity.id}
-                  className="bg-gray-900/50 border border-white/5 rounded-lg p-4 hover:border-white/10 transition-all cursor-pointer"
+                  className="bg-white border border-[var(--color-border)] rounded-lg p-4 hover:shadow-[0_14px_30px_rgba(15,23,42,0.10)] hover:-translate-y-[1px] transition-all cursor-pointer"
                   onClick={() => navigate(`/activities/${activity.id}`)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                        <FiActivity className="w-5 h-5 text-primary-400" />
+                      <div className="w-10 h-10 rounded-lg bg-primary-500/12 flex items-center justify-center text-primary-700">
+                        <FiActivity className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-white font-medium">{activity.type}</h4>
-                        <p className="text-sm text-gray-400">
+                        <h4 className="text-[var(--color-text)] font-medium">{activity.type}</h4>
+                        <p className="text-sm text-[var(--color-text-muted)]">
                           {activity.duration} min • {activity.caloriesBurned} cal
                         </p>
                       </div>
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-[var(--color-text-muted)]">
                       {new Date(activity.createdAt).toLocaleDateString()}
                     </div>
                   </div>

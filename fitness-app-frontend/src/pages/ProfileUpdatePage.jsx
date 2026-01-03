@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { FiUser, FiMail, FiSave, FiEdit2, FiActivity, FiTrendingUp, FiAward } from 'react-icons/fi'
+import { FiUser, FiMail, FiSave, FiEdit2, FiActivity, FiTrendingUp, FiAward, FiMapPin, FiTarget, FiAlertCircle, FiHeart } from 'react-icons/fi'
 import { AuthContext } from 'react-oauth2-code-pkce'
 import { getUserProfile, updateUserProfile, getActivityStats } from '../services/api'
 import Toast from '../components/Toast'
@@ -14,19 +14,70 @@ const ProfilePage = () => {
     firstName: '',
     lastName: '',
     email: '',
+    gender: '',
+    age: '',
+    location: '',
+    fitnessGoals: '',
+    areasToImprove: '',
+    weaknesses: '',
+    healthIssues: '',
+    height: '',
+    weight: '',
+    activityLevel: '',
+    dietaryPreferences: '',
+    targetWeeklyWorkouts: '',
   })
 
   const userId = tokenData?.sub
 
   useEffect(() => {
-    if (tokenData) {
-      setProfile({
-        firstName: tokenData.given_name || '',
-        lastName: tokenData.family_name || '',
-        email: tokenData.email || '',
-      })
+    const fetchProfile = async () => {
+      if (userId) {
+        try {
+          const response = await getUserProfile(userId)
+          const userData = response.data
+          setProfile({
+            firstName: userData.firstName || tokenData.given_name || '',
+            lastName: userData.lastName || tokenData.family_name || '',
+            email: userData.email || tokenData.email || '',
+            gender: userData.gender || '',
+            age: userData.age || '',
+            location: userData.location || '',
+            fitnessGoals: userData.fitnessGoals || '',
+            areasToImprove: userData.areasToImprove || '',
+            weaknesses: userData.weaknesses || '',
+            healthIssues: userData.healthIssues || '',
+            height: userData.height || '',
+            weight: userData.weight || '',
+            activityLevel: userData.activityLevel || '',
+            dietaryPreferences: userData.dietaryPreferences || '',
+            targetWeeklyWorkouts: userData.targetWeeklyWorkouts || '',
+          })
+        } catch (error) {
+          console.error('Error fetching profile:', error)
+          // Fallback to tokenData
+          setProfile({
+            firstName: tokenData.given_name || '',
+            lastName: tokenData.family_name || '',
+            email: tokenData.email || '',
+            gender: '',
+            age: '',
+            location: '',
+            fitnessGoals: '',
+            areasToImprove: '',
+            weaknesses: '',
+            healthIssues: '',
+            height: '',
+            weight: '',
+            activityLevel: '',
+            dietaryPreferences: '',
+            targetWeeklyWorkouts: '',
+          })
+        }
+      }
     }
-  }, [tokenData])
+    fetchProfile()
+  }, [tokenData, userId])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -192,6 +243,223 @@ const ProfilePage = () => {
                 placeholder="john.doe@example.com"
               />
             </div>
+          </div>
+
+          {/* Extended Profile Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={profile.gender}
+                onChange={handleChange}
+                disabled={!editing}
+                className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">Select Gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+                <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Age
+              </label>
+              <input
+                type="number"
+                name="age"
+                value={profile.age}
+                onChange={handleChange}
+                disabled={!editing}
+                min="13"
+                max="120"
+                className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="25"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <FiMapPin className="inline mr-2" />
+              Location
+            </label>
+            <input
+              type="text"
+              name="location"
+              value={profile.location}
+              onChange={handleChange}
+              disabled={!editing}
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="City, Country"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Height (cm)
+              </label>
+              <input
+                type="number"
+                name="height"
+                value={profile.height}
+                onChange={handleChange}
+                disabled={!editing}
+                min="50"
+                max="300"
+                step="0.1"
+                className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="170"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Weight (kg)
+              </label>
+              <input
+                type="number"
+                name="weight"
+                value={profile.weight}
+                onChange={handleChange}
+                disabled={!editing}
+                min="20"
+                max="500"
+                step="0.1"
+                className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="70"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Activity Level
+            </label>
+            <select
+              name="activityLevel"
+              value={profile.activityLevel}
+              onChange={handleChange}
+              disabled={!editing}
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">Select Activity Level</option>
+              <option value="Sedentary">Sedentary (little or no exercise)</option>
+              <option value="Lightly Active">Lightly Active (1-3 days/week)</option>
+              <option value="Moderately Active">Moderately Active (3-5 days/week)</option>
+              <option value="Very Active">Very Active (6-7 days/week)</option>
+              <option value="Extra Active">Extra Active (physical job + exercise)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Target Weekly Workouts
+            </label>
+            <input
+              type="number"
+              name="targetWeeklyWorkouts"
+              value={profile.targetWeeklyWorkouts}
+              onChange={handleChange}
+              disabled={!editing}
+              min="0"
+              max="14"
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="3-5 workouts per week"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <FiTarget className="inline mr-2" />
+              Fitness Goals
+            </label>
+            <textarea
+              name="fitnessGoals"
+              value={profile.fitnessGoals}
+              onChange={handleChange}
+              disabled={!editing}
+              rows="3"
+              maxLength="1000"
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              placeholder="Describe your fitness goals (e.g., lose weight, build muscle, improve endurance)"
+            />
+            <p className="text-xs text-gray-500 mt-1">{profile.fitnessGoals?.length || 0}/1000 characters</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <FiTrendingUp className="inline mr-2" />
+              Areas to Improve
+            </label>
+            <textarea
+              name="areasToImprove"
+              value={profile.areasToImprove}
+              onChange={handleChange}
+              disabled={!editing}
+              rows="3"
+              maxLength="1000"
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              placeholder="What areas do you want to focus on improving?"
+            />
+            <p className="text-xs text-gray-500 mt-1">{profile.areasToImprove?.length || 0}/1000 characters</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <FiAlertCircle className="inline mr-2" />
+              Known Weaknesses
+            </label>
+            <textarea
+              name="weaknesses"
+              value={profile.weaknesses}
+              onChange={handleChange}
+              disabled={!editing}
+              rows="3"
+              maxLength="1000"
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              placeholder="Any physical weaknesses or limitations"
+            />
+            <p className="text-xs text-gray-500 mt-1">{profile.weaknesses?.length || 0}/1000 characters</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <FiHeart className="inline mr-2" />
+              Health Issues
+            </label>
+            <textarea
+              name="healthIssues"
+              value={profile.healthIssues}
+              onChange={handleChange}
+              disabled={!editing}
+              rows="3"
+              maxLength="1000"
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              placeholder="Any health conditions or injuries to consider"
+            />
+            <p className="text-xs text-gray-500 mt-1">{profile.healthIssues?.length || 0}/1000 characters</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Dietary Preferences
+            </label>
+            <textarea
+              name="dietaryPreferences"
+              value={profile.dietaryPreferences}
+              onChange={handleChange}
+              disabled={!editing}
+              rows="2"
+              maxLength="500"
+              className="w-full bg-gray-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              placeholder="Dietary preferences or restrictions (e.g., vegetarian, vegan, allergies)"
+            />
+            <p className="text-xs text-gray-500 mt-1">{profile.dietaryPreferences?.length || 0}/500 characters</p>
           </div>
 
           {editing && (

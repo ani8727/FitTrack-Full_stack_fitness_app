@@ -15,7 +15,6 @@ import { getActivities } from '../shared/api/api'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler)
 
-const toDate = (d) => new Date(d)
 const fmt = (d) => {
   const x = new Date(d)
   return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`
@@ -84,7 +83,7 @@ const ActivityChart = () => {
         }
       ]
     }
-  }, [items])
+  }, [items, range])
 
   const options = {
     responsive: true,
