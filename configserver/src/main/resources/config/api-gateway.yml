@@ -9,7 +9,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: "http://127.0.0.1:8181/realms/fitness-oauth2/protocol/openid-connect/certs"
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8181/realms/fitness-oauth2}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8181/realms/fitness-oauth2/protocol/openid-connect/certs}
 
   cloud:
     gateway:
@@ -18,6 +19,10 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**
+        - id: contact
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/contact,/api/contact/**
         - id: activity-service
           uri: lb://ACTIVITY-SERVICE
           predicates:
@@ -30,7 +35,7 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
   instance:
-    hostname: 127.0.0.1
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:${HOSTNAME:api-gateway}}
     prefer-ip-address: true

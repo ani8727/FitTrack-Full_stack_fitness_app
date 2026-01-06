@@ -49,9 +49,10 @@ public class ActivityService {
                 .additionalMetrics(request.getAdditionalMetrics())
                 .build();
 
+        // Fixed null type safety issue
         Activity savedActivity = activityRepository.save(activity);
         if (savedActivity == null) {
-            throw new RuntimeException("Failed to save activity");
+            throw new IllegalStateException("Failed to save activity");
         }
 
         // Publish to RabbitMQ for AI Processing

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = 'http://localhost:8085/api'; // Updated to use the gateway port (8085) for routing requests
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8085/api';
 
 const api = axios.create({
     baseURL:API_URL
@@ -77,3 +77,6 @@ export const reactivateAccount = (userId) => api.post(`/users/${userId}/reactiva
 // Onboarding APIs
 export const completeOnboarding = (userId) => api.post(`/users/${userId}/onboarding/complete`);
 export const getOnboardingStatus = (userId) => api.get(`/users/${userId}/onboarding/status`);
+
+// Contact API (public)
+export const sendContactMessage = (payload) => api.post('/contact', payload);

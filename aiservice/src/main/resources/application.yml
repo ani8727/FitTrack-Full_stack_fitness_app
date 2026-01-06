@@ -14,23 +14,23 @@ spring:
   application:
     name: ai-service
   config:
-    import: optional:configserver:http://localhost:8888
+    import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://configserver:8888}
   data:
     mongodb:
-      uri: mongodb://localhost:27017/fitness_ai_db
+      uri: ${AI_MONGODB_URI:mongodb://mongodb:27017/fitness_ai_db}
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: ${EUREKA_HOST:eureka}
     prefer-ip-address: false
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
 
 rabbitmq:
   exchange:
@@ -42,5 +42,5 @@ rabbitmq:
 
 gemini:
   api:
-    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-    key: AIzaSyCrIB3QBJIUO7vVIQss_zXcNc8zu57XOa8
+    url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent}
+    key: ${GEMINI_API_KEY:}

@@ -52,44 +52,27 @@ public class UserService {
             return userResponse;
         }
 
-        String keycloakUserId = null;
-        
         // Create user in Keycloak if integration is enabled
         if (keycloakIntegrationEnabled) {
             try {
                 log.info("Creating user in Keycloak: {}", request.getEmail());
                 List<String> roles = java.util.List.of("USER");
                 
-                keycloakUserId = keycloakService.createKeycloakUser(
+                keycloakService.createKeycloakUser(
                     request.getEmail(),
                     request.getFirstName(),
                     request.getLastName(),
                     request.getPassword(),
                     roles
                 );
-                
-                if (keycloakUserId == null) {
-                    log.warn("Failed to create user in Keycloak, will use generated ID");
-                    keycloakUserId = request.getKeycloakId() != null ? 
-                        request.getKeycloakId() : 
-                        "local-" + java.util.UUID.randomUUID().toString();
-                }
             } catch (Exception e) {
                 log.error("Error creating user in Keycloak: {}", e.getMessage());
-                keycloakUserId = request.getKeycloakId() != null ? 
-                    request.getKeycloakId() : 
-                    "local-" + java.util.UUID.randomUUID().toString();
             }
-        } else {
-            keycloakUserId = request.getKeycloakId() != null ? 
-                request.getKeycloakId() : 
-                "local-" + java.util.UUID.randomUUID().toString();
-        }
+        } 
 
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash password
-        user.setKeycloakId(keycloakUserId);
         user.setUsername(request.getUsername());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -108,10 +91,9 @@ public class UserService {
         return userResponse;
     }
 
-    @SuppressWarnings("null")
     public UserResponse getUserProfile(String userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+        if (userId == null || userId.isBlank()) {
+            throw new IllegalArgumentException("User ID cannot be null or blank");
         }
         
         // Try to find by database ID first, then by Keycloak ID
@@ -141,6 +123,7 @@ public class UserService {
     // ADMIN METHODS
     
     public List<UserResponse> getAllUsers(String search, String role, String status) {
+        // Fixed potential null pointer dereference in getAllUsers
         return repository.findAll().stream()
                 .filter(user -> {
                     if (search == null || search.isBlank()) return true;

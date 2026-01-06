@@ -28,25 +28,32 @@ public class KeycloakUserSyncFilter implements WebFilter {
         String userId = exchange.getRequest().getHeaders().getFirst("X-User-ID");
         RegisterRequest registerRequest = getUserDetails(token);
 
-        if (userId == null && registerRequest != null) {
-            userId = registerRequest.getKeycloakId();
-        }
+        // Determine final user id: prefer header, then token-sub, otherwise null
+        final String tokenSub = (registerRequest != null ? registerRequest.getKeycloakId() : null);
+        final String finalUserIdCandidate = userId != null ? userId : tokenSub;
 
-        if (userId != null && token != null){
-            String finalUserId = userId;
-            
-            // Validate and auto-register user
-            return userService.validateUser(userId)
+        // Public paths where missing X-User-ID should be injected as "anonymous"
+        String path = exchange.getRequest().getPath().pathWithinApplication().value();
+        boolean isPublicPath = path != null && (
+                path.startsWith("/api/activities") ||
+                path.startsWith("/api/users/register") ||
+                path.startsWith("/api/contact")
+        );
+
+        final String finalUserId = finalUserIdCandidate != null ? finalUserIdCandidate : (isPublicPath ? "anonymous" : null);
+
+        if (registerRequest != null) {
+            // Validate and auto-register user when we have token details
+            String uid = finalUserId != null ? finalUserId : tokenSub;
+            return userService.validateUser(uid)
                     .flatMap(exist -> {
-                        if (!exist && registerRequest != null) {
-                            log.info("User not found, auto-registering: {}", finalUserId);
+                        if (!exist) {
+                            log.info("User not found, auto-registering: {}", uid);
                             return userService.registerUser(registerRequest)
-                                    .doOnSuccess(user -> log.info("User registered successfully: {}", finalUserId))
+                                    .doOnSuccess(u -> log.info("User registered successfully: {}", uid))
                                     .then(Mono.empty());
-                        } else {
-                            log.info("User exists, continuing: {}", finalUserId);
-                            return Mono.empty();
                         }
+                        return Mono.empty();
                     })
                     .onErrorResume(error -> {
                         log.error("Error during user sync, continuing anyway: {}", error.getMessage());
@@ -54,11 +61,21 @@ public class KeycloakUserSyncFilter implements WebFilter {
                     })
                     .then(Mono.defer(() -> {
                         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                                .header("X-User-ID", finalUserId)
+                                .header("X-User-ID", uid)
                                 .build();
                         return chain.filter(exchange.mutate().request(mutatedRequest).build());
                     }));
         }
+
+        // No token and no user header: if public path, inject anonymous; otherwise continue unchanged
+        if (finalUserId != null) {
+            ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                    .header("X-User-ID", finalUserId)
+                    .build();
+            log.debug("Injected X-User-ID='{}' for path {}", finalUserId, path);
+            return chain.filter(exchange.mutate().request(mutatedRequest).build());
+        }
+
         return chain.filter(exchange);
     }
 

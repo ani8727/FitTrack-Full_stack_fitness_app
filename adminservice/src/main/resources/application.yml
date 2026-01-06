@@ -2,11 +2,11 @@ spring:
   application:
     name: adminservice
   config:
-    import: optional:configserver:http://localhost:8888
+    import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://configserver:8888}
   datasource:
-    url: ${ADMIN_DB_URL:jdbc:mysql://localhost:3307/fitness_users_db}
+    url: ${ADMIN_DB_URL:jdbc:mysql://mysql:3306/fitness_users_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${ADMIN_DB_USERNAME:fitnessuser}
-    password: ${ADMIN_DB_PASSWORD:}
+    password: ${ADMIN_DB_PASSWORD:fitness123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -18,8 +18,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8181/realms/fitness-oauth2}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8181/realms/fitness-oauth2}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8181/realms/fitness-oauth2/protocol/openid-connect/certs}
 
 server:
   port: 8083
@@ -36,7 +36,7 @@ management:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
     fetch-registry: true
     register-with-eureka: true
   instance:

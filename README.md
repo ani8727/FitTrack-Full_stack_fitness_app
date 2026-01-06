@@ -2,6 +2,11 @@
 
 A full-stack fitness platform built as Java microservices with a React (Vite) frontend. Uses Spring Boot services for users, admin, gateway, activity, AI, config, and service discovery via Eureka. Messaging is over RabbitMQ; MySQL and MongoDB back persistence; Redis for caching/sessions. Keycloak provides auth (roles: ADMIN, USER). Everything can run locally via docker-compose with env-driven configuration.
 
+## Deployment (Docker)
+
+- Production-like compose: see [docker-compose.prod.yml](docker-compose.prod.yml)
+- Step-by-step: see [Guide/DEPLOYMENT_GUIDE.md](Guide/DEPLOYMENT_GUIDE.md)
+
 ## Architecture (high level)
 - Gateway: entry point for client traffic, routes to downstream services.
 - Config Server + Eureka: central config and service discovery.

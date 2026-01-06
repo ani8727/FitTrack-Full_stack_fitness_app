@@ -1,0 +1,22 @@
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.dist
+build
+
+dist
+
+.vscode
+.idea
+
+.git
+.gitignore
+
+.DS_Store
+
+# optional: local env files
+.env
+.env.*

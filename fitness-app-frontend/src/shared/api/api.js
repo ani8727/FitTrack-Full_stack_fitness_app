@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = 'http://localhost:8085/api'; // Updated to use the gateway port (8085) for routing requests
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8085/api';
 
 const api = axios.create({
     baseURL:API_URL
@@ -27,3 +27,6 @@ export const addActivity = (activity) => api.post('/activities', activity);
 export const getActivity = (id) => api.get(`/activities/${id}`);
 export const getActivityRecommendation = (id) => api.get(`/recommendations/activity/${id}`);
 export const getActivityDetail = (id) => api.get(`/recommendations/activity/${id}`); // Legacy compatibility
+
+// Contact API (public)
+export const sendContactMessage = (payload) => api.post('/contact', payload);

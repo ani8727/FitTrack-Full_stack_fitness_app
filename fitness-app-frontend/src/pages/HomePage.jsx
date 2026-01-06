@@ -1,10 +1,14 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiActivity, FiTrendingUp, FiAward, FiUsers, FiTarget, FiZap, FiHeart, FiClock, FiSun, FiMoon } from 'react-icons/fi'
 import { useTheme } from '../context/ThemeContext'
+import ContactModal from '../shared/ui/ContactModal'
+import { Logo } from '../shared/ui/Icons'
+import { site } from '../config/site'
 
 const HomePage = ({ onLogin }) => {
   const navigate = useNavigate()
+  const [contactOpen, setContactOpen] = useState(false)
 
   const features = [
     {
@@ -49,38 +53,61 @@ const HomePage = ({ onLogin }) => {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
 
-  const backgroundStyle = isDark
-    ? 'radial-gradient(circle at 12% 14%, rgba(56,189,248,0.14), transparent 32%), radial-gradient(circle at 86% 10%, rgba(251,146,60,0.12), transparent 30%), linear-gradient(150deg, #0f172a 0%, #111827 55%, #0b1220 100%)'
-    : 'radial-gradient(circle at 8% 12%, rgba(37,99,235,0.12), transparent 28%), radial-gradient(circle at 88% 10%, rgba(249,115,22,0.10), transparent 26%), linear-gradient(140deg, #eff3f9 0%, #f7f9fc 60%, #eef2f8 100%)'
+  const backgroundStyle =
+    'radial-gradient(circle at 10% 12%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 38%), ' +
+    'radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 34%), ' +
+    'linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg) 100%)'
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: backgroundStyle }}>
       <div className="absolute inset-0 pointer-events-none">
-        <div className={`absolute -left-24 top-12 w-72 h-72 ${isDark ? 'bg-primary-400/12' : 'bg-primary-500/8'} blur-3xl rounded-full`} />
-        <div className={`absolute right-0 top-32 w-80 h-80 ${isDark ? 'bg-secondary-400/12' : 'bg-secondary-500/8'} blur-3xl rounded-full`} />
+        <div className={`absolute -left-24 top-10 w-72 h-72 ${isDark ? 'bg-primary-400/12' : 'bg-primary-500/10'} blur-3xl rounded-full`} />
+        <div className={`absolute right-0 top-28 w-80 h-80 ${isDark ? 'bg-secondary-400/12' : 'bg-secondary-500/10'} blur-3xl rounded-full`} />
       </div>
+
+      {/* Top bar */}
+      <header className="relative">
+        <div className="app-container pt-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 select-none">
+              <Logo className="w-10 h-10" />
+              <div className="leading-tight">
+                <div className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>{site?.name || 'FitTrack'}</div>
+                <div className={`text-xs ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Track • Insights • AI guidance</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--color-border)] glass text-[var(--color-text)]"
+                aria-label="Toggle theme"
+              >
+                {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
+                <span className="text-sm font-semibold">{isDark ? 'Light' : 'Dark'}</span>
+              </button>
+              <button
+                onClick={onLogin}
+                className="px-5 py-2.5 rounded-full btn-primary"
+              >
+                Sign in
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Hero Section */}
       <div className="relative">
-        <div className="relative app-container pt-16 lg:pt-20 pb-16 lg:pb-24">
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={toggleTheme}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--color-border)] bg-white/80 dark:bg-neutral-900/70 text-[var(--color-text)] dark:text-slate-100 shadow-sm hover:shadow transition-all"
-              aria-label="Toggle theme"
-            >
-              {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
-              <span className="text-sm font-semibold">{isDark ? 'Light mode' : 'Dark mode'}</span>
-            </button>
-          </div>
+        <div className="relative app-container pt-10 lg:pt-14 pb-14 lg:pb-20">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <div className="space-y-6">
-              <div className={`inline-flex items-center gap-2 ${isDark ? 'bg-primary-500/15 text-primary-100' : 'bg-white/80 text-primary-700'} backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold shadow-[0_12px_30px_rgba(37,99,235,0.08)]`}>
+              <div className={`inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-sm font-semibold ${isDark ? 'text-white' : 'text-primary-700'}`}>
                 <FiZap className="w-4 h-4" />
                 <span>Transform your fitness journey</span>
               </div>
-              <h1 className={`text-4xl lg:text-5xl font-bold leading-tight ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>
-                Track progress, stay motivated, and hit every goal.
+              <h1 className={`text-4xl lg:text-6xl font-bold leading-[1.06] tracking-tight ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>
+                A calmer way to stay consistent.
               </h1>
               <p className={`text-lg max-w-2xl ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>
                 FitTrack blends effortless logging with AI guidance, personalized goals, and clear visuals so you always know what to do next.
@@ -88,52 +115,46 @@ const HomePage = ({ onLogin }) => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button 
                   onClick={onLogin}
-                  className="px-7 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white text-base font-semibold shadow-lg shadow-primary-500/30 hover:translate-y-[-1px] transition-all"
+                  className="px-7 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white text-base font-semibold shadow-glow hover:translate-y-[-1px] transition-all"
                 >
                   Get started free
                 </button>
                 <button 
                   onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
-                  className={`px-7 py-3 rounded-xl border border-[var(--color-border)] ${isDark ? 'text-white bg-neutral-900/60 hover:bg-neutral-800' : 'text-[var(--color-text)] bg-white/80 hover:bg-white'} shadow-sm transition-all`}
+                  className={`px-7 py-3 rounded-xl border border-[var(--color-border)] glass ${isDark ? 'text-white' : 'text-[var(--color-text)]'} transition-all`}
                 >
                   See how it works
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-4 max-w-md">
-                <div className={`rounded-xl border border-[var(--color-border)] p-4 shadow-sm ${isDark ? 'bg-neutral-900/70 text-white' : 'bg-white/80 text-[var(--color-text)]'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full grid place-items-center ${isDark ? 'bg-primary-500/20 text-primary-100' : 'bg-primary-500/15 text-primary-700'}`}><FiActivity /></div>
-                    <div>
-                      <p className={`text-xs uppercase tracking-wide ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Daily streak</p>
-                      <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>18 days</p>
-                    </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
+                <div className="glass rounded-2xl border border-[var(--color-border)] p-4">
+                  <p className={`text-xs uppercase tracking-wide ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Daily streak</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl grid place-items-center ${isDark ? 'bg-primary-500/20 text-primary-100' : 'bg-primary-500/12 text-primary-700'}`}><FiActivity /></div>
+                    <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>18 days</p>
                   </div>
                 </div>
-                <div className={`rounded-xl border border-[var(--color-border)] p-4 shadow-sm ${isDark ? 'bg-neutral-900/70 text-white' : 'bg-white/80 text-[var(--color-text)]'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full grid place-items-center ${isDark ? 'bg-secondary-500/25 text-secondary-100' : 'bg-secondary-500/15 text-secondary-700'}`}><FiHeart /></div>
-                    <div>
-                      <p className={`text-xs uppercase tracking-wide ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Calories today</p>
-                      <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>820 kcal</p>
-                    </div>
+                <div className="glass rounded-2xl border border-[var(--color-border)] p-4">
+                  <p className={`text-xs uppercase tracking-wide ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Calories today</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl grid place-items-center ${isDark ? 'bg-secondary-500/25 text-secondary-100' : 'bg-secondary-500/12 text-secondary-700'}`}><FiHeart /></div>
+                    <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>820 kcal</p>
                   </div>
                 </div>
-                <div className={`rounded-xl border border-[var(--color-border)] p-4 shadow-sm ${isDark ? 'bg-neutral-900/70 text-white' : 'bg-white/80 text-[var(--color-text)]'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full grid place-items-center ${isDark ? 'bg-primary-500/20 text-primary-100' : 'bg-primary-500/15 text-primary-700'}`}><FiClock /></div>
-                    <div>
-                      <p className={`text-xs uppercase tracking-wide ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Time saved</p>
-                      <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>12 hrs/mo</p>
-                    </div>
+                <div className="glass rounded-2xl border border-[var(--color-border)] p-4">
+                  <p className={`text-xs uppercase tracking-wide ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Time saved</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl grid place-items-center ${isDark ? 'bg-primary-500/20 text-primary-100' : 'bg-primary-500/12 text-primary-700'}`}><FiClock /></div>
+                    <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>12 hrs/mo</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="relative">
-              <div className={`relative rounded-3xl border border-[var(--color-border)] shadow-[0_30px_80px_rgba(15,23,42,0.12)] p-6 overflow-hidden ${isDark ? 'bg-[#0f172a]/90' : 'bg-white/80'}`}>
-                <div className={`absolute -right-10 -top-10 w-40 h-40 ${isDark ? 'bg-primary-400/12' : 'bg-primary-500/10'} blur-3xl rounded-full`} />
-                <div className={`absolute -left-10 bottom-0 w-52 h-52 ${isDark ? 'bg-secondary-400/12' : 'bg-secondary-500/10'} blur-3xl rounded-full`} />
+              <div className="relative rounded-3xl border border-[var(--color-border)] glass shadow-soft p-6 overflow-hidden">
+                <div className={`absolute -right-10 -top-10 w-44 h-44 ${isDark ? 'bg-primary-400/12' : 'bg-primary-500/10'} blur-3xl rounded-full`} />
+                <div className={`absolute -left-10 bottom-0 w-56 h-56 ${isDark ? 'bg-secondary-400/12' : 'bg-secondary-500/10'} blur-3xl rounded-full`} />
                 <div className="relative space-y-4">
                   <div className="flex items-center justify-between">
                     <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>This week</span>
@@ -147,12 +168,12 @@ const HomePage = ({ onLogin }) => {
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className={`rounded-xl border border-[var(--color-border)] p-4 ${isDark ? 'bg-neutral-900/80' : 'bg-white/90'}`}>
+                    <div className="rounded-xl border border-[var(--color-border)] p-4 glass">
                       <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>AI recommendation</p>
                       <p className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>Lower-body + core • 45 min</p>
                       <p className={`text-xs mt-2 ${isDark ? 'text-primary-200' : 'text-primary-700'}`}>Based on recovery and recent sessions</p>
                     </div>
-                    <div className={`rounded-xl border border-[var(--color-border)] p-4 ${isDark ? 'bg-neutral-900/80' : 'bg-white/90'}`}>
+                    <div className="rounded-xl border border-[var(--color-border)] p-4 glass">
                       <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>Goal progress</p>
                       <div className={`mt-2 h-2 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-[var(--color-surface-muted)]'}`}>
                         <div className="h-full bg-gradient-to-r from-primary-500 to-secondary-500" style={{ width: '72%' }} />
@@ -171,7 +192,7 @@ const HomePage = ({ onLogin }) => {
       <div className="relative app-container pb-14">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {stats.map((stat, index) => (
-            <div key={index} className={`rounded-2xl border border-[var(--color-border)] p-5 text-center shadow-sm ${isDark ? 'bg-neutral-900/70' : 'bg-white/85'}`}>
+            <div key={index} className="rounded-2xl border border-[var(--color-border)] p-5 text-center glass">
               <div className={`text-3xl lg:text-4xl font-bold mb-1 ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>{stat.value}</div>
               <div className={`text-sm lg:text-base ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>{stat.label}</div>
             </div>
@@ -193,7 +214,7 @@ const HomePage = ({ onLogin }) => {
           {features.map((feature, index) => (
             <div 
               key={index}
-              className={`group rounded-2xl border border-[var(--color-border)] p-7 transition-all hover:-translate-y-1 ${isDark ? 'bg-[#0f172a]/80 shadow-[0_18px_40px_rgba(0,0,0,0.25)] hover:shadow-[0_22px_48px_rgba(37,99,235,0.18)]' : 'bg-white/85 shadow-[0_18px_40px_rgba(15,23,42,0.08)] hover:shadow-[0_22px_48px_rgba(37,99,235,0.12)]'}`}
+              className="group rounded-2xl border border-[var(--color-border)] p-7 glass transition-all hover:-translate-y-1 hover:shadow-soft"
             >
               <div className={`w-12 h-12 rounded-xl grid place-items-center mb-4 group-hover:scale-105 transition-all ${isDark ? 'bg-primary-500/20 text-primary-100' : 'bg-primary-500/12 text-primary-700 group-hover:bg-primary-500/16'}`}>
                 {feature.icon}
@@ -207,17 +228,17 @@ const HomePage = ({ onLogin }) => {
 
       {/* CTA Section */}
       <div className="relative app-container pb-16">
-        <div className="rounded-3xl bg-gradient-to-r from-primary-600 to-secondary-500 text-white p-10 lg:p-14 shadow-[0_28px_70px_rgba(37,99,235,0.28)] overflow-hidden">
+        <div className="rounded-3xl bg-gradient-to-r from-primary-600 to-secondary-500 text-white p-10 lg:p-14 shadow-glow overflow-hidden">
           <div className="absolute right-0 -top-10 w-72 h-72 bg-white/15 blur-3xl rounded-full" />
           <div className="absolute -left-16 bottom-0 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
           <div className="relative text-center space-y-4">
-            <h2 className="text-3xl lg:4xl font-bold">Ready to start your journey?</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold">Ready to start your journey?</h2>
             <p className="text-lg text-white/90 max-w-2xl mx-auto">
               Join thousands already using FitTrack to stay accountable, measure progress, and feel confident every week.
             </p>
             <button 
               onClick={onLogin}
-              className="px-8 py-3 rounded-xl bg-white text-primary-700 font-semibold shadow-lg hover:translate-y-[-1px] transition-all"
+              className="px-8 py-3 rounded-xl bg-white text-primary-700 font-semibold shadow-soft hover:translate-y-[-1px] transition-all"
             >
               Start tracking now
             </button>
@@ -239,16 +260,6 @@ const HomePage = ({ onLogin }) => {
               <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>Product</h4>
               <ul className={`space-y-2 text-sm ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>
                 <li><a href="#features" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Features</a></li>
-                <li><a href="#" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Pricing</a></li>
-                <li><a href="#" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-[var(--color-text)]'}`}>Company</h4>
-              <ul className={`space-y-2 text-sm ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>
-                <li><a href="#" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>About</a></li>
-                <li><a href="#" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Blog</a></li>
-                <li><a href="#" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Careers</a></li>
               </ul>
             </div>
             <div>
@@ -256,7 +267,15 @@ const HomePage = ({ onLogin }) => {
               <ul className={`space-y-2 text-sm ${isDark ? 'text-slate-300' : 'text-[var(--color-text-muted)]'}`}>
                 <li><button onClick={() => navigate('/privacy')} className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Privacy</button></li>
                 <li><button onClick={() => navigate('/terms')} className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Terms</button></li>
-                <li><a href="#" className={`transition-colors ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}>Contact</a></li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setContactOpen(true)}
+                    className={`transition-colors px-0 py-0 ${isDark ? 'hover:text-white' : 'hover:text-[var(--color-text)]'}`}
+                  >
+                    Contact
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
@@ -265,6 +284,8 @@ const HomePage = ({ onLogin }) => {
           </div>
         </div>
       </footer>
+
+      <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   )
 }
