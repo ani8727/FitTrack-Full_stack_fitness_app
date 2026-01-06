@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -89,8 +90,8 @@ public class ActivityAIService {
                     .createdAt(LocalDateTime.now())
                     .build();
 
-        } catch (Exception e){
-            e.printStackTrace();
+        } catch (IOException | IllegalArgumentException e){
+            log.error("Error occurred while generating recommendation: {}", e.getMessage(), e);
             return createDefaultRecommendation(activity);
         }
     }

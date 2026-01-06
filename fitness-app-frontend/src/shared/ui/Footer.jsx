@@ -1,9 +1,12 @@
-import React from 'react'
-import { Logo, LinkedInIcon } from './Icons'
+import React, { useState } from 'react'
+import { Logo } from './Icons'
 import { site } from '../../config/site'
 import { FiLinkedin } from 'react-icons/fi'
+import ContactModal from './ContactModal'
 
 const Footer = () => {
+  const [contactOpen, setContactOpen] = useState(false)
+
   return (
     <footer className="w-full border-t border-[var(--color-border)] bg-[var(--color-surface)]/92 backdrop-blur-sm shadow-[0_-8px_30px_rgba(15,23,42,0.06)] mt-auto">
       <div className="w-full px-6 py-4">
@@ -33,6 +36,13 @@ const Footer = () => {
               <span className="hidden sm:inline">LinkedIn</span>
             </a>
             <span className="text-[var(--color-border)]">|</span>
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors px-0 py-0"
+            >
+              Contact
+            </button>
             <a 
               href={site.links.privacy} 
               className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
@@ -48,6 +58,8 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
+      <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
     </footer>
   )
 }

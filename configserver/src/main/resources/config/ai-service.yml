@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8084
 
 
 spring:
@@ -9,22 +9,21 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/ai_collection
-      database: ai_collection
+      uri: ${AI_MONGODB_URI:mongodb://mongodb:27017/fitness_ai_db}
       
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://Aniket.mshome.net:8761/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
   instance:
-    hostname: Aniket.mshome.net
+    hostname: ${EUREKA_HOST:ai-service}
     prefer-ip-address: false
 
 
@@ -40,5 +39,5 @@ rabbitmq:
 
 gemini:
   api:
-    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-    key: AIzaSyD1nQ5l4LUcB3pUyMZ-Q9rSdrhlzScZZAA
+    url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent}
+    key: ${GEMINI_API_KEY:}

@@ -1,5 +1,5 @@
 server: 
-  port: 8082
+  port: ${ACTIVITY_SERVICE_PORT:8082}
 
 
 spring:
@@ -7,20 +7,19 @@ spring:
     name: activity-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/activities_collection
-      database: activities_collection
+      uri: ${ACTIVITY_MONGODB_URI:mongodb://mongodb:27017/fitness_activities_db}
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest    
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://Aniket.mshome.net:8761/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
   instance:
-    hostname: Aniket.mshome.net
+    hostname: ${EUREKA_HOST:activity-service}
     prefer-ip-address: false
 
 

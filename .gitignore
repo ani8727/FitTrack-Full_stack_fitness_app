@@ -23,6 +23,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Prevent accidental root lockfile (frontend has its own lockfile)
+/package-lock.json
+
 # Maven wrapper cache (keep wrapper scripts tracked)
 .mvn/wrapper/maven-wrapper.jar
 

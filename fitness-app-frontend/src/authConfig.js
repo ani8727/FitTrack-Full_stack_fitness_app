@@ -1,10 +1,17 @@
+const keycloakBaseUrl = import.meta.env.VITE_KEYCLOAK_BASE_URL || 'http://localhost:8181'
+const keycloakRealm = import.meta.env.VITE_KEYCLOAK_REALM || 'fitness-oauth2'
+const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'fitness-client'
+const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173'
+
+const oidcBase = `${keycloakBaseUrl}/realms/${keycloakRealm}/protocol/openid-connect`
+
 export const authConfig = {
-    clientId: 'fitness-client',
-    authorizationEndpoint: 'http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/auth',
-    tokenEndpoint: 'http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/token',
-    userInfoEndpoint: 'http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/userinfo',
-    endSessionEndpoint: 'http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/logout',
-    redirectUri: 'http://localhost:5173',
+    clientId,
+    authorizationEndpoint: `${oidcBase}/auth`,
+    tokenEndpoint: `${oidcBase}/token`,
+    userInfoEndpoint: `${oidcBase}/userinfo`,
+    endSessionEndpoint: `${oidcBase}/logout`,
+    redirectUri,
     scope: 'openid profile email',
     onRefreshTokenExpire: (event) => event.logIn(),
     autoLogin: false, // Prevent automatic login redirect

@@ -14,11 +14,11 @@ spring:
   application:
     name: user-service
   config:
-    import: optional:configserver:http://localhost:8888
+    import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://configserver:8888}
   datasource:
-    url: ${USER_DB_URL:jdbc:mysql://localhost:3307/fitness_users_db}
+    url: ${USER_DB_URL:jdbc:mysql://mysql:3306/fitness_users_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${USER_DB_USERNAME:fitnessuser}
-    password: ${USER_DB_PASSWORD:}
+    password: ${USER_DB_PASSWORD:fitness123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -27,17 +27,24 @@ spring:
     properties:
       hibernate.dialect: org.hibernate.dialect.MySQLDialect
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:8181/realms/fitness-oauth2}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:8181/realms/fitness-oauth2/protocol/openid-connect/certs}
+
 eureka:
   instance:
-    hostname: localhost
+    hostname: ${EUREKA_HOST:user-service}
     prefer-ip-address: false
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
 
 # Keycloak Configuration
 keycloak:
-  server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8181}
+  server-url: ${KEYCLOAK_SERVER_URL:http://keycloak:8181}
   realm: ${KEYCLOAK_REALM:fitness-oauth2}
   admin:
     username: ${KEYCLOAK_ADMIN_USERNAME:}

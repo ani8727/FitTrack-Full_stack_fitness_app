@@ -36,7 +36,7 @@ public class GeminiService {
                 return webClient.post()
                         .uri(geminiApiUrl + "?key=" + geminiApiKey)
                         .header("Content-Type", "application/json")
-                        .bodyValue((Object)(requestBody != null ? requestBody : Map.of()))
+                        .bodyValue((requestBody != null) ? requestBody : Map.of())
                         .retrieve()
                         .bodyToMono(String.class)
                         .timeout(Duration.ofSeconds(30)) // increased timeout for AI response
