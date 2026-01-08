@@ -37,6 +37,9 @@ yarn-error.log*
 !**/.env.example
 !**/.env.prod.example
 
+# Ensure workspace production env is not committed
+backend/.env.prod
+
 # OS artifacts
 Thumbs.db
 .DS_Store

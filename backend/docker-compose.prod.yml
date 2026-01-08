@@ -3,7 +3,6 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
-    container_name: fitness-keycloak
     restart: unless-stopped
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
@@ -24,10 +23,7 @@ services:
 
   # -------- Platform services --------
   configserver:
-    build:
-      context: ./configserver
-      dockerfile: Dockerfile
-    container_name: fitness-configserver
+    image: ${CONFIGSERVER_IMAGE:?CONFIGSERVER_IMAGE is required}
     restart: unless-stopped
     environment:
       EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
@@ -46,10 +42,7 @@ services:
       - fitness-network
 
   eureka:
-    build:
-      context: ./eureka
-      dockerfile: Dockerfile
-    container_name: fitness-eureka
+    image: ${EUREKA_IMAGE:?EUREKA_IMAGE is required}
     restart: unless-stopped
     ports:
       - "8761:8761"
@@ -62,10 +55,7 @@ services:
       - fitness-network
 
   gateway:
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
-    container_name: fitness-gateway
+    image: ${GATEWAY_IMAGE:?GATEWAY_IMAGE is required}
     restart: unless-stopped
     environment:
       CONFIG_SERVER_URI: http://configserver:8888
@@ -86,10 +76,7 @@ services:
       - fitness-network
 
   userservice:
-    build:
-      context: ./userservice
-      dockerfile: Dockerfile
-    container_name: fitness-userservice
+    image: ${USERSERVICE_IMAGE:?USERSERVICE_IMAGE is required}
     restart: unless-stopped
     environment:
       CONFIG_SERVER_URI: http://configserver:8888
@@ -121,10 +108,7 @@ services:
       - fitness-network
 
   adminservice:
-    build:
-      context: ./adminservice
-      dockerfile: Dockerfile
-    container_name: fitness-adminservice
+    image: ${ADMINSERVICE_IMAGE:?ADMINSERVICE_IMAGE is required}
     restart: unless-stopped
     environment:
       CONFIG_SERVER_URI: http://configserver:8888
@@ -151,10 +135,7 @@ services:
       - fitness-network
 
   activityservice:
-    build:
-      context: ./activityservice
-      dockerfile: Dockerfile
-    container_name: fitness-activityservice
+    image: ${ACTIVITYSERVICE_IMAGE:?ACTIVITYSERVICE_IMAGE is required}
     restart: unless-stopped
     environment:
       CONFIG_SERVER_URI: http://configserver:8888
@@ -178,10 +159,7 @@ services:
       - fitness-network
 
   aiservice:
-    build:
-      context: ./aiservice
-      dockerfile: Dockerfile
-    container_name: fitness-aiservice
+    image: ${AISERVICE_IMAGE:?AISERVICE_IMAGE is required}
     restart: unless-stopped
     environment:
       CONFIG_SERVER_URI: http://configserver:8888
@@ -206,16 +184,7 @@ services:
       - fitness-network
 
   frontend:
-    build:
-      context: ./fitness-app-frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_KEYCLOAK_BASE_URL: ${VITE_KEYCLOAK_BASE_URL}
-        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
-        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
-        VITE_REDIRECT_URI: ${VITE_REDIRECT_URI}
-    container_name: fitness-frontend
+    image: ${FRONTEND_IMAGE:?FRONTEND_IMAGE is required}
     restart: unless-stopped
     ports:
       - "5173:80"

@@ -27,5 +27,12 @@ A full-stack fitness platform built as Java microservices with a React (Vite) fr
 - Preferred: `docker-compose up --build` with required `.env` values (see PREREQUISITES.md).
 - Alternatively: start infra (MySQL, MongoDB, RabbitMQ, Redis, Keycloak), then run each Spring Boot app with matching envs, and `npm install && npm run dev` or `npm run build && npm run preview` for frontend.
 
+## Production deployment (short)
+- See production compose at [backend/docker-compose.prod.yml](backend/docker-compose.prod.yml).
+- Example production env template: [backend/.env.prod.example](backend/.env.prod.example).
+- Secure deployment guidance: [backend/docker-compose.prod.secrets.md](backend/docker-compose.prod.secrets.md).
+
+Notes: For production you should build and push images in CI, provide real image tags via the `*_IMAGE` environment variables, and inject secrets via a secrets manager or host-only `.env.prod` that is not checked into git.
+
 ## Notes
 - Docs live in the Guide/ folder for deeper detail. This README stays intentionally brief for quick orientation.
