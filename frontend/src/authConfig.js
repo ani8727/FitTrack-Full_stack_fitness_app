@@ -1,7 +1,7 @@
-const keycloakBaseUrl = import.meta.env.VITE_KEYCLOAK_BASE_URL || 'http://localhost:8181'
-const keycloakRealm = import.meta.env.VITE_KEYCLOAK_REALM || 'fitness-oauth2'
-const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'fitness-client'
-const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173'
+const keycloakBaseUrl = 'http://gateway:8085/auth'
+const keycloakRealm = 'fitness-oauth2'
+const clientId = 'fitness-client'
+const redirectUri = 'http://localhost:5173'
 
 const oidcBase = `${keycloakBaseUrl}/realms/${keycloakRealm}/protocol/openid-connect`
 
