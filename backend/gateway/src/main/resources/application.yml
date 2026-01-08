@@ -1,0 +1,28 @@
+server:
+  port: ${GATEWAY_SERVICE_PORT}
+
+spring:
+  application:
+    name: api-gateway
+
+management:
+  endpoints:
+    web:
+      cors:
+        allowed-origins: ${CORS_ALLOWED_ORIGINS}
+        allowed-methods: "*"
+        allowed-headers: "*"
+        allow-credentials: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
+  instance:
+    hostname: ${EUREKA_HOST}
+    prefer-ip-address: ${EUREKA_PREFER_IP}
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  environment: ${SPRING_PROFILES_ACTIVE}
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE}

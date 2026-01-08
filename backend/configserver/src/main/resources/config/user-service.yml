@@ -1,0 +1,47 @@
+server:
+  port: ${USER_SERVICE_PORT}
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO}
+    open-in-view: false
+    show-sql: ${JPA_SHOW_SQL}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+security:
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri: ${KEYCLOAK_ISSUER_URI}
+        jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+
+keycloak:
+  server-url: ${KEYCLOAK_SERVER_URL}
+  realm: ${KEYCLOAK_REALM}
+  admin:
+    username: ${KEYCLOAK_ADMIN}
+    password: ${KEYCLOAK_ADMIN_PASSWORD}
+    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
+  instance:
+    hostname: ${EUREKA_HOST}
+    prefer-ip-address: ${EUREKA_PREFER_IP}
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  environment: ${SPRING_PROFILES_ACTIVE}
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE}

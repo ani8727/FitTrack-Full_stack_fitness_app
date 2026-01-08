@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: adminservice
+  config:
+    import: configserver:http://configserver:8888
+
+# If you later remove the Config Server, this file can be deleted safely.

@@ -32,6 +32,10 @@ yarn-error.log*
 # Environment files
 .env
 .env.*
+!.env.example
+!.env.prod.example
+!**/.env.example
+!**/.env.prod.example
 
 # OS artifacts
 Thumbs.db
