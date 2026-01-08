@@ -43,6 +43,7 @@ public class User {
     
     // Account Status
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountStatus accountStatus = AccountStatus.ACTIVE;
     
     private Boolean emailVerified = false;

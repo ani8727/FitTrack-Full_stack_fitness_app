@@ -162,6 +162,21 @@ public class UserService {
         return stats;
     }
 
+    /**
+     * Scan users and set a default AccountStatus for any records that have null.
+     * Returns the number of users updated. This can be invoked by an admin or
+     * during a maintenance run to normalize stored data.
+     */
+    public int normalizeAccountStatuses() {
+        List<User> usersWithNullStatus = repository.findAll().stream()
+                .filter(u -> u.getAccountStatus() == null)
+                .collect(Collectors.toList());
+        if (usersWithNullStatus.isEmpty()) return 0;
+        usersWithNullStatus.forEach(u -> u.setAccountStatus(com.fitness.userservice.model.AccountStatus.ACTIVE));
+        repository.saveAll(usersWithNullStatus);
+        return usersWithNullStatus.size();
+    }
+
     @SuppressWarnings("null")
     public UserResponse updateUserStatus(String userId, String status, String reason) {
         if (userId == null) {
@@ -247,7 +262,7 @@ public class UserService {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setRole(user.getRole() != null ? user.getRole().toString() : "USER");
-        response.setAccountStatus(user.getAccountStatus() != null ? user.getAccountStatus().toString() : null);
+        response.setAccountStatus(user.getAccountStatus() != null ? user.getAccountStatus().toString() : "UNKNOWN");
         response.setEmailVerified(user.getEmailVerified());
         response.setLastLoginAt(user.getLastLoginAt());
         response.setGender(user.getGender());
