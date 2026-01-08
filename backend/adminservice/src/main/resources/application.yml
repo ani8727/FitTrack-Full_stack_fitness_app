@@ -1,0 +1,12 @@
+server:
+  port: ${ADMIN_SERVICE_PORT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+spring:
+  application:
+    name: adminservice

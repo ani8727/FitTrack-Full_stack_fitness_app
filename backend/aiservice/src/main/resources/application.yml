@@ -1,0 +1,12 @@
+server:
+  port: ${AI_SERVICE_PORT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+spring:
+  application:
+    name: ai-service

@@ -32,6 +32,13 @@ yarn-error.log*
 # Environment files
 .env
 .env.*
+!.env.example
+!.env.prod.example
+!**/.env.example
+!**/.env.prod.example
+
+# Ensure workspace production env is not committed
+backend/.env.prod
 
 # OS artifacts
 Thumbs.db
