@@ -148,15 +148,17 @@ public class UserService {
     public Map<String, Object> getUserStats() {
         long totalUsers = repository.count();
         long activeUsers = repository.findAll().stream()
-                .filter(user -> user.getRole() != null)
-                .count();
-        
+            .filter(user -> user.getAccountStatus() != null && user.getAccountStatus().toString().equalsIgnoreCase("ACTIVE"))
+            .count();
+
+        long adminUsers = repository.findAll().stream()
+            .filter(user -> user.getRole() != null && "ADMIN".equalsIgnoreCase(user.getRole().toString()))
+            .count();
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalUsers", totalUsers);
         stats.put("activeUsers", activeUsers);
-        stats.put("adminUsers", repository.findAll().stream()
-                .filter(user -> "ADMIN".equals(user.getRole().toString()))
-                .count());
+        stats.put("adminUsers", adminUsers);
         return stats;
     }
 
