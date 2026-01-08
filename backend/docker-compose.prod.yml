@@ -1,0 +1,234 @@
+services:
+  # -------- Infrastructure (externalized DBs/brokers; no local containers) --------
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: fitness-keycloak
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
+      KC_DB: dev-file
+      KC_HTTP_PORT: 8181
+    ports:
+      - "8181:8181"
+    command:
+      - start-dev
+      - --http-port=8181
+      - --import-realm
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak/realm-export:/opt/keycloak/data/import
+    networks:
+      - fitness-network
+
+  # -------- Platform services --------
+  configserver:
+    build:
+      context: ./configserver
+      dockerfile: Dockerfile
+    container_name: fitness-configserver
+    restart: unless-stopped
+    environment:
+      EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+      EUREKA_HOST: configserver
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      eureka:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: fitness-eureka
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - fitness-network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: fitness-gateway
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URI: http://configserver:8888
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8888
+      EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+      EUREKA_HOST: gateway
+      KEYCLOAK_ISSUER_URI: http://keycloak:8181/realms/${KEYCLOAK_REALM}
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8181/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    ports:
+      - "8085:8085"
+    depends_on:
+      eureka:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  userservice:
+    build:
+      context: ./userservice
+      dockerfile: Dockerfile
+    container_name: fitness-userservice
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URI: http://configserver:8888
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8888
+      EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+      EUREKA_HOST: userservice
+      # PostgreSQL (Neon) credentials
+      POSTGRES_URL: ${POSTGRES_URL:?POSTGRES_URL is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8181/realms/${KEYCLOAK_REALM}
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8181/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+      KEYCLOAK_SERVER_URL: http://keycloak:8181
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    ports:
+      - "8081:8081"
+    depends_on:
+      eureka:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    networks:
+      - fitness-network
+
+  adminservice:
+    build:
+      context: ./adminservice
+      dockerfile: Dockerfile
+    container_name: fitness-adminservice
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URI: http://configserver:8888
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8888
+      EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+      EUREKA_HOST: adminservice
+      # PostgreSQL (Neon) credentials
+      POSTGRES_URL: ${POSTGRES_URL:?POSTGRES_URL is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8181/realms/${KEYCLOAK_REALM}
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8181/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    ports:
+      - "8083:8083"
+    depends_on:
+      eureka:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    networks:
+      - fitness-network
+
+  activityservice:
+    build:
+      context: ./activityservice
+      dockerfile: Dockerfile
+    container_name: fitness-activityservice
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URI: http://configserver:8888
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8888
+      EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+      EUREKA_HOST: activityservice
+      MONGO_URI: ${MONGO_URI:?MONGO_URI is required}
+      RABBITMQ_HOST: ${RABBITMQ_HOST:?RABBITMQ_HOST is required}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:?RABBITMQ_PORT is required}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:?RABBITMQ_USERNAME is required}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD is required}
+      ACTIVITY_SERVICE_PORT: 8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      eureka:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  aiservice:
+    build:
+      context: ./aiservice
+      dockerfile: Dockerfile
+    container_name: fitness-aiservice
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URI: http://configserver:8888
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8888
+      EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+      EUREKA_HOST: aiservice
+      MONGO_URI: ${MONGO_URI:?MONGO_URI is required}
+      RABBITMQ_HOST: ${RABBITMQ_HOST:?RABBITMQ_HOST is required}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:?RABBITMQ_PORT is required}
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:?RABBITMQ_USERNAME is required}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD is required}
+      GEMINI_API_URL: ${GEMINI_API_URL}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    ports:
+      - "8084:8084"
+    depends_on:
+      eureka:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+    networks:
+      - fitness-network
+
+  frontend:
+    build:
+      context: ./fitness-app-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_KEYCLOAK_BASE_URL: ${VITE_KEYCLOAK_BASE_URL}
+        VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+        VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+        VITE_REDIRECT_URI: ${VITE_REDIRECT_URI}
+    container_name: fitness-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      gateway:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    networks:
+      - fitness-network
+
+volumes:
+  keycloak_data:
+networks:
+  fitness-network:
+    driver: bridge
