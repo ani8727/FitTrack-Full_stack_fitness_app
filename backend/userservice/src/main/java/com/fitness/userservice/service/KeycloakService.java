@@ -17,19 +17,19 @@ import java.util.*;
 @Slf4j
 public class KeycloakService {
 
-    @Value("${keycloak.server-url:http://keycloak:8181}")
+    @Value("${keycloak.server-url}")
     private String keycloakServerUrl;
 
-    @Value("${keycloak.realm:fitness-oauth2}")
+    @Value("${keycloak.realm}")
     private String realm;
 
-    @Value("${keycloak.admin.username:}")
+    @Value("${keycloak.admin.username}")
     private String adminUsername;
 
-    @Value("${keycloak.admin.password:}")
+    @Value("${keycloak.admin.password}")
     private String adminPassword;
 
-    @Value("${keycloak.admin.client-id:admin-cli}")
+    @Value("${keycloak.admin.client-id}")
     private String adminClientId;
 
     private final RestTemplate restTemplate = new RestTemplate();

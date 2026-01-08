@@ -31,7 +31,7 @@ public class UserService {
     @Autowired
     private KeycloakService keycloakService;
     
-    @Value("${keycloak.integration.enabled:true}")
+    @Value("${keycloak.integration.enabled}")
     private boolean keycloakIntegrationEnabled;
 
     public UserResponse register(RegisterRequest request) {
