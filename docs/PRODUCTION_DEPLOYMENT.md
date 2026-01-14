@@ -69,28 +69,28 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 #### Option B: Inline environment variables (Windows CMD)
 ```cmd
-set MONGO_URI=mongodb+srv://fitness_db:fitness123@fitapp.awbcqor.mongodb.net/fitness_db?retryWrites=true^&w=majority
-set POSTGRES_URL=jdbc:postgresql://ep-misty-sound-aeorpzzo-pooler.c-2.us-east-2.aws.neon.tech/fitness_db?sslmode=require
-set POSTGRES_USER=neondb_owner
-set POSTGRES_PASSWORD=npg_nf9xjhB0ZUgM
-set RABBITMQ_HOST=leopard.lmq.cloudamqp.com
+set MONGO_URI=<your-mongodb-uri>
+set POSTGRES_URL=jdbc:postgresql://<your-neon-host>/<db>?sslmode=require
+set POSTGRES_USER=<your-neon-user>
+set POSTGRES_PASSWORD=<your-neon-password>
+set RABBITMQ_HOST=<your-cloudamqp-host>
 set RABBITMQ_PORT=5672
-set RABBITMQ_USERNAME=unvzgqsg
-set RABBITMQ_PASSWORD=6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu
+set RABBITMQ_USERNAME=<your-cloudamqp-username>
+set RABBITMQ_PASSWORD=<your-cloudamqp-password>
 
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 #### Option C: PowerShell
 ```powershell
-$env:MONGO_URI="mongodb+srv://fitness_db:fitness123@fitapp.awbcqor.mongodb.net/fitness_db?retryWrites=true&w=majority"
-$env:POSTGRES_URL="jdbc:postgresql://ep-misty-sound-aeorpzzo-pooler.c-2.us-east-2.aws.neon.tech/fitness_db?sslmode=require"
-$env:POSTGRES_USER="neondb_owner"
-$env:POSTGRES_PASSWORD="npg_nf9xjhB0ZUgM"
-$env:RABBITMQ_HOST="leopard.lmq.cloudamqp.com"
+$env:MONGO_URI="<your-mongodb-uri>"
+$env:POSTGRES_URL="jdbc:postgresql://<your-neon-host>/<db>?sslmode=require"
+$env:POSTGRES_USER="<your-neon-user>"
+$env:POSTGRES_PASSWORD="<your-neon-password>"
+$env:RABBITMQ_HOST="<your-cloudamqp-host>"
 $env:RABBITMQ_PORT="5672"
-$env:RABBITMQ_USERNAME="unvzgqsg"
-$env:RABBITMQ_PASSWORD="6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu"
+$env:RABBITMQ_USERNAME="<your-cloudamqp-username>"
+$env:RABBITMQ_PASSWORD="<your-cloudamqp-password>"
 
 docker compose -f docker-compose.prod.yml up -d --build
 ```
@@ -104,28 +104,28 @@ docker compose -f docker-compose.prod.yml ps
 
 Check service health:
 ```bash
-curl http://localhost:8761  # Eureka
-curl http://localhost:8888/actuator/health  # Config Server
-curl http://localhost:8085/actuator/health  # Gateway
-curl http://localhost:8081/actuator/health  # User Service
-curl http://localhost:8083/actuator/health  # Admin Service
-curl http://localhost:8082/actuator/health  # Activity Service
-curl http://localhost:8084/actuator/health  # AI Service
+curl https://eureka.fittrack.com/eureka/  # Eureka (prod)
+curl https://config.fittrack.com/actuator/health  # Config Server (prod)
+curl https://api.fittrack.com/actuator/health  # Gateway (prod)
+curl https://users.api.fittrack.com/actuator/health  # User Service (prod)
+curl https://admin.api.fittrack.com/actuator/health  # Admin Service (prod)
+curl https://activity.api.fittrack.com/actuator/health  # Activity Service (prod)
+curl https://ai.api.fittrack.com/actuator/health  # AI Service (prod)
 ```
 
-### 5. Keycloak Setup
+### 5. Keycloak (managed Cloud-IAM)
 
-Access Keycloak:
+Use the managed Cloud-IAM Keycloak instance for authentication.
+Access Cloud-IAM:
 ```
-http://localhost:8181
-Admin credentials: admin / [KEYCLOAK_ADMIN_PASSWORD from .env]
+https://lemur-10.cloud-iam.com
 ```
 
-Configure realm and clients:
-1. Import realm: `keycloak/realm-export/fitness-oauth2-realm.json`
-2. Update redirect URIs to match your production domains
-3. Create client roles: `ADMIN`, `USER`
-4. Assign roles to test users
+Configuration notes:
+1. Use the `fitness-auth` realm on Cloud-IAM (managed) and create the `fittrack-frontend` client.
+2. Update redirect URIs to match your production domains.
+3. Create client roles: `ADMIN`, `USER`.
+4. Assign roles to test users.
 
 ### 6. Frontend Deployment (Vercel/Netlify)
 
@@ -137,9 +137,9 @@ vercel --prod
 
 Set environment variables in Vercel dashboard:
 - `VITE_API_BASE_URL`: Your Gateway URL (e.g., `https://api.yourapp.com/api`)
-- `VITE_KEYCLOAK_BASE_URL`: Your Keycloak URL
-- `VITE_KEYCLOAK_REALM`: `fitness-oauth2`
-- `VITE_KEYCLOAK_CLIENT_ID`: `fitness-client`
+- `VITE_KEYCLOAK_BASE_URL`: `https://lemur-10.cloud-iam.com`
+- `VITE_KEYCLOAK_REALM`: `fitness-auth`
+- `VITE_KEYCLOAK_CLIENT_ID`: `fittrack-frontend`
 - `VITE_REDIRECT_URI`: Your frontend URL
 
 #### Netlify

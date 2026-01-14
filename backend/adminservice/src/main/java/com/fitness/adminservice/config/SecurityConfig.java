@@ -30,7 +30,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 public class SecurityConfig {
 
     private static List<String> parseAllowedOrigins() {
-        String raw = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173");
+        String raw = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "https://app.fittrack.com");
         return Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isBlank())

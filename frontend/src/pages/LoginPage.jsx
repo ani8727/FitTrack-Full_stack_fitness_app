@@ -48,7 +48,7 @@ const LoginPage = ({ onLogin, onRegister }) => {
               onClick={() => onLogin()} 
               className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl px-8 py-4 text-lg font-semibold shadow-[0_20px_40px_rgba(37,99,235,0.25)] transition-all hover:-translate-y-[1px]"
             >
-              Sign in with Keycloak
+              Sign in with Auth0
             </button>
             {onRegister && (
               <button 
@@ -61,7 +61,7 @@ const LoginPage = ({ onLogin, onRegister }) => {
           </div>
 
           <p className="text-[var(--color-text-muted)] text-sm mt-6">
-            Secure authentication powered by Keycloak OAuth2 PKCE
+            Secure authentication powered by Auth0 OAuth2
           </p>
         </div>
         

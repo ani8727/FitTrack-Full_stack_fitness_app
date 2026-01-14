@@ -1,19 +1,14 @@
-const keycloakBaseUrl = 'http://gateway:8085/auth'
-const keycloakRealm = 'fitness-oauth2'
-const clientId = 'fitness-client'
-const redirectUri = 'http://localhost:5173'
+// Auth0 Configuration for FitTrack
+export const auth0Config = {
+  domain: import.meta.env.VITE_AUTH0_DOMAIN || 'dev-5s2csl8rpq2phx88.us.auth0.com',
+  clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || 'qnXHlMOmUhSTiQx0ohzneAvZWtTm8IuS',
+  authorizationParams: {
+    redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI || window.location.origin,
+    audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'fitness_auth',
+    scope: 'openid profile email roles'
+  },
+  cacheLocation: 'localstorage',
+  useRefreshTokens: true
+}
 
-const oidcBase = `${keycloakBaseUrl}/realms/${keycloakRealm}/protocol/openid-connect`
-
-export const authConfig = {
-    clientId,
-    authorizationEndpoint: `${oidcBase}/auth`,
-    tokenEndpoint: `${oidcBase}/token`,
-    userInfoEndpoint: `${oidcBase}/userinfo`,
-    endSessionEndpoint: `${oidcBase}/logout`,
-    redirectUri,
-    scope: 'openid profile email',
-    onRefreshTokenExpire: (event) => event.logIn(),
-    autoLogin: false, // Prevent automatic login redirect
-    // PKCE is enabled by default
-  }
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082'

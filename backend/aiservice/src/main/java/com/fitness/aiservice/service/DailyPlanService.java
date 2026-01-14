@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ public class DailyPlanService {
 
     private final DailyPlanRepository dailyPlanRepository;
     private final GeminiService geminiService;
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient apiGatewayWebClient;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @SuppressWarnings("null")
@@ -38,6 +39,7 @@ public class DailyPlanService {
 
         // Fetch user profile from user service
         return fetchUserProfile(userId)
+            .publishOn(Schedulers.boundedElastic())
                 .flatMap(userProfile -> {
                     String prompt = createDailyPlanPrompt(userProfile, planDate);
                     return geminiService.getAnswer(prompt)
@@ -54,9 +56,8 @@ public class DailyPlanService {
     }
 
     private Mono<UserProfile> fetchUserProfile(String userId) {
-        return webClientBuilder.build()
-                .get()
-                .uri("http://USER-SERVICE/api/users/" + userId)
+        return apiGatewayWebClient.get()
+            .uri("/api/users/{userId}", userId)
                 .retrieve()
                 .bodyToMono(UserProfile.class)
                 .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));

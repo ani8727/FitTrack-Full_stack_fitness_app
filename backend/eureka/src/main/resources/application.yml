@@ -3,9 +3,12 @@ spring:
     name: eureka
 
 server:
-  port: 8761
+  port: ${EUREKA_SERVER_PORT:8761}
 
 eureka:
+  instance:
+    hostname: ${EUREKA_HOST:eureka}
+    prefer-ip-address: ${EUREKA_PREFER_IP:false}
   client:
     register-with-eureka: false   # Do not register the Eureka server as a client
     fetch-registry: false         # This is the registry itself, no need to fetch others

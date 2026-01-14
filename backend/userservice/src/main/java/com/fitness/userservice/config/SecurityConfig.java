@@ -33,7 +33,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 public class SecurityConfig {
 
     private static List<String> parseAllowedOrigins() {
-        String raw = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173");
+        String raw = System.getenv().getOrDefault("CORS_ALLOWED_ORIGINS", "https://app.fittrack.com");
         return Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
@@ -80,7 +80,27 @@ public class SecurityConfig {
             }
         }
 
-        // 2) Keycloak realm roles: { "realm_access": { "roles": ["..."] } }
+        // 2) Auth0 custom namespace: { "https://fitness.app/roles": ["ADMIN", "USER"] }
+        Object auth0RolesClaim = jwt.getClaims().get("https://fitness.app/roles");
+        if (auth0RolesClaim instanceof Collection<?> auth0RoleList) {
+            for (Object r : auth0RoleList) {
+                if (r != null && !r.toString().isBlank()) {
+                    roles.add(r.toString());
+                }
+            }
+        }
+
+        // 3) Auth0 audience-specific: { "fitness_auth/roles": ["ADMIN", "USER"] }
+        Object audienceRolesClaim = jwt.getClaims().get("fitness_auth/roles");
+        if (audienceRolesClaim instanceof Collection<?> audienceRoleList) {
+            for (Object r : audienceRoleList) {
+                if (r != null && !r.toString().isBlank()) {
+                    roles.add(r.toString());
+                }
+            }
+        }
+
+        // 4) Keycloak realm roles: { "realm_access": { "roles": ["..."] } }
         Object realmAccessObj = jwt.getClaims().get("realm_access");
         if (realmAccessObj instanceof Map<?, ?> realmAccess) {
             Object realmRolesObj = realmAccess.get("roles");
@@ -93,7 +113,7 @@ public class SecurityConfig {
             }
         }
 
-        // 3) Keycloak client roles: { "resource_access": { "client": { "roles": ["..."] } } }
+        // 5) Keycloak client roles: { "resource_access": { "client": { "roles": ["..."] } } }
         Object resourceAccessObj = jwt.getClaims().get("resource_access");
         if (resourceAccessObj instanceof Map<?, ?> resourceAccess) {
             for (Object clientAccessObj : resourceAccess.values()) {

@@ -1,0 +1,55 @@
+@startuml Event_Flow_Diagram
+title Event-Driven Architecture - Message Flow
+
+participant "User Service" as User
+participant "Activity Service" as Activity
+participant "AI Service" as AI
+participant "Admin Service" as Admin
+participant "RabbitMQ Broker" as MQ
+participant "Analytics Engine" as Analytics
+
+== User Registration Flow ==
+User -> MQ: Publish "user.onboarded"\n{userId, email, profile}
+MQ -> AI: Route to ai.user.events queue
+AI -> AI: Initialize user AI profile\nSet default recommendations
+
+== Activity Tracking Flow ==
+Activity -> MQ: Publish "activity.recorded"\n{activityId, userId, type, metrics}
+MQ -> AI: Route to ai.activity.events queue
+AI -> AI: Process activity data\nUpdate insights & recommendations
+AI -> MQ: Publish "insights.generated"\n{userId, insights, recommendations}
+
+== Profile Update Flow ==
+User -> MQ: Publish "user.profile.updated"\n{userId, changes, goals}
+MQ -> AI: Route to ai.user.events queue
+AI -> AI: Recalculate recommendations\nbased on new goals
+MQ -> Analytics: Route to analytics.user.events queue
+Analytics -> Analytics: Update user segments\nand behavior patterns
+
+== Admin Actions Flow ==
+Admin -> MQ: Publish "admin.action.performed"\n{adminId, action, targetUserId}
+MQ -> Analytics: Route to analytics.admin.events queue
+Analytics -> Analytics: Log admin action\nUpdate audit trails
+
+== Background Processing ==
+note over AI
+    AI Service processes events asynchronously:
+    - Pattern recognition on activities
+    - Goal progress calculation
+    - Recommendation engine updates
+    - Achievement unlocking
+end note
+
+== Dead Letter Handling ==
+MQ -> MQ: Failed message processing
+note right: Messages that fail processing\nare routed to DLQ for manual review
+
+== Event Replay Capability ==
+note over MQ
+    All events are persisted to enable:
+    - Event replay for new AI models
+    - Audit trail reconstruction
+    - Data recovery scenarios
+end note
+
+@enduml

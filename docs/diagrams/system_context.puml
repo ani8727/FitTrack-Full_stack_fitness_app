@@ -1,0 +1,26 @@
+@startuml FitTrack_System_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title System Context Diagram - FitTrack Fitness Platform
+
+Person(user, "Fitness User", "Tracks workouts, views progress insights, manages profile")
+Person(admin, "System Admin", "Manages users, monitors system health, handles support")
+
+System(fittrack, "FitTrack Platform", "Comprehensive fitness tracking and analytics platform with microservices architecture")
+
+System_Ext(keycloak, "Keycloak Identity Provider", "Handles authentication, authorization, and user identity management")
+System_Ext(postgres, "PostgreSQL Database", "Stores user profiles, admin data, and relational information")
+System_Ext(mongo, "MongoDB Database", "Stores activity data, AI insights, and flexible document data")
+System_Ext(redis, "Redis Cache", "Provides session management, caching, and fast data access")
+System_Ext(rabbitmq, "RabbitMQ", "Handles asynchronous messaging and event streaming")
+
+Rel(user, fittrack, "Uses", "HTTPS/React SPA")
+Rel(admin, fittrack, "Manages", "HTTPS/Admin Dashboard")
+
+Rel(fittrack, keycloak, "Authenticates users", "OIDC/OAuth2")
+Rel(fittrack, postgres, "Stores structured data", "JDBC/SQL")
+Rel(fittrack, mongo, "Stores document data", "MongoDB Protocol")
+Rel(fittrack, redis, "Caches data", "Redis Protocol")
+Rel(fittrack, rabbitmq, "Publishes/Consumes events", "AMQP")
+
+@enduml

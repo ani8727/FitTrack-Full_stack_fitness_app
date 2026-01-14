@@ -14,7 +14,7 @@ const Recommendations = () => {
   const fetchRecommendations = async () => {
     try {
       setLoading(true)
-      const userId = localStorage.getItem('userId')
+      const userId = sessionStorage.getItem('userId')
       if (!userId) {
         setError('User not authenticated. Please log in again.')
         setLoading(false)

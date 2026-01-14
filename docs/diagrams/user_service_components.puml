@@ -1,0 +1,50 @@
+@startuml User_Service_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram - User Service Internal Architecture
+
+Container_Boundary(c1, "User Service") {
+    Component(controller, "UserController", "Spring MVC Controller", "REST API endpoints for user operations")
+    Component(accountController, "AccountController", "Spring MVC Controller", "Account management endpoints")
+    Component(contactController, "ContactController", "Spring MVC Controller", "Contact message endpoints")
+    
+    Component(userService, "UserService", "Business Service", "Core user management logic")
+    Component(keycloakService, "KeycloakService", "Integration Service", "Keycloak user account management")
+    Component(contactService, "ContactService", "Business Service", "Contact message handling")
+    Component(accountMgmtService, "AccountManagementService", "Business Service", "Account lifecycle operations")
+    
+    Component(userSecurity, "UserSecurity", "Security Component", "Authorization and ownership checks")
+    Component(eventPublisher, "EventPublisher", "Integration Component", "RabbitMQ event publishing")
+    
+    Component(userRepo, "UserRepository", "Spring Data JPA", "User entity data access")
+    Component(contactRepo, "ContactMessageRepository", "Spring Data JPA", "Contact message data access")
+}
+
+ContainerDb(postgres, "PostgreSQL", "User data storage")
+ContainerDb(cache, "Redis", "Profile caching")
+ContainerQueue(mq, "RabbitMQ", "Event messaging")
+Container_Ext(keycloak, "Keycloak", "Identity provider")
+
+' Controller to Service relationships
+Rel(controller, userService, "Uses")
+Rel(controller, userSecurity, "Authorizes with")
+Rel(accountController, accountMgmtService, "Uses")
+Rel(contactController, contactService, "Uses")
+
+' Service to Repository relationships
+Rel(userService, userRepo, "Persists via")
+Rel(contactService, contactRepo, "Persists via")
+
+' Service integrations
+Rel(userService, keycloakService, "Manages accounts via")
+Rel(userService, eventPublisher, "Publishes events via")
+Rel(accountMgmtService, userRepo, "Updates via")
+
+' External integrations
+Rel(userRepo, postgres, "Queries", "JDBC")
+Rel(contactRepo, postgres, "Queries", "JDBC")
+Rel(userService, cache, "Caches profiles", "Redis")
+Rel(keycloakService, keycloak, "API calls", "REST")
+Rel(eventPublisher, mq, "Publishes", "AMQP")
+
+@enduml

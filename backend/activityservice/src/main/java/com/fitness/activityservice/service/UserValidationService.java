@@ -11,12 +11,12 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Slf4j
 @RequiredArgsConstructor
 public class UserValidationService {
-    private final WebClient userServiceWebClient;
+    private final WebClient apiGatewayWebClient;
 
     public boolean validateUser(String userId) {
         log.info("Calling User Validation API for userId: {}", userId);
         try{
-            return userServiceWebClient.get()
+                return apiGatewayWebClient.get()
                     .uri("/api/users/{userId}/validate", userId)
                     .retrieve()
                     .bodyToMono(Boolean.class)

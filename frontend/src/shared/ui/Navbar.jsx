@@ -1,28 +1,33 @@
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Logo, MenuIcon, ChevronDownIcon } from './Icons'
-import { AuthContext } from 'react-oauth2-code-pkce'
+import { useAuth0 } from '@auth0/auth0-react'
 import { site } from '../../config/site'
 import { FiSun, FiMoon, FiX, FiHome, FiActivity, FiTrendingUp, FiUser, FiMenu, FiChevronLeft } from 'react-icons/fi'
 
 const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate()
   const [userMenu, setUserMenu] = useState(false)
-  const { tokenData } = useContext(AuthContext)
+  const { user } = useAuth0()
 
   const isAdmin = useMemo(() => {
-    const roles = tokenData?.realm_access?.roles || tokenData?.roles || []
-    return Array.isArray(roles) && roles.includes('ADMIN')
-  }, [tokenData])
+    // Auth0 can include roles in multiple places depending on configuration
+    const roles = user?.['https://fitness-app/roles'] || 
+                  user?.['fitness_auth/roles'] || 
+                  user?.roles || 
+                  user?.['https://fitness.app/roles'] || 
+                  []
+    return Array.isArray(roles) && (roles.includes('ADMIN') || roles.includes('admin'))
+  }, [user])
   
   const initials = useMemo(() => {
-    const n = tokenData?.name || tokenData?.preferred_username || ''
+    const n = user?.name || user?.nickname || ''
     if (!n) return 'U'
     const parts = n.split(' ').filter(Boolean)
     const first = parts[0]?.[0] || ''
     const last = parts[1]?.[0] || ''
     return (first + last || first).toUpperCase()
-  }, [tokenData])
+  }, [user])
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'color-mix(in srgb, var(--color-surface) 94%, transparent)' }}>
@@ -85,10 +90,10 @@ const Navbar = ({ onLogout, isAuthenticated, isDark, onToggleTheme, sidebarOpen,
                     <div className="absolute right-0 mt-2 w-56 card py-2 z-50 shadow-xl">
                       <div className="px-4 py-3 border-b border-[var(--color-border)]">
                         <p className="text-sm font-semibold text-[var(--color-text)]">
-                          {tokenData?.name || tokenData?.preferred_username || 'User'}
+                          {user?.name || user?.nickname || 'User'}
                         </p>
                         <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                          {tokenData?.email || ''}
+                          {user?.email || ''}
                         </p>
                       </div>
                       <button

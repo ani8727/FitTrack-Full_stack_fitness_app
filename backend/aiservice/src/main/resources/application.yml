@@ -1,12 +1,49 @@
 server:
-  port: ${AI_SERVICE_PORT}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+  port: ${AI_SERVICE_PORT:8084}
 
 spring:
   application:
     name: ai-service
+  cloud:
+    discovery:
+      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
+  config:
+    import: optional:${SPRING_CONFIG_IMPORT:configserver:http://localhost:8888}
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb+srv://fitness_db:fitness123@fitapp.awbcqor.mongodb.net/fitness_db?appName=FitApp}
+  rabbitmq:
+    addresses: ${RABBITMQ_URI:amqps://unvzgqsg:6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu@leopard.lmq.cloudamqp.com/unvzgqsg}
+    host: ${RABBITMQ_HOST:leopard.lmq.cloudamqp.com}
+    port: ${RABBITMQ_PORT:5671}
+    username: ${RABBITMQ_USERNAME:unvzgqsg}
+    password: ${RABBITMQ_PASSWORD:6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:unvzgqsg}
+    listener:
+      simple:
+        missing-queues-fatal: false
+        auto-startup: ${rabbitmq.listener.auto-startup:true}
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: ${EUREKA_HOST:localhost}
+    prefer-ip-address: ${EUREKA_PREFER_IP:false}
+
+rabbitmq:
+  exchange:
+    name: ${AI_RABBITMQ_EXCHANGE:${RABBITMQ_EXCHANGE:activity.exchange}}
+  queue:
+    name: ${AI_RABBITMQ_QUEUE:${RABBITMQ_QUEUE:activity.queue}}
+  routing:
+    key: ${AI_RABBITMQ_ROUTING_KEY:${RABBITMQ_ROUTING_KEY:activity.tracking}}
+  listener:
+    auto-startup: ${RABBITMQ_LISTENER_AUTO_START:true}
+
+gemini:
+  api:
+    url: ${GEMINI_API_URL:}
+    key: ${GEMINI_API_KEY:}

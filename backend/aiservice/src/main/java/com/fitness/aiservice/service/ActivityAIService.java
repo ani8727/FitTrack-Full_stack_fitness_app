@@ -21,7 +21,7 @@ import java.util.*;
 public class ActivityAIService {
 
     private final GeminiService geminiService;
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient apiGatewayWebClient;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public Mono<Recommendation> generateRecommendation(Activity activity) {
@@ -43,9 +43,8 @@ public class ActivityAIService {
     }
 
     private Mono<UserProfile> fetchUserProfile(String userId) {
-        return webClientBuilder.build()
-                .get()
-                .uri("http://USER-SERVICE/api/users/" + userId)
+        return apiGatewayWebClient.get()
+            .uri("/api/users/{userId}", userId)
                 .retrieve()
                 .bodyToMono(UserProfile.class)
                 .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));

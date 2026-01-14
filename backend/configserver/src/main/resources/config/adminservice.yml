@@ -1,0 +1,34 @@
+server:
+  port: ${ADMIN_SERVICE_PORT:8083}
+
+spring:
+  application:
+    name: adminservice
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/admin_db?sslmode=require&channel_binding=require}
+    username: ${POSTGRES_USER:neondb_owner}
+    password: ${POSTGRES_PASSWORD:npg_CLRh6Z5OFUGm}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:https://lemur-10.cloud-iam.com/auth/realms/fitness-auth}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:https://lemur-10.cloud-iam.com/auth/realms/fitness-auth/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+  instance:
+    hostname: ${EUREKA_HOST:localhost}
+    prefer-ip-address: ${EUREKA_PREFER_IP:false}

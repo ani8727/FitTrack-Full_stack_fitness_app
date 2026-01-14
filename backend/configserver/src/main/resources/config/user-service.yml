@@ -1,45 +1,51 @@
 server:
-  port: ${USER_SERVICE_PORT}
+  port: ${USER_SERVICE_PORT:8086}
 
 spring:
   application:
     name: user-service
   datasource:
-    url: ${POSTGRES_URL}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: "${POSTGRES_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/user_db?sslmode=require&channel_binding=require}"
+    username: "${POSTGRES_USER:neondb_owner}"
+    password: "${POSTGRES_PASSWORD:npg_CLRh6Z5OFUGm}"
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO}
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO:update}
     open-in-view: false
-    show-sql: ${JPA_SHOW_SQL}
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-security:
-  oauth2:
-    resourceserver:
-      jwt:
-        issuer-uri: ${KEYCLOAK_ISSUER_URI}
-        jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+  cloud:
+    discovery:
+      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/}
+          jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+          audience: ${AUTH0_AUDIENCE:fitness_auth}
 
 keycloak:
-  server-url: ${KEYCLOAK_SERVER_URL}
-  realm: ${KEYCLOAK_REALM}
+  server-url: ${KEYCLOAK_SERVER_URL:https://lemur-10.cloud-iam.com}
+  realm: ${KEYCLOAK_REALM:fitness-auth}
   admin:
-    username: ${KEYCLOAK_ADMIN}
-    password: ${KEYCLOAK_ADMIN_PASSWORD}
-    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
+    username: ${KEYCLOAK_ADMIN:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+    client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:admin-cli}
+  integration:
+    enabled: ${KEYCLOAK_INTEGRATION_ENABLED:false}
 
 eureka:
   client:
+    enabled: true
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE}
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
   instance:
-    hostname: ${EUREKA_HOST}
-    prefer-ip-address: ${EUREKA_PREFER_IP}
+    hostname: ${EUREKA_HOST:localhost}
+    prefer-ip-address: ${EUREKA_PREFER_IP:false}
 
 sentry:
   dsn: ${SENTRY_DSN}

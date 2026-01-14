@@ -1,0 +1,78 @@
+@startuml FitTrack_Container_Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container Diagram - FitTrack Platform Architecture
+
+Person(user, "User")
+Person(admin, "Admin")
+
+Container_Boundary(c1, "FitTrack Platform") {
+    Container(spa, "React SPA", "Vite/React/JavaScript", "Provides fitness tracking UI, dashboards, and user management interface")
+    Container(nginx, "Frontend Server", "Nginx", "Serves static assets, handles routing, and proxies API requests")
+    Container(gateway, "API Gateway", "Spring Cloud Gateway", "Single entry point for all API requests, handles auth and routing")
+    
+    Container_Boundary(infra, "Infrastructure Services") {
+        Container(eureka, "Service Discovery", "Netflix Eureka", "Service registration and discovery for microservices")
+        Container(config, "Config Server", "Spring Cloud Config", "Centralized configuration management")
+    }
+    
+    Container_Boundary(business, "Business Services") {
+        Container(userservice, "User Service", "Spring Boot/Java", "Manages user profiles, registration, and onboarding")
+        Container(adminservice, "Admin Service", "Spring Boot/Java", "Handles admin operations and user management")
+        Container(activityservice, "Activity Service", "Spring Boot/Java", "Tracks fitness activities and exercise data")
+        Container(aiservice, "AI Service", "Spring Boot/Java", "Provides ML insights and personalized recommendations")
+    }
+}
+
+ContainerDb(postgres, "PostgreSQL", "Relational Database", "Stores user profiles and admin data")
+ContainerDb(mongo, "MongoDB", "Document Database", "Stores activities and AI analytics")
+ContainerDb(redis, "Redis", "Cache Database", "Handles sessions and caching")
+ContainerQueue(mq, "RabbitMQ", "Message Broker", "Asynchronous event processing")
+Container_Ext(keycloak, "Keycloak", "Identity Provider", "Authentication and authorization")
+
+' User interactions
+Rel(user, spa, "Uses", "HTTPS")
+Rel(admin, spa, "Manages", "HTTPS")
+Rel(spa, nginx, "Served by", "HTTP")
+Rel(nginx, gateway, "Proxies to", "/api/*")
+
+' Gateway routing
+Rel(gateway, eureka, "Discovers services", "REST")
+Rel(gateway, config, "Gets configuration", "REST")
+Rel(gateway, userservice, "Routes", "/users/*")
+Rel(gateway, adminservice, "Routes", "/admin/*")
+Rel(gateway, activityservice, "Routes", "/activities/*")
+Rel(gateway, aiservice, "Routes", "/ai/*")
+
+' Service registration
+Rel(userservice, eureka, "Registers", "REST")
+Rel(adminservice, eureka, "Registers", "REST")
+Rel(activityservice, eureka, "Registers", "REST")
+Rel(aiservice, eureka, "Registers", "REST")
+
+' Configuration
+Rel(userservice, config, "Gets config", "REST")
+Rel(adminservice, config, "Gets config", "REST")
+Rel(activityservice, config, "Gets config", "REST")
+Rel(aiservice, config, "Gets config", "REST")
+
+' Data persistence
+Rel(userservice, postgres, "Stores user data", "JDBC")
+Rel(adminservice, postgres, "Stores admin data", "JDBC")
+Rel(activityservice, mongo, "Stores activities", "MongoDB")
+Rel(aiservice, mongo, "Stores AI data", "MongoDB")
+
+' Caching
+Rel(userservice, redis, "Caches profiles", "Redis")
+Rel(activityservice, redis, "Caches stats", "Redis")
+
+' Event messaging
+Rel(activityservice, mq, "Publishes events", "activity.recorded")
+Rel(aiservice, mq, "Consumes events", "activity.recorded")
+Rel(userservice, mq, "Publishes events", "user.onboarded")
+
+' Authentication
+Rel(gateway, keycloak, "Validates JWT", "OIDC")
+Rel(userservice, keycloak, "Manages accounts", "Admin API")
+
+@enduml

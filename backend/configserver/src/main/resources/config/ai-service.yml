@@ -1,41 +1,55 @@
 server:
-  port: ${AI_SERVICE_PORT}
+  port: ${AI_SERVICE_PORT:8084}
 
 spring:
 
   application:
     name: ai-service
+  cloud:
+    discovery:
+      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
+  config:
+    import: optional:${SPRING_CONFIG_IMPORT:configserver:http://localhost:8888}
 
   data:
     mongodb:
-      uri: ${MONGO_URI}
+      uri: ${MONGO_URI:mongodb+srv://ai_db_user:aiuser@fitapp.awbcqor.mongodb.net/ai_db?retryWrites=true&w=majority}
       
   rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+    addresses: ${RABBITMQ_URI:amqps://unvzgqsg:6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu@leopard.lmq.cloudamqp.com/unvzgqsg}
+    host: ${RABBITMQ_HOST:leopard.lmq.cloudamqp.com}
+    port: ${RABBITMQ_PORT:5671}
+    username: ${RABBITMQ_USERNAME:unvzgqsg}
+    password: ${RABBITMQ_PASSWORD:6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:unvzgqsg}
+    listener:
+      simple:
+        missing-queues-fatal: false
+        auto-startup: ${rabbitmq.listener.auto-startup:true}
 
 
 eureka:
   client:
+    enabled: ${EUREKA_CLIENT_ENABLED:true}
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE}
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
   instance:
-    hostname: ${EUREKA_HOST}
-    prefer-ip-address: ${EUREKA_PREFER_IP}
+    hostname: ${EUREKA_HOST:localhost}
+    prefer-ip-address: ${EUREKA_PREFER_IP:false}
 
 
 rabbitmq:
   exchange:
-    name: ${RABBITMQ_EXCHANGE}
+    name: ${AI_RABBITMQ_EXCHANGE:${RABBITMQ_EXCHANGE:activity.exchange}}
   queue:
-    name: ${RABBITMQ_QUEUE}
+    name: ${AI_RABBITMQ_QUEUE:${RABBITMQ_QUEUE:activity.queue}}
   routing:
-    key: ${RABBITMQ_ROUTING_KEY}
+    key: ${AI_RABBITMQ_ROUTING_KEY:${RABBITMQ_ROUTING_KEY:activity.tracking}}
+  listener:
+    auto-startup: ${RABBITMQ_LISTENER_AUTO_START:true}
 
 
 gemini:
   api:
-    url: ${GEMINI_API_URL}
-    key: ${GEMINI_API_KEY}
+    url: ${GEMINI_API_URL:}
+    key: ${GEMINI_API_KEY:}

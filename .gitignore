@@ -59,6 +59,10 @@ run-all.bat
 # Local documentation bundle (kept locally, not in git)
 Guide/
 
+# Local scripts
+scripts/
+
+
 # Logs
 logs/
 Logs/

@@ -2,6 +2,6 @@ spring:
   application:
     name: adminservice
   config:
-    import: configserver:http://configserver:8888
+    import: optional:${SPRING_CONFIG_IMPORT:configserver:http://localhost:8888}
 
 # If you later remove the Config Server, this file can be deleted safely.

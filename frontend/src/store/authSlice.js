@@ -3,9 +3,9 @@ import { createSlice } from '@reduxjs/toolkit'
 const authSlice = createSlice({
   name: 'auth',
   initialState : {
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null,
-    userId: localStorage.getItem('userId') | null
+    user: JSON.parse(sessionStorage.getItem('user')) || null,
+    token: sessionStorage.getItem('token') || null,
+    userId: sessionStorage.getItem('userId') || null
   },
   reducers: {
     setCredentials: (state, action) => {
@@ -13,18 +13,18 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.userId = action.payload.user.sub;
 
-      localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
-      localStorage.setItem('userId', action.payload.user.sub);
+      sessionStorage.setItem('token', action.payload.token);
+      sessionStorage.setItem('user', JSON.stringify(action.payload.user));
+      sessionStorage.setItem('userId', action.payload.user.sub);
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.userId = null;
       
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userId');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      sessionStorage.removeItem('userId');
     },
   },
 });
