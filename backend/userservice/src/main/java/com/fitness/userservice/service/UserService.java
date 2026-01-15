@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +26,6 @@ public class UserService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private KeycloakService keycloakService;
-    
-    @Value("${keycloak.integration.enabled}")
-    private boolean keycloakIntegrationEnabled;
 
     public UserResponse register(RegisterRequest request) {
         log.info("Registering user with email: {}", request.getEmail());
@@ -43,7 +36,6 @@ public class UserService {
             User existingUser = repository.findByEmail(request.getEmail());
             UserResponse userResponse = new UserResponse();
             userResponse.setId(existingUser.getId());
-            userResponse.setKeycloakId(existingUser.getKeycloakId());
             userResponse.setEmail(existingUser.getEmail());
             userResponse.setFirstName(existingUser.getFirstName());
             userResponse.setLastName(existingUser.getLastName());
@@ -52,24 +44,7 @@ public class UserService {
             return userResponse;
         }
 
-        // Create user in Keycloak if integration is enabled
-        if (keycloakIntegrationEnabled) {
-            try {
-                log.info("Creating user in Keycloak: {}", request.getEmail());
-                List<String> roles = java.util.List.of("USER");
-                
-                keycloakService.createKeycloakUser(
-                    request.getEmail(),
-                    request.getFirstName(),
-                    request.getLastName(),
-                    request.getPassword(),
-                    roles
-                );
-            } catch (Exception e) {
-                log.error("Error creating user in Keycloak: {}", e.getMessage());
-            }
-        } 
-
+        // User registration handled by Auth0
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash password
@@ -80,7 +55,6 @@ public class UserService {
 
         User savedUser = repository.save(user);
         UserResponse userResponse = new UserResponse();
-        userResponse.setKeycloakId(savedUser.getKeycloakId());
         userResponse.setId(savedUser.getId());
         userResponse.setEmail(savedUser.getEmail());
         userResponse.setFirstName(savedUser.getFirstName());

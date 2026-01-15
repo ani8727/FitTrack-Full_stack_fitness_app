@@ -1,39 +1,33 @@
-server:
-  port: ${ACTIVITY_SERVICE_PORT:8082}
+# Activity Service Configuration
+# Managed by Config Server
 
 spring:
-  application:
-    name: activity-service
   cloud:
     discovery:
       enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
-  config:
-    import: optional:${SPRING_CONFIG_IMPORT:configserver:http://localhost:8888}
+  
   data:
     mongodb:
-      uri: ${MONGO_URI:mongodb+srv://activity_db_user:activityuser@fitapp.awbcqor.mongodb.net/activity_db?retryWrites=true&w=majority}
+      uri: ${MONGO_URI:${MONGO_URI_ACTIVITY}}
+  
   rabbitmq:
-    addresses: ${RABBITMQ_URI:amqps://unvzgqsg:6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu@leopard.lmq.cloudamqp.com/unvzgqsg}
-    host: ${RABBITMQ_HOST:leopard.lmq.cloudamqp.com}
-    port: ${RABBITMQ_PORT:5671}
-    username: ${RABBITMQ_USERNAME:unvzgqsg}
-    password: ${RABBITMQ_PASSWORD:6xz8gRL6dG0F8CNxrhWTwoJWN9PqIrVu}
-    virtual-host: ${RABBITMQ_VIRTUAL_HOST:unvzgqsg}
+    addresses: ${RABBITMQ_URI}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST}
     listener:
       simple:
         missing-queues-fatal: false
-        auto-startup: ${rabbitmq.listener.auto-startup:true}
+        auto-startup: ${RABBITMQ_LISTENER_AUTO_START:true}
 
 eureka:
   client:
-    enabled: ${EUREKA_CLIENT_ENABLED:true}
+    enabled: true
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
     hostname: ${EUREKA_HOST:localhost}
     prefer-ip-address: ${EUREKA_PREFER_IP:false}
-
-
 
 rabbitmq:
   exchange:

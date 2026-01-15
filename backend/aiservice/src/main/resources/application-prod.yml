@@ -1,36 +1,8 @@
+# Production-specific overrides
+# Main configuration comes from config server
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info
-
-spring:
-  data:
-    mongodb:
-      uri: ${MONGO_URI}
-  rabbitmq:
-    addresses: ${RABBITMQ_URI:}
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
-    virtual-host: ${RABBITMQ_VIRTUAL_HOST}
-    listener:
-      simple:
-        missing-queues-fatal: false
-        auto-startup: ${rabbitmq.listener.auto-startup:true}
-
-rabbitmq:
-  exchange:
-    name: ${AI_RABBITMQ_EXCHANGE:${RABBITMQ_EXCHANGE:activity.exchange}}
-  queue:
-    name: ${AI_RABBITMQ_QUEUE:${RABBITMQ_QUEUE:activity.queue}}
-  routing:
-    key: ${AI_RABBITMQ_ROUTING_KEY:${RABBITMQ_ROUTING_KEY:activity.tracking}}
-  listener:
-    auto-startup: ${RABBITMQ_LISTENER_AUTO_START:true}
-
-gemini:
-  api:
-    url: ${GEMINI_API_URL}
-    key: ${GEMINI_API_KEY}

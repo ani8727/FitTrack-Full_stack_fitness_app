@@ -1,11 +1,11 @@
-# User Service Configuration
+# Admin Service Configuration
 # Managed by Config Server
 
 spring:
   datasource:
-    url: ${USER_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/user_db?sslmode=require&currentSchema=user_schema}
-    username: ${USER_DB_USER:neondb_owner}
-    password: ${USER_DB_PASSWORD}
+    url: ${ADMIN_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/admin_db?sslmode=require&currentSchema=admin_schema}
+    username: ${ADMIN_DB_USER:neondb_owner}
+    password: ${ADMIN_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -15,17 +15,13 @@ spring:
     show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        default_schema: user_schema
+        default_schema: admin_schema
         dialect: org.hibernate.dialect.PostgreSQLDialect
   
   flyway:
-    schemas: user_schema
+    schemas: admin_schema
     locations: classpath:db/migration
     baseline-on-migrate: true
-  
-  cloud:
-    discovery:
-      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
   
   security:
     oauth2:

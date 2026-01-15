@@ -1,34 +1,10 @@
 server:
-  port: ${ADMIN_SERVICE_PORT:8083}
+  port: ${ADMIN_SERVICE_PORT:8082}
 
 spring:
-  datasource:
-    url: jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/admin_db?sslmode=require&currentSchema=admin_schema
-    username: neondb_owner
-    password: npg_CLRh6Z5OFUGm
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        default_schema: admin_schema
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: false
-  flyway:
-    schemas: admin_schema
-    locations: classpath:db/migration
-    baseline-on-migrate: true
   application:
-    name: adminservice
+    name: admin-service
   config:
-    import: optional:${SPRING_CONFIG_IMPORT:configserver:http://localhost:8888}
-
-eureka:
-  client:
-    enabled: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    hostname: ${EUREKA_HOST}
-    prefer-ip-address: ${EUREKA_PREFER_IP:false}
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  autoconfigure:
+    exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration

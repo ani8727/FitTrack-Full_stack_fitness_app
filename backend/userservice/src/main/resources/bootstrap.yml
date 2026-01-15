@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: user-service
-  config:
-    import: optional:${SPRING_CONFIG_IMPORT:configserver:http://configserver:8888}
-
-# If you later remove the Config Server, this file can be deleted safely.

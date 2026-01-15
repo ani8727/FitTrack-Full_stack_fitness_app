@@ -1,3 +1,6 @@
+# Production-specific overrides
+# Main configuration comes from config server
+
 management:
   endpoints:
     web:
@@ -5,27 +8,6 @@ management:
         include: health,info
 
 spring:
-  datasource:
-    url: jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/admin_db?sslmode=require&currentSchema=admin_schema
-    username: neondb_owner
-    password: npg_CLRh6Z5OFUGm
-    driver-class-name: org.postgresql.Driver
   jpa:
-    hibernate:
-      ddl-auto: validate
     open-in-view: false
     show-sql: false
-    properties:
-      hibernate:
-        default_schema: admin_schema
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-  flyway:
-    schemas: admin_schema
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}

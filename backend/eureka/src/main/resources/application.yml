@@ -7,7 +7,7 @@ server:
 
 eureka:
   instance:
-    hostname: ${EUREKA_HOST:eureka}
+    hostname: ${EUREKA_HOST:localhost}
     prefer-ip-address: ${EUREKA_PREFER_IP:false}
   client:
     register-with-eureka: false   # Do not register the Eureka server as a client
