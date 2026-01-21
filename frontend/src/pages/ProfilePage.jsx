@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react'
-import { AuthContext } from 'react-oauth2-code-pkce'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
 import { getUserProfile, updateUserProfile } from '../services/api'
 import Toast from '../components/Toast'
 import { FiUser, FiMail, FiActivity, FiTarget, FiHeart, FiAlertCircle, FiSave } from 'react-icons/fi'
 
 const ProfilePage = () => {
-  const { tokenData } = useContext(AuthContext)
+  const { user } = useAuth0()
+  const tokenData = user
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState(null)
@@ -50,13 +51,44 @@ const ProfilePage = () => {
     setProfile(prev => ({ ...prev, [name]: value }))
   }
 
+  const normalizeGender = (g) => {
+    if (!g) return null
+    const map = {
+      Male: 'MALE',
+      Female: 'FEMALE',
+      Other: 'OTHER',
+      'Prefer not to say': 'PREFER_NOT_TO_SAY'
+    }
+    return map[g] || g
+  }
+
+  const toNullString = (v) => (v && v.trim().length ? v.trim() : null)
+  const toNullNumber = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!userId) return
     
     try {
       setSaving(true)
-      await updateUserProfile(userId, profile)
+      const payload = {
+        ...profile,
+        firstName: toNullString(profile.firstName),
+        lastName: toNullString(profile.lastName),
+        gender: normalizeGender(profile.gender),
+        age: toNullNumber(profile.age),
+        height: toNullNumber(profile.height),
+        weight: toNullNumber(profile.weight),
+        targetWeeklyWorkouts: toNullNumber(profile.targetWeeklyWorkouts),
+        fitnessGoals: toNullString(profile.fitnessGoals),
+        areasToImprove: toNullString(profile.areasToImprove),
+        weaknesses: toNullString(profile.weaknesses),
+        healthIssues: toNullString(profile.healthIssues),
+        dietaryPreferences: toNullString(profile.dietaryPreferences),
+        activityLevel: toNullString(profile.activityLevel)
+      }
+
+      await updateUserProfile(userId, payload)
       setToast({ message: 'Profile updated successfully!', type: 'success' })
     } catch (error) {
       console.error('Error updating profile:', error)
@@ -134,10 +166,10 @@ const ProfilePage = () => {
                 className="w-full bg-neutral-900 text-white border border-white/10 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-                <option value="Prefer not to say">Prefer not to say</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+                <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
               </select>
             </div>
           </div>

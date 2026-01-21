@@ -1,11 +1,12 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import { FiCheck, FiUser, FiTarget, FiActivity, FiTrendingUp } from 'react-icons/fi'
-import { AuthContext } from 'react-oauth2-code-pkce'
+import { useAuth0 } from '@auth0/auth0-react'
 import { updateUserProfile, completeOnboarding } from '../services/api'
 import Toast from '../components/Toast'
 
 const OnboardingWizard = ({ onComplete }) => {
-  const { tokenData } = useContext(AuthContext)
+  const { user } = useAuth0()
+  const tokenData = user
   const [currentStep, setCurrentStep] = useState(1)
   const [toast, setToast] = useState(null)
   const [formData, setFormData] = useState({

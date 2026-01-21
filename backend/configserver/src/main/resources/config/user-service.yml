@@ -1,27 +1,47 @@
 # User Service Configuration
 # Managed by Config Server
+# ===================================================
+# DATABASE: user_db
+# OWNER: neondb_owner
+# SCHEMA: public (default)
+# ===================================================
 
 spring:
   datasource:
-    url: ${USER_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/user_db?sslmode=require&currentSchema=user_schema}
+    url: ${USER_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech:5432/user_db?sslmode=require}
     username: ${USER_DB_USER:neondb_owner}
-    password: ${USER_DB_PASSWORD}
+    password: ${USER_DB_PASSWORD:npg_CLRh6Z5OFUGm}
     driver-class-name: org.postgresql.Driver
+    # Connection Pooling - HikariCP (default for Spring Boot)
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 5
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT:900000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+      auto-commit: true
+      leak-detection-threshold: 60000
+      # Neon-specific: connection test query
+      connection-test-query: "SELECT 1"
+      initialization-fail-timeout: 1
   
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate}
+      ddl-auto: ${JPA_DDL_AUTO:update}
     open-in-view: false
     show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        default_schema: user_schema
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        format_sql: true
   
   flyway:
-    schemas: user_schema
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+    enabled: false
   
   cloud:
     discovery:

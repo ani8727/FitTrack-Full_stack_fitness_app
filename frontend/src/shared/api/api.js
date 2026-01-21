@@ -1,6 +1,11 @@
 import axios from "axios";
+import { apiBaseUrl } from "../../authConfig";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082';
+const API_URL = apiBaseUrl;
+
+if (!API_URL) {
+    throw new Error('VITE_API_BASE_URL is not configured. Set it in your .env file.');
+}
 
 const api = axios.create({
     baseURL: API_URL

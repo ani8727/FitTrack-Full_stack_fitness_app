@@ -1,16 +1,16 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ActivitySummary from './ActivitySummary'
 import ActivityChart from './ActivityChart'
 import QuickAdd from './QuickAdd'
 import { useLocation } from 'react-router-dom'
-import { AuthContext } from 'react-oauth2-code-pkce'
+import { useAuth0 } from '@auth0/auth0-react'
 import HealthInsights from './HealthInsights'
 import Achievements from './Achievements'
 import { getActivities } from '../../shared/api/api'
 
 const Dashboard = () => {
   const location = useLocation()
-  const { tokenData } = useContext(AuthContext)
+  const { user } = useAuth0()
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -38,7 +38,7 @@ const Dashboard = () => {
     })()
   }, [])
 
-  const displayName = tokenData?.name || tokenData?.preferred_username || 'there'
+  const displayName = user?.name || user?.nickname || 'there'
 
   return (
     <div className="space-y-6">

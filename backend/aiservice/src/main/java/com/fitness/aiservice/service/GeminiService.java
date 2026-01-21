@@ -32,9 +32,12 @@ public class GeminiService {
         public Mono<String> getAnswer(String question) {
 
                 if (!StringUtils.hasText(geminiApiUrl) || !StringUtils.hasText(geminiApiKey)) {
-                        log.warn("Gemini API is not configured; falling back to default recommendations.");
+                        log.error("Gemini API is NOT configured - URL or Key missing");
                         return Mono.error(new IllegalStateException("Gemini API credentials missing"));
                 }
+                
+                log.debug("Gemini API configured - Sending request");
+
 
                 Map<String, Object> requestBody = Map.of(
                         "contents", new Object[]{
@@ -50,7 +53,8 @@ public class GeminiService {
                         .bodyValue((requestBody != null) ? requestBody : Map.of())
                         .retrieve()
                         .bodyToMono(String.class)
-                        .timeout(Duration.ofSeconds(30)) // increased timeout for AI response
-                        .doOnError(e -> System.err.println("Gemini API Error: " + e.getMessage()));
+                        .timeout(Duration.ofSeconds(30))
+                        .doOnError(e -> log.error("Gemini HTTP Error: {}", e.getMessage()))
+                        .doOnSuccess(response -> log.debug("Gemini API Response received, length: {}", response.length()));
         }
 }

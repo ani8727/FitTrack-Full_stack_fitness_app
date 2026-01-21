@@ -2,6 +2,35 @@
 
 A full-stack fitness platform built as Java microservices with a React (Vite) frontend. Uses Spring Boot services for users, admin, gateway, activity, AI, config, and service discovery via Eureka. Messaging is over RabbitMQ; PostgreSQL (Neon-ready) and MongoDB back persistence; Redis for caching/sessions. Keycloak provides auth (roles: ADMIN, USER). Everything can run locally via docker-compose with env-driven configuration.
 
+## 🚀 Quick Start (Local Development)
+
+**Get everything running in 3 steps:**
+
+```powershell
+# 1. Start infrastructure (30 sec)
+docker-compose up -d
+
+# 2. Start microservices (in backend dir)
+cd backend
+.\start-all-local.ps1
+
+# 3. Start frontend (in frontend dir)
+cd frontend
+npm run dev
+```
+
+**App ready at:**
+- 🌐 Frontend: http://localhost:5173
+- 📚 Swagger API: http://localhost:8000/swagger-ui.html  
+- 🔍 Eureka: http://localhost:8761
+- 🐰 RabbitMQ: http://localhost:15672 (user: fittrack_user)
+
+**Full guide:** [DOCKER_QUICKSTART.md](./DOCKER_QUICKSTART.md) | [DOCKER_LOCAL_DEV_GUIDE.md](./DOCKER_LOCAL_DEV_GUIDE.md)
+
+**Health check:** `./check-docker-health.ps1`
+
+---
+
 ## Deployment (Docker)
 
 - Local infra (databases, brokers, auth): `docker compose --env-file backend/.env -f backend/docker-compose.yml up -d`. Enable optional services with profiles (e.g. `--profile keycloak`, `--profile redis`).

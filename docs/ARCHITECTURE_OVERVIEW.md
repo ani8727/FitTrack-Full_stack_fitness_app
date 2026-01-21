@@ -1,8 +1,10 @@
 # FitTrack Architecture Overview
 
+**Last Updated:** January 2026
+
 ## Introduction
 
-This document provides a comprehensive overview of the FitTrack fitness platform architecture, including both high-level system design and detailed low-level implementations. The system follows microservices architecture principles with event-driven communication patterns.
+This document provides a comprehensive overview of the FitTrack fitness platform architecture, including both high-level system design and detailed low-level implementations. The system follows microservices architecture principles with event-driven communication patterns, built on Spring Boot 3.5.9, Spring Cloud 2025.0.0, and Java 21.
 
 ## Quick Links
 
@@ -40,11 +42,13 @@ This document provides a comprehensive overview of the FitTrack fitness platform
 
 ### Frontend Layer
 ```
-React SPA (Vite)
-├── Authentication (Keycloak integration)
+React 19 SPA (Vite 7)
+├── Authentication (Auth0 integration with JWT)
 ├── User Dashboard & Activity Tracking
 ├── Admin Management Interface
-└── Responsive UI (Mobile-first design)
+├── Responsive UI (TailwindCSS, Mobile-first design)
+├── State Management (Redux Toolkit)
+└── UI Components (Material-UI, React Icons)
 ```
 
 ### API Gateway Layer
@@ -68,20 +72,22 @@ Microservices Ecosystem
 ### Infrastructure Layer
 ```
 Supporting Services
-├── Config Server (Centralized Configuration)
-├── Eureka (Service Discovery)
-├── PostgreSQL (Structured Data)
-├── MongoDB (Document Data)
-├── Redis (Caching & Sessions)
-└── RabbitMQ (Event Messaging)
+├── Config Server (Centralized Configuration - Spring Cloud Config)
+├── Eureka (Service Discovery - Netflix Eureka)
+├── PostgreSQL (Neon Cloud - Separate databases per service)
+│   ├── user_db (user_schema) - User Service
+│   └── admin_db (admin_schema) - Admin Service
+├── MongoDB (Cloud - Activity & AI data)
+├── RabbitMQ (CloudAMQP - Event Messaging)
+└── Auth0 (Identity & Authentication Provider)
 ```
 
 ## Data Flow Patterns
 
 ### Synchronous Flows
-1. **User Registration**: React → Gateway → User Service → Keycloak → PostgreSQL
-2. **Activity Submission**: React → Gateway → Activity Service → MongoDB
-3. **Profile Updates**: React → Gateway → User Service → PostgreSQL → Cache
+1. **User Registration**: React → Auth0 → Gateway (JWT validation) → User Service → Neon PostgreSQL (user_db)
+2. **Activity Submission**: React → Gateway (JWT validation) → Activity Service → MongoDB
+3. **Profile Updates**: React → Gateway (JWT validation) → User Service → Neon PostgreSQL → RabbitMQ Event
 
 ### Asynchronous Flows
 1. **AI Processing**: Activity Service → RabbitMQ → AI Service → MongoDB
@@ -92,8 +98,14 @@ Supporting Services
 
 ### Authentication Flow
 ```
-User Login → Keycloak → JWT Token → Gateway Validation → Service Access
+User Login → Auth0 (OAuth2/OIDC) → JWT Token → Gateway Validation → Service Access
 ```
+
+**Auth0 Configuration:**
+- Issuer URI: Configured per tenant
+- JWK Set URI: Auto-discovered from Auth0
+- JWT Audience: API identifier configured in Auth0
+- Roles: Embedded in JWT claims (USER, ADMIN)
 
 ### Authorization Patterns
 - **Role-Based**: USER, ADMIN roles with different permissions
@@ -102,18 +114,33 @@ User Login → Keycloak → JWT Token → Gateway Validation → Service Access
 
 ### Data Security
 - **Encryption**: TLS/SSL for data in transit
-- **Secrets Management**: Environment variables and Kubernetes secrets
-- **Database Security**: Connection encryption and credential rotation
+- **Secrets Management**: Environment variables for sensitive data
+- **Database Security**: Neon PostgreSQL with SSL, isolated schemas per service
+- **Authentication**: OAuth2/OIDC via Auth0 with JWT tokens
+- **Authorization**: Role-based (USER, ADMIN) with method-level security
 
 ## Deployment Architecture
 
-### Development Environment
+### Local Development Environment
 ```
-Docker Compose
-├── Infrastructure Services (DB, Cache, Message Broker)
-├── Application Services (Microservices)
-└── Frontend (Nginx serving React build)
+Local Services (No Docker Compose currently)
+├── Infrastructure Services
+│   ├── Config Server: localhost:8888
+│   ├── Eureka Server: localhost:8761
+│   ├── Neon PostgreSQL: Cloud-hosted
+│   ├── MongoDB: Cloud-hosted (MongoDB Atlas)
+│   ├── RabbitMQ: Cloud-hosted (CloudAMQP)
+│   └── Auth0: Cloud-hosted
+├── Microservices
+│   ├── Gateway: localhost:8085
+│   ├── User Service: localhost:8081
+│   ├── Admin Service: localhost:8082
+│   ├── Activity Service: localhost:8083
+│   └── AI Service: localhost:8084
+└── Frontend: localhost:5173 (Vite dev server)
 ```
+
+**Note:** All infrastructure services (databases, message broker, auth) are cloud-hosted for both development and production environments.
 
 ### Production Environment
 ```

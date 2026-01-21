@@ -1,27 +1,47 @@
 # Admin Service Configuration
 # Managed by Config Server
+# ===================================================
+# DATABASE: admin_db
+# OWNER: neondb_owner
+# SCHEMA: public (default)
+# ===================================================
 
 spring:
   datasource:
-    url: ${ADMIN_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech/admin_db?sslmode=require&currentSchema=admin_schema}
+    url: ${ADMIN_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech:5432/admin_db?sslmode=require&channel_binding=require}
     username: ${ADMIN_DB_USER:neondb_owner}
     password: ${ADMIN_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    # Connection Pooling - HikariCP (default for Spring Boot)
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 5
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT:900000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+      auto-commit: true
+      leak-detection-threshold: 60000
+      # Neon-specific: connection test query
+      connection-test-query: "SELECT 1"
+      initialization-fail-timeout: 1
   
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate}
+      ddl-auto: ${JPA_DDL_AUTO:update}
     open-in-view: false
     show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        default_schema: admin_schema
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        format_sql: true
   
   flyway:
-    schemas: admin_schema
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+    enabled: false
   
   security:
     oauth2:

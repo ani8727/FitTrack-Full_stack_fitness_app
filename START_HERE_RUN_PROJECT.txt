@@ -1,0 +1,202 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║                   🚀 FITTRACK - RUN FULL PROJECT 🚀                      ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+⚠️  IMPORTANT: Docker Desktop MUST be running first!
+
+If Docker Desktop is NOT running:
+1. Search for "Docker Desktop" in Windows Start Menu
+2. Click to open it
+3. Wait 30 seconds for it to fully start
+4. Check system tray (right side of taskbar) for whale icon
+5. Then follow steps below
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ ALL REQUIREMENTS MET:
+
+  ✓ Docker: 29.1.3 (installed)
+  ✓ Java:   21.0.9 (correct version)
+  ✓ Maven:  3.9.12 (installed)
+  ✓ npm:    10.8.2 (installed)
+  ✓ Files:  All project files created
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 HOW TO RUN (3 PowerShell Windows):
+
+Open 3 separate PowerShell windows and run these commands in order:
+
+───────────────────────────────────────────────────────────────────────────
+TERMINAL 1 - INFRASTRUCTURE (PostgreSQL, MongoDB, RabbitMQ, Redis)
+───────────────────────────────────────────────────────────────────────────
+
+Copy and paste this entire block:
+
+```powershell
+cd c:\Users\anike\Desktop\Project\fitness_app
+echo "Starting Docker Infrastructure..."
+docker compose -f docker-compose.yml up -d
+echo "Waiting for health checks (30 seconds)..."
+Start-Sleep -Seconds 30
+echo "Checking container status:"
+docker compose ps
+```
+
+Expected output:
+  STATUS    Up (healthy) - postgres, mongodb, rabbitmq, redis
+
+Keep this window open! (Services run in background)
+
+───────────────────────────────────────────────────────────────────────────
+TERMINAL 2 - BACKEND SERVICES (7 Microservices)
+───────────────────────────────────────────────────────────────────────────
+
+Copy and paste this entire block:
+
+```powershell
+cd c:\Users\anike\Desktop\Project\fitness_app\backend
+echo "Starting all 7 microservices..."
+echo "This will launch: Config Server, Eureka, User Service, Admin Service, Activity Service, AI Service, Gateway"
+.\start-all-local.ps1
+```
+
+Expected output (after 2-3 minutes):
+  ✅ All services started
+  ✅ Gateway running on 8000
+  ✅ Eureka running on 8761
+  ✅ Can check: http://localhost:8761
+
+Keep this window open! (Services run in background)
+
+───────────────────────────────────────────────────────────────────────────
+TERMINAL 3 - FRONTEND (React Dev Server)
+───────────────────────────────────────────────────────────────────────────
+
+Copy and paste this entire block:
+
+```powershell
+cd c:\Users\anike\Desktop\Project\fitness_app\frontend
+echo "Starting React frontend..."
+npm run dev
+```
+
+Expected output:
+  VITE ready in XXX ms
+  ➜ Local: http://localhost:5173/
+
+═══════════════════════════════════════════════════════════════════════════
+
+🌐 OPEN IN BROWSER (After all 3 terminals are running):
+
+1. Frontend:
+   http://localhost:5173
+   → See landing page with Sign In/Sign Up buttons
+
+2. API Documentation:
+   http://localhost:8000/swagger-ui.html
+   → See all endpoints, test APIs
+
+3. Eureka Service Discovery:
+   http://localhost:8761
+   → See all 7 services registered and healthy
+
+4. RabbitMQ Admin:
+   http://localhost:15672
+   User: fittrack_user
+   Pass: fittrack_rabbitmq_password_123
+   → Monitor message queues
+
+═══════════════════════════════════════════════════════════════════════════
+
+✨ FEATURES TO TEST:
+
+1. Sign In:
+   - Click "Sign In" on landing page
+   - Authenticate with Auth0
+   - Access dashboard
+
+2. Admin Endpoints (via Swagger):
+   - POST /admin/users/{id}/ban
+   - POST /admin/users/{id}/suspend
+   - POST /admin/users/{id}/deactivate
+   - POST /admin/users/{id}/reactivate
+   - GET /admin/stats/users
+   - GET /admin/stats/activities
+
+3. View Logs:
+   - Backend: check backend/logs/ folder
+   - Docker: docker compose logs -f
+   - Frontend: Browser Console (F12)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔧 TROUBLESHOOTING:
+
+Docker won't start?
+  → Make sure Docker Desktop application is running
+  → Check system tray for whale icon
+
+"Port already in use"?
+  → Close other applications using ports 5432, 27017, 5672, etc.
+  → Or kill the process: taskkill /PID <PID> /F
+
+Backend won't start?
+  → Check Docker is running: docker ps
+  → Wait for PostgreSQL/MongoDB to be healthy
+  → Check backend logs for errors
+
+Frontend can't connect?
+  → Check Gateway is running: curl http://localhost:8000/actuator/health
+  → Check browser console (F12) for Auth0 errors
+  → Check Auth0 credentials in .env
+
+═══════════════════════════════════════════════════════════════════════════
+
+⏸️  TO STOP EVERYTHING:
+
+In Terminal 1, press Ctrl+C, then:
+```powershell
+docker compose down
+```
+
+In Terminal 2, press Ctrl+C
+
+In Terminal 3, press Ctrl+C
+
+═══════════════════════════════════════════════════════════════════════════
+
+📚 FULL DOCUMENTATION:
+
+  • RUN_PROJECT.md ................. This file (launch instructions)
+  • READY_TO_RUN.md ............... Detailed step-by-step guide
+  • DOCKER_QUICKSTART.md .......... 2-minute quick start
+  • DOCKER_LOCAL_DEV_GUIDE.md ..... Full comprehensive guide
+  • FILE_MANIFEST.md .............. All created files listed
+  • IMPLEMENTATION_COMPLETE.md .... Session summary
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ STATUS CHECKLIST:
+
+  [  ] Docker Desktop started
+  [  ] Terminal 1: docker compose up -d
+  [  ] Terminal 2: ./start-all-local.ps1
+  [  ] Terminal 3: npm run dev
+  [  ] Browser: http://localhost:5173 (loads)
+  [  ] Eureka: http://localhost:8761 (shows 7 services)
+  [  ] Swagger: http://localhost:8000/swagger-ui.html (shows docs)
+
+═══════════════════════════════════════════════════════════════════════════
+
+Ready? 
+
+1. ✓ Start Docker Desktop
+2. ✓ Open 3 PowerShell windows
+3. ✓ Copy-paste the commands from each TERMINAL section above
+4. ✓ Open browser URLs when all 3 are running
+5. ✓ Enjoy your FitTrack app! 🎉
+
+═══════════════════════════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import emailjs from '@emailjs/browser'
 import { FiX } from 'react-icons/fi'
 import { sendContactMessage } from '../../services/api'
 
@@ -17,7 +18,8 @@ const ContactModal = ({ isOpen, onClose }) => {
   const canSubmit = useMemo(() => {
     const nameOk = form.name.trim().length >= 2
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
-    const messageOk = form.message.trim().length >= 10
+    const messageLen = form.message.trim().length
+    const messageOk = messageLen >= 10 // backend requires @Size min 10
     return nameOk && emailOk && messageOk && !submitting
   }, [form, submitting])
 
@@ -54,6 +56,20 @@ const ContactModal = ({ isOpen, onClose }) => {
     try {
       setSubmitting(true)
       setStatus(null)
+      // Send emails via EmailJS (admin + user confirmation)
+      const templateParams = {
+        user_name: form.name.trim(),
+        user_email: form.email.trim(),
+        reason: form.reason,
+        message: form.message.trim(),
+        admin_email: 'aniketgupta.8727@gmail.com',
+        timestamp: new Date().toLocaleString()
+      }
+      await Promise.all([
+        emailjs.send('fitness_app', 'template_hpm27gd', templateParams, 'NXoVXoETzx_Thvzn1'),
+        emailjs.send('fitness_app', 'template_had0n98', templateParams, 'NXoVXoETzx_Thvzn1')
+      ])
+
       await sendContactMessage({
         name: form.name.trim(),
         email: form.email.trim(),
@@ -144,8 +160,11 @@ const ContactModal = ({ isOpen, onClose }) => {
                 value={form.message}
                 onChange={update('message')}
                 placeholder="Write your message..."
+                minLength={10}
               />
-              <div className="mt-1 text-xs text-[var(--color-text-muted)]">Minimum 10 characters.</div>
+              <div className="mt-1 text-xs text-[var(--color-text-muted)]">
+                Minimum 10 characters (required). {Math.max(0, 10 - form.message.trim().length)} more to go.
+              </div>
             </div>
 
             {status && (
@@ -161,11 +180,18 @@ const ContactModal = ({ isOpen, onClose }) => {
             )}
 
             <div className="flex items-center justify-end gap-2 pt-2">
-              <button type="button" onClick={resetAndClose} className="btn-outline">
+              <button type="button" onClick={resetAndClose} className="btn-outline" disabled={submitting}>
                 Cancel
               </button>
               <button type="submit" className="btn-primary" disabled={!canSubmit}>
-                {submitting ? 'Sending...' : 'Send'}
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Sending...
+                  </span>
+                ) : (
+                  'Send'
+                )}
               </button>
             </div>
           </form>

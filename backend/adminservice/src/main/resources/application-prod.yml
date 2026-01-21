@@ -5,9 +5,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
 
 spring:
   jpa:
     open-in-view: false
     show-sql: false
+
+# Logging - production level
+logging:
+  level:
+    root: INFO
+    com.fitness: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    # Enable database logging for monitoring
+    com.zaxxer.hikari: INFO

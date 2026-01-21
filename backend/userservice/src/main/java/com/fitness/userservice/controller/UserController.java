@@ -48,8 +48,8 @@ public class UserController {
 
     /**
      * Validate user existence by KEYCLOAK ID
+     * Note: This endpoint is publicly accessible for service-to-service communication
      */
-    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.name or @userSecurity.isOwner(#userId, authentication.name)")
     @GetMapping("/{userId}/validate")
     public ResponseEntity<Boolean> validateUser(@PathVariable String userId){
         try {

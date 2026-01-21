@@ -1,6 +1,11 @@
 import axios from "axios";
+import { apiBaseUrl } from "../authConfig";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082';
+const API_URL = apiBaseUrl;
+
+if (!API_URL) {
+    throw new Error('VITE_API_BASE_URL is not configured. Set it in your .env file.');
+}
 
 const api = axios.create({
     baseURL: API_URL
@@ -71,7 +76,7 @@ export const getUserDailyPlans = (userId, startDate, endDate) => {
 
 // Account Management APIs
 export const deactivateAccount = (userId, data) => api.post(`/users/${userId}/deactivate`, data);
-export const deleteAccount = (userId, data) => api.delete(`/users/${userId}/delete`, { data });
+export const deleteAccount = (userId, data) => api.post(`/users/${userId}/delete`, data);
 export const reactivateAccount = (userId) => api.post(`/users/${userId}/reactivate`);
 
 // Onboarding APIs

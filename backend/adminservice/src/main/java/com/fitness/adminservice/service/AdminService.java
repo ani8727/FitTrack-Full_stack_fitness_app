@@ -1,23 +1,25 @@
 package com.fitness.adminservice.service;
 
-import com.fitness.adminservice.dto.DashboardStatsDTO;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fitness.adminservice.dto.AdminAuditLogDTO;
+import com.fitness.adminservice.dto.DashboardStatsDTO;
 import com.fitness.adminservice.dto.UserDTO;
 import com.fitness.adminservice.entity.AdminAuditLog;
 import com.fitness.adminservice.entity.User;
 import com.fitness.adminservice.entity.UserRole;
 import com.fitness.adminservice.repository.AdminAuditLogRepository;
 import com.fitness.adminservice.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -143,4 +145,119 @@ public class AdminService {
             user.getUpdateAt()
         );
     }
+
+    /**
+     * Ban a user
+     */
+    @Transactional
+    @SuppressWarnings("null")
+    public UserDTO banUser(String id, String reason, String adminKeycloakId) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setAccountStatus("BANNED");
+        user.setDeactivatedAt(java.time.LocalDateTime.now());
+        user.setDeactivationReason(reason);
+        User bannedUser = userRepository.save(user);
+        
+        writeAuditLog(adminKeycloakId, "BAN_USER", id, Map.of("reason", reason));
+        log.info("Banned user {}: {}", id, reason);
+        return convertToDTO(bannedUser);
+    }
+
+    /**
+     * Suspend a user
+     */
+    @Transactional
+    @SuppressWarnings("null")
+    public UserDTO suspendUser(String id, String reason, String adminKeycloakId) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setAccountStatus("SUSPENDED");
+        user.setDeactivatedAt(java.time.LocalDateTime.now());
+        user.setDeactivationReason(reason);
+        User suspendedUser = userRepository.save(user);
+        
+        writeAuditLog(adminKeycloakId, "SUSPEND_USER", id, Map.of("reason", reason));
+        log.info("Suspended user {}: {}", id, reason);
+        return convertToDTO(suspendedUser);
+    }
+
+    /**
+     * Deactivate a user
+     */
+    @Transactional
+    @SuppressWarnings("null")
+    public UserDTO deactivateUser(String id, String reason, String adminKeycloakId) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setAccountStatus("DEACTIVATED");
+        user.setDeactivatedAt(java.time.LocalDateTime.now());
+        user.setDeactivationReason(reason);
+        User deactivatedUser = userRepository.save(user);
+        
+        writeAuditLog(adminKeycloakId, "DEACTIVATE_USER", id, Map.of("reason", reason));
+        log.info("Deactivated user {}: {}", id, reason);
+        return convertToDTO(deactivatedUser);
+    }
+
+    /**
+     * Reactivate a user
+     */
+    @Transactional
+    @SuppressWarnings("null")
+    public UserDTO reactivateUser(String id, String adminKeycloakId) {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setAccountStatus("ACTIVE");
+        user.setDeactivatedAt(null);
+        user.setDeactivationReason(null);
+        User reactivatedUser = userRepository.save(user);
+        
+        writeAuditLog(adminKeycloakId, "REACTIVATE_USER", id, Map.of());
+        log.info("Reactivated user {}", id);
+        return convertToDTO(reactivatedUser);
+    }
+
+    /**
+     * Get user statistics
+     */
+    public Map<String, Object> getUserStatistics() {
+        long totalUsers = userRepository.count();
+        long adminUsers = userRepository.countByRole(UserRole.ADMIN);
+        long regularUsers = userRepository.countByRole(UserRole.USER);
+        
+        return Map.of(
+            "totalUsers", totalUsers,
+            "adminUsers", adminUsers,
+            "regularUsers", regularUsers,
+            "activePercentage", totalUsers > 0 ? ((regularUsers + adminUsers) * 100 / totalUsers) : 0
+        );
+    }
+
+    /**
+     * Get activity statistics (placeholder - calls activity service or local cache)
+     */
+    public Map<String, Object> getActivityStatistics() {
+        // Placeholder for activity stats
+        // In production, this would call the activity service or fetch from a cache
+        return Map.of(
+            "totalActivities", 0,
+            "activitiesThisWeek", 0,
+            "averagePerUser", 0.0,
+            "lastUpdated", java.time.Instant.now().toString()
+        );
+    }
 }
+

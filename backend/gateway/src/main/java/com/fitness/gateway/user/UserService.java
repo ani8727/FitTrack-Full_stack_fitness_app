@@ -1,23 +1,38 @@
 package com.fitness.gateway.user;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class UserService {
     private final WebClient userServiceWebClient;
 
+    // Constructor for dependency injection with configurable base URL
+    @Autowired
+    public UserService(@Value("${services.user-service.url:http://localhost:8081}") String userServiceUrl) {
+        this.userServiceWebClient = WebClient.builder()
+            .baseUrl(userServiceUrl)
+            .build();
+    }
+
+    // Constructor for testing with custom WebClient
+    public UserService(WebClient userServiceWebClient) {
+        this.userServiceWebClient = userServiceWebClient;
+    }
+
     public Mono<Boolean> validateUser(String userId) {
-        log.info("Calling User Validation API for userId: {}", userId);
         return userServiceWebClient.get()
                 .uri("/api/users/{userId}/validate", userId)
+                .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
                 .retrieve()
                 .bodyToMono(Boolean.class)
                 .onErrorResume(WebClientResponseException.class, e -> {
@@ -30,9 +45,9 @@ public class UserService {
     }
 
     public Mono<UserResponse> registerUser(RegisterRequest request) {
-        log.info("Calling User Registration API for email: {}", request.getEmail());
         return userServiceWebClient.post()
                 .uri("/api/users/register")
+                .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(UserResponse.class)

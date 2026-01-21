@@ -17,7 +17,7 @@ public class UserSecurity {
             return false;
         }
         if (principalId.equals(userId)) {
-           return false;
+           return true;
         }
         return userRepository.findById(userId)
                 .map(user -> principalId.equals(user.getKeycloakId()))

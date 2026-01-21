@@ -5,6 +5,6 @@ export const site = {
   links: {
     terms: '/terms',
     privacy: '/privacy',
-    linkedin: 'http://www.linkedin.com/in/aniket8727',
+    linkedin: import.meta.env.VITE_SITE_LINKEDIN || '#',
   },
 }

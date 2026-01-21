@@ -56,7 +56,6 @@ const RegisterPage = ({ onSuccess }) => {
         role: 'USER'
       })
 
-      console.log('Registration response:', response)
       setToast({ message: 'Registration successful! Please login with your credentials.', type: 'success' })
       setTimeout(() => {
         if (onSuccess) {

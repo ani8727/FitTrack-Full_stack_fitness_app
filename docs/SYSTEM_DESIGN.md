@@ -1,5 +1,8 @@
 # FitTrack - System Design Documentation
 
+**Last Updated:** January 2026  
+**Spring Boot:** 3.5.9 | **Spring Cloud:** 2025.0.0 | **Java:** 21 | **React:** 19 | **Vite:** 7
+
 ## Table of Contents
 - [C4 Model Architecture](#c4-model-architecture)
   - [Level 1: System Context](#level-1-system-context)
@@ -25,19 +28,17 @@ C4Context
     
     System(fittrack, "FitTrack Platform", "Full-stack fitness tracking and analysis system")
     
-    System_Ext(keycloak, "Keycloak", "Identity & Authentication Provider")
-    System_Ext(db_postgres, "PostgreSQL", "User & Admin Data")
-    System_Ext(db_mongo, "MongoDB", "Activity & AI Data")
-    System_Ext(redis, "Redis", "Cache & Sessions")
-    System_Ext(rabbitmq, "RabbitMQ", "Event Message Broker")
+    System_Ext(auth0, "Auth0", "Identity & Authentication Provider (OAuth2/OIDC)")
+    System_Ext(db_neon, "Neon PostgreSQL", "User & Admin Data (Separate databases)")
+    System_Ext(db_mongo, "MongoDB Atlas", "Activity & AI Data")
+    System_Ext(rabbitmq, "CloudAMQP", "Event Message Broker")
     
     Rel(user, fittrack, "Uses", "HTTPS/React SPA")
     Rel(admin, fittrack, "Manages", "HTTPS/Admin Portal")
-    Rel(fittrack, keycloak, "Authenticates", "OIDC/OAuth2")
-    Rel(fittrack, db_postgres, "Stores", "JDBC")
+    Rel(fittrack, auth0, "Authenticates", "OIDC/OAuth2 + JWT")
+    Rel(fittrack, db_neon, "Stores", "JDBC over SSL")
     Rel(fittrack, db_mongo, "Stores", "MongoDB Driver")
-    Rel(fittrack, redis, "Caches", "Redis Protocol")
-    Rel(fittrack, rabbitmq, "Publishes/Consumes", "AMQP")
+    Rel(fittrack, rabbitmq, "Publishes/Consumes", "AMQP over SSL")
 ```
 
 ### Level 2: Container Diagram
@@ -50,9 +51,9 @@ C4Container
     Person(admin, "Admin")
     
     Container_Boundary(c1, "FitTrack Platform") {
-        Container(spa, "React SPA", "Vite/React", "User interface for fitness tracking")
-        Container(nginx, "Frontend Server", "Nginx", "Serves static assets and proxies API")
-        Container(gateway, "API Gateway", "Spring Cloud Gateway", "Entry point, routing, auth")
+        Container(spa, "React SPA", "React 19/Vite 7", "User interface for fitness tracking")
+        Container(nginx, "Frontend Server", "Vite Dev/Nginx", "Serves static assets and proxies API")
+        Container(gateway, "API Gateway", "Spring Cloud Gateway 4.x", "Entry point, routing, JWT auth")
         
         Container(eureka, "Service Registry", "Eureka Server", "Service discovery")
         Container(config, "Config Server", "Spring Cloud Config", "Centralized configuration")
@@ -63,11 +64,10 @@ C4Container
         Container(aiservice, "AI Service", "Spring Boot", "ML insights, recommendations")
     }
     
-    ContainerDb(postgres, "PostgreSQL", "Users, Admin Data")
-    ContainerDb(mongo, "MongoDB", "Activities, AI Models")
-    ContainerDb(redis, "Redis", "Cache, Sessions")
-    ContainerQueue(mq, "RabbitMQ", "Event Messages")
-    Container_Ext(keycloak, "Keycloak", "Identity Provider")
+    ContainerDb(neon, "Neon PostgreSQL", "user_db, admin_db (separate schemas)")
+    ContainerDb(mongo, "MongoDB Atlas", "Activities, AI Models")
+    ContainerQueue(mq, "CloudAMQP", "Event Messages")
+    Container_Ext(auth0, "Auth0", "Identity Provider")
     
     Rel(user, spa, "Uses")
     Rel(admin, spa, "Manages")
@@ -91,8 +91,8 @@ C4Container
     Rel(activityservice, config, "Gets config")
     Rel(aiservice, config, "Gets config")
     
-    Rel(userservice, postgres, "Stores users")
-    Rel(adminservice, postgres, "Stores admin data")
+    Rel(userservice, neon, "Stores users (user_db)")
+    Rel(adminservice, neon, "Stores admin data (admin_db)")
     Rel(activityservice, mongo, "Stores activities")
     Rel(aiservice, mongo, "Stores AI data")
     
@@ -103,8 +103,8 @@ C4Container
     Rel(aiservice, mq, "Consumes activity.recorded")
     Rel(userservice, mq, "Publishes user.onboarded")
     
-    Rel(gateway, keycloak, "Validates JWT")
-    Rel(userservice, keycloak, "Manages accounts")
+    Rel(gateway, auth0, "Validates JWT")
+    Rel(userservice, auth0, "Syncs user metadata")
 ```
 
 ### Level 3: Component Diagrams

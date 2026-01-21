@@ -6,5 +6,20 @@ spring:
     name: user-service
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use AUTH0_JWK_SET_URI if provided, else default to Auth0 tenant JWKS
+          jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
   autoconfigure:
     exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+
+# EmailJS configuration (reads from environment, with sane defaults)
+emailjs:
+  enabled: ${EMAILJS_BACKEND_ENABLED:false}
+  service-id: ${EMAILJS_SERVICE_ID:fitness_app}
+  template-admin: ${EMAILJS_TEMPLATE_ADMIN:template_hpm27gd}
+  template-user: ${EMAILJS_TEMPLATE_USER:template_had0n98}
+  public-key: ${EMAILJS_PUBLIC_KEY:NXoVXoETzx_Thvzn1}
+  admin-email: ${EMAILJS_ADMIN_EMAIL:aniketgupta.8727@gmail.com}

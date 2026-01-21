@@ -6,5 +6,50 @@ spring:
     name: api-gateway
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use AUTH0_JWK_SET_URI if provided, else default to Auth0 tenant JWKS
+          jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+    gateway:
+      server:
+        webflux:
+          routes:
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/users/**
+        - id: activity-service
+          uri: ${ACTIVITY_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/activities/**
+        - id: ai-service
+          uri: ${AI_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/ai/**
+        - id: ai-recommendations
+          uri: ${AI_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/recommendations/**
+        - id: ai-daily-plans
+          uri: ${AI_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/daily-plans/**
   autoconfigure:
     exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+
+services:
+  user-service:
+    url: ${USER_SERVICE_URL:http://localhost:8081}
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

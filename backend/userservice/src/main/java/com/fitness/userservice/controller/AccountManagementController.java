@@ -21,7 +21,7 @@ public class AccountManagementController {
         return ResponseEntity.ok("Account deactivated successfully");
     }
 
-    @DeleteMapping("/{userId}/delete")
+    @PostMapping("/{userId}/delete")
     public ResponseEntity<String> deleteAccount(
             @PathVariable String userId,
             @RequestBody AccountActionRequest request) {

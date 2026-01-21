@@ -17,16 +17,13 @@ const ActivityDetail = () => {
         
         // Fetch activity details
         const activityResponse = await getActivity(id);
-        console.log('Activity response:', activityResponse.data);
         setActivity(activityResponse.data);
 
         // Fetch AI recommendation
         try {
           const recResponse = await getActivityRecommendation(id);
-          console.log('Recommendation response:', recResponse.data);
           setRecommendation(recResponse.data);
         } catch (recError) {
-          console.log('No recommendation found yet, will use fallback', recError);
           // Recommendation might not exist yet - that's okay
         }
       } catch (error) {
@@ -96,12 +93,12 @@ const ActivityDetail = () => {
             {recommendation.recommendation && (
               <div className="mb-4">
                 <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">Analysis</div>
-                {recommendation.recommendation === "Unable to generate detailed analysis" ? (
+                {!recommendation.isGenerated ? (
                   <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-4">
                     <p className="text-yellow-200 mb-2">⚠️ AI Analysis Currently Unavailable</p>
                     <p className="text-sm text-gray-300">
-                      The AI service requires a valid Gemini API key. 
-                      <a href="#" className="text-blue-400 hover:underline ml-1">View setup guide</a>
+                      The AI service is not available. Please try again later or view setup guide
+                      <a href="#" className="text-blue-400 hover:underline ml-1">here</a>
                     </p>
                   </div>
                 ) : (

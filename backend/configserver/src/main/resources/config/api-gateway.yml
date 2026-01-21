@@ -17,26 +17,22 @@ spring:
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/users/**
-              filters:
-                - StripPrefix=1
             - id: contact
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/contact,/api/contact/**
-              filters:
-                - StripPrefix=1
             - id: activity-service
               uri: lb://ACTIVITY-SERVICE
               predicates:
                 - Path=/api/activities/**
-              filters:
-                - StripPrefix=1
-            - id: ai-service
+            - id: ai-service-recommendations
               uri: lb://AI-SERVICE
               predicates:
                 - Path=/api/recommendations/**
-              filters:
-                - StripPrefix=1
+            - id: ai-service-daily-plans
+              uri: lb://AI-SERVICE
+              predicates:
+                - Path=/api/daily-plans/**
 
 eureka:
   client:

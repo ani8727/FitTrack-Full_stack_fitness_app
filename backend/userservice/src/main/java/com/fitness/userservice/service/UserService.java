@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fitness.userservice.dto.RegisterRequest;
 import com.fitness.userservice.dto.UpdateProfileRequest;
@@ -27,42 +29,56 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     public UserResponse register(RegisterRequest request) {
-        log.info("Registering user with email: {}", request.getEmail());
+        // Prepare safe defaults for token-based auto registration
+        String email = request.getEmail();
+        String keycloakId = request.getKeycloakId();
+        if (email == null || email.isBlank()) {
+            email = (keycloakId != null ? keycloakId : "user") + "@auth.local";
+        }
+        String password = request.getPassword();
+        if (password == null || password.isBlank()) {
+            password = "TempPass!234";
+        }
+        String username = request.getUsername();
+        if (username == null || username.isBlank()) {
+            username = email.split("@")[0];
+        }
+
+        log.info("Registering user with email: {}", email);
         
         // Check if user already exists in database
-        if (repository.existsByEmail(request.getEmail())) {
-            log.info("User already exists with email: {}", request.getEmail());
-            User existingUser = repository.findByEmail(request.getEmail());
-            UserResponse userResponse = new UserResponse();
-            userResponse.setId(existingUser.getId());
-            userResponse.setEmail(existingUser.getEmail());
-            userResponse.setFirstName(existingUser.getFirstName());
-            userResponse.setLastName(existingUser.getLastName());
-            userResponse.setCreateAt(existingUser.getCreateAt());
-            userResponse.setUpdateAt(existingUser.getUpdateAt());
-            return userResponse;
+        if (repository.existsByEmail(email)) {
+            log.info("✅ User already exists with email: {}. Returning existing user.", email);
+            User existingUser = repository.findByEmail(email);
+            return convertToResponse(existingUser);
         }
 
         // User registration handled by Auth0
         User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash password
-        user.setUsername(request.getUsername());
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password)); // Hash password
+        user.setUsername(username);
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
+        user.setKeycloakId(keycloakId);
         user.setRole(com.fitness.userservice.model.UserRole.USER);
 
-        User savedUser = repository.save(user);
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(savedUser.getId());
-        userResponse.setEmail(savedUser.getEmail());
-        userResponse.setFirstName(savedUser.getFirstName());
-        userResponse.setLastName(savedUser.getLastName());
-        userResponse.setCreateAt(savedUser.getCreateAt());
-        userResponse.setUpdateAt(savedUser.getUpdateAt());
-
-        return userResponse;
+        try {
+            User savedUser = repository.save(user);
+            log.info("✅ User registered successfully with email: {}", email);
+            return convertToResponse(savedUser);
+        } catch (DataIntegrityViolationException e) {
+            // Handle race condition: another thread inserted the user between our check and insert
+            log.warn("⚠️ Race condition detected - user was inserted by another thread. Fetching existing user for email: {}", email);
+            User existingUser = repository.findByEmail(email);
+            if (existingUser != null) {
+                return convertToResponse(existingUser);
+            }
+            log.error("❌ Failed to handle duplicate registration for email: {}", email, e);
+            throw new RuntimeException("Failed to register user: duplicate email detected but unable to retrieve existing user", e);
+        }
     }
 
     public UserResponse getUserProfile(String userId) {

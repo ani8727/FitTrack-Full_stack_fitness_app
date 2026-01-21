@@ -1,13 +1,13 @@
-import { Suspense, lazy, useEffect, useMemo } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useDispatch } from "react-redux";
-import { BrowserRouter as Router, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import { setCredentials } from "./store/authSlice";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SiteLayout from "./shared/ui/SiteLayout";
+import LandingPage from "./pages/LandingPage";
 
 // Lazy load pages
-const HomePage = lazy(() => import("./pages/HomePage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const Dashboard = lazy(() => import("./pages/DashboardEnhanced"));
@@ -26,41 +26,6 @@ const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 
-/**
- * RoleBasedRedirect Component
- * Redirects authenticated users to their appropriate dashboard
- */
-const RoleBasedRedirect = () => {
-  const { user } = useAuth0();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Extract roles from various possible locations in Auth0 token
-    const roles = user?.['https://fitness-app/roles'] || 
-                  user?.roles || 
-                  user?.['fitness_auth/roles'] || 
-                  [];
-    
-    const isAdmin = Array.isArray(roles) && 
-                    (roles.includes('admin') || roles.includes('ADMIN'));
-    
-    // Redirect based on role
-    if (isAdmin) {
-      navigate('/admin-dashboard', { replace: true });
-    } else {
-      navigate('/user-dashboard', { replace: true });
-    }
-  }, [user, navigate]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-        <p className="text-[var(--color-text-muted)]">Redirecting to your dashboard...</p>
-      </div>
-    </div>
-  );
-};
 
 /**
  * Main App Component with Auth0 Integration
@@ -68,19 +33,6 @@ const RoleBasedRedirect = () => {
 function App() {
   const { isAuthenticated, isLoading, user, getAccessTokenSilently, loginWithRedirect, logout } = useAuth0();
   const dispatch = useDispatch();
-
-  // Extract user roles
-  const userRoles = useMemo(() => {
-    return user?.['https://fitness-app/roles'] || 
-           user?.roles || 
-           user?.['fitness_auth/roles'] || 
-           [];
-  }, [user]);
-
-  const isAdmin = useMemo(() => {
-    return Array.isArray(userRoles) && 
-           (userRoles.includes('admin') || userRoles.includes('ADMIN'));
-  }, [userRoles]);
 
   // Get and store access token when authenticated
   useEffect(() => {
@@ -118,20 +70,13 @@ function App() {
     );
   }
 
-  // Show HomePage for unauthenticated users
+  // If unauthenticated, show landing with manual sign-in/up
   if (!isAuthenticated) {
     return (
-      <Router>
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-          </div>
-        }>
-          <Routes>
-            <Route path="/*" element={<HomePage onLogin={() => loginWithRedirect()} />} />
-          </Routes>
-        </Suspense>
-      </Router>
+      <LandingPage
+        onSignIn={() => loginWithRedirect()}
+        onSignUp={() => loginWithRedirect({ authorizationParams: { screen_hint: "signup" } })}
+      />
     );
   }
 
@@ -147,8 +92,14 @@ function App() {
         </div>
       }>
         <Routes>
-          {/* Root redirect based on role */}
-          <Route path="/" element={<RoleBasedRedirect />} />
+          {/* Unified home: Dashboard for all authenticated users */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <SiteLayout isAuthenticated={true} onLogout={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+                <Dashboard />
+              </SiteLayout>
+            </ProtectedRoute>
+          } />
 
           {/* Admin Dashboard - Protected, requires admin role */}
           <Route 
@@ -268,8 +219,8 @@ function App() {
             </SiteLayout>
           } />
 
-          {/* Catch-all redirect */}
-          <Route path="*" element={<RoleBasedRedirect />} />
+          {/* Catch-all redirect to unified home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </Router>

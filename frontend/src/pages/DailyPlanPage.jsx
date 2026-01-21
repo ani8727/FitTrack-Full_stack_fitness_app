@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { FiCalendar, FiClock, FiActivity, FiCheckCircle, FiTrendingUp, FiCoffee, FiDroplet, FiHeart, FiSun, FiMoon } from 'react-icons/fi'
-import { AuthContext } from 'react-oauth2-code-pkce'
+import { useAuth0 } from '@auth0/auth0-react'
 import { generateDailyPlan, getDailyPlanByDate } from '../services/api'
 import Toast from '../components/Toast'
 
 const DailyPlanPage = () => {
-  const { tokenData } = useContext(AuthContext)
+  const { user } = useAuth0()
+  const tokenData = user
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])

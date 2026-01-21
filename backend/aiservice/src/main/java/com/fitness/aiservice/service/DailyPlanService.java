@@ -23,11 +23,10 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class DailyPlanService {
-
     private final DailyPlanRepository dailyPlanRepository;
     private final GeminiService geminiService;
     private final WebClient apiGatewayWebClient;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
 
     @SuppressWarnings("null")
     public Mono<DailyPlan> generateDailyPlan(String userId, LocalDate planDate) {
@@ -47,7 +46,7 @@ public class DailyPlanService {
                             .doOnNext(plan -> {
                                 if (plan != null) {
                                     dailyPlanRepository.save(plan);
-                                    log.info("Daily plan generated and saved for user: {}", userId);
+                                    log.debug("Daily plan saved for user: {}", userId);
                                 }
                             })
                             .onErrorReturn(createDefaultDailyPlan(userId, planDate, userProfile));
@@ -58,6 +57,7 @@ public class DailyPlanService {
     private Mono<UserProfile> fetchUserProfile(String userId) {
         return apiGatewayWebClient.get()
             .uri("/api/users/{userId}", userId)
+                .header("X-Service-ID", "ai-service")
                 .retrieve()
                 .bodyToMono(UserProfile.class)
                 .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));
@@ -90,14 +90,14 @@ public class DailyPlanService {
                         exercisesNode.forEach(ex -> exercises.add(ex.asText()));
                     }
 
-                    workouts.add(DailyPlan.WorkoutPlan.builder()
-                            .time(workoutNode.path("time").asText())
-                            .type(workoutNode.path("type").asText())
-                            .duration(workoutNode.path("duration").asInt())
-                            .intensity(workoutNode.path("intensity").asText())
-                            .description(workoutNode.path("description").asText())
-                            .exercises(exercises)
-                            .build());
+                    DailyPlan.WorkoutPlan workout = new DailyPlan.WorkoutPlan();
+                    workout.setTime(workoutNode.path("time").asText());
+                    workout.setType(workoutNode.path("type").asText());
+                    workout.setDuration(workoutNode.path("duration").asInt());
+                    workout.setIntensity(workoutNode.path("intensity").asText());
+                    workout.setDescription(workoutNode.path("description").asText());
+                    workout.setExercises(exercises);
+                    workouts.add(workout);
                 });
             }
 
@@ -107,20 +107,20 @@ public class DailyPlanService {
                 goalsNode.forEach(goal -> goals.add(goal.asText()));
             }
 
-            return DailyPlan.builder()
-                    .userId(userId)
-                    .planDate(planDate)
-                    .morningRoutine(planJson.path("morningRoutine").asText())
-                    .workouts(workouts)
-                    .nutritionAdvice(planJson.path("nutritionAdvice").asText())
-                    .hydrationReminder(planJson.path("hydrationReminder").asText())
-                    .goals(goals)
-                    .motivationalQuote(planJson.path("motivationalQuote").asText())
-                    .targetSteps(planJson.path("targetSteps").asInt())
-                    .targetCalories(planJson.path("targetCalories").asInt())
-                    .restAndRecovery(planJson.path("restAndRecovery").asText())
-                    .createdAt(LocalDateTime.now())
-                    .build();
+            DailyPlan plan = new DailyPlan();
+            plan.setUserId(userId);
+            plan.setPlanDate(planDate);
+            plan.setMorningRoutine(planJson.path("morningRoutine").asText());
+            plan.setWorkouts(workouts);
+            plan.setNutritionAdvice(planJson.path("nutritionAdvice").asText());
+            plan.setHydrationReminder(planJson.path("hydrationReminder").asText());
+            plan.setGoals(goals);
+            plan.setMotivationalQuote(planJson.path("motivationalQuote").asText());
+            plan.setTargetSteps(planJson.path("targetSteps").asInt());
+            plan.setTargetCalories(planJson.path("targetCalories").asInt());
+            plan.setRestAndRecovery(planJson.path("restAndRecovery").asText());
+            plan.setCreatedAt(LocalDateTime.now());
+            return plan;
 
         } catch (Exception e) {
             log.error("Error processing daily plan response: {}", e.getMessage());
@@ -129,39 +129,40 @@ public class DailyPlanService {
     }
 
     private DailyPlan createDefaultDailyPlan(String userId, LocalDate planDate, UserProfile userProfile) {
-        List<DailyPlan.WorkoutPlan> defaultWorkouts = Arrays.asList(
-                DailyPlan.WorkoutPlan.builder()
-                        .time("Morning")
-                        .type("Cardio")
-                        .duration(30)
-                        .intensity("Moderate")
-                        .description("Start your day with light cardio")
-                        .exercises(Arrays.asList("Brisk walking", "Light jogging", "Cycling"))
-                        .build(),
-                DailyPlan.WorkoutPlan.builder()
-                        .time("Evening")
-                        .type("Strength")
-                        .duration(20)
-                        .intensity("Light")
-                        .description("Light strength training")
-                        .exercises(Arrays.asList("Bodyweight squats", "Push-ups", "Plank"))
-                        .build()
-        );
+        List<DailyPlan.WorkoutPlan> defaultWorkouts = new ArrayList<>();
+        
+        DailyPlan.WorkoutPlan workout1 = new DailyPlan.WorkoutPlan();
+        workout1.setTime("Morning");
+        workout1.setType("Cardio");
+        workout1.setDuration(30);
+        workout1.setIntensity("Moderate");
+        workout1.setDescription("Start your day with light cardio");
+        workout1.setExercises(Arrays.asList("Brisk walking", "Light jogging", "Cycling"));
+        defaultWorkouts.add(workout1);
+        
+        DailyPlan.WorkoutPlan workout2 = new DailyPlan.WorkoutPlan();
+        workout2.setTime("Evening");
+        workout2.setType("Strength");
+        workout2.setDuration(20);
+        workout2.setIntensity("Light");
+        workout2.setDescription("Light strength training");
+        workout2.setExercises(Arrays.asList("Bodyweight squats", "Push-ups", "Plank"));
+        defaultWorkouts.add(workout2);
 
-        return DailyPlan.builder()
-                .userId(userId)
-                .planDate(planDate)
-                .morningRoutine("Start with hydration, light stretching, and a healthy breakfast")
-                .workouts(defaultWorkouts)
-                .nutritionAdvice("Eat balanced meals with protein, healthy fats, and complex carbs")
-                .hydrationReminder("Drink at least 8 glasses of water throughout the day")
-                .goals(Arrays.asList("Stay active", "Eat healthy", "Get adequate rest"))
-                .motivationalQuote("Every workout brings you closer to your goals!")
-                .targetSteps(8000)
-                .targetCalories(2000)
-                .restAndRecovery("Ensure 7-8 hours of quality sleep")
-                .createdAt(LocalDateTime.now())
-                .build();
+        DailyPlan plan = new DailyPlan();
+        plan.setUserId(userId);
+        plan.setPlanDate(planDate);
+        plan.setMorningRoutine("Start with hydration, light stretching, and a healthy breakfast");
+        plan.setWorkouts(defaultWorkouts);
+        plan.setNutritionAdvice("Eat balanced meals with protein, healthy fats, and complex carbs");
+        plan.setHydrationReminder("Drink at least 8 glasses of water throughout the day");
+        plan.setGoals(Arrays.asList("Stay active", "Eat healthy", "Get adequate rest"));
+        plan.setMotivationalQuote("Every workout brings you closer to your goals!");
+        plan.setTargetSteps(8000);
+        plan.setTargetCalories(2000);
+        plan.setRestAndRecovery("Ensure 7-8 hours of quality sleep");
+        plan.setCreatedAt(LocalDateTime.now());
+        return plan;
     }
 
     private String createDailyPlanPrompt(UserProfile userProfile, LocalDate planDate) {

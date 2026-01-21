@@ -76,6 +76,15 @@
 			<artifactId>sentry-spring-boot-starter-jakarta</artifactId>
 			<version>7.2.0</version>
 		</dependency>
+		<!-- Resilience4j for Circuit Breaker -->
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-circuitbreaker</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

@@ -2,6 +2,7 @@ package com.fitness.aiservice.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -27,6 +28,8 @@ public class Recommendation {
     private List<String> improvements;
     private List<String> suggestions;
     private List<String> safety;
+    @Default
+    private boolean isGenerated = true;  // true = AI-generated, false = fallback/default
 
     @CreatedDate
     private LocalDateTime createdAt;

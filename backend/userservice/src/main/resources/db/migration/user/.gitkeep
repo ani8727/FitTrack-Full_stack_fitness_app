@@ -1,0 +1,10 @@
+-- User Service Migration Placeholder
+-- Database: user_db
+-- Schema: user_schema
+-- User Role: user_service_user
+-- 
+-- This file serves as a placeholder for user-specific migrations
+-- Each migration should be prefixed with V1__, V2__, etc.
+-- Example: V1__Create_User_Tables.sql
+
+-- Placeholder: Migrations will be added here as needed

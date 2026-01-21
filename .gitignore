@@ -58,6 +58,7 @@ run-all.bat
 
 # Local documentation bundle (kept locally, not in git)
 Guide/
+docs/
 
 # Local scripts
 scripts/

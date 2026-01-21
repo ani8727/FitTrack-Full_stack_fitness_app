@@ -30,21 +30,27 @@ public class ActivityAIService {
                     String prompt = createPromptForActivity(activity, userProfile);
                     return geminiService.getAnswer(prompt)
                             .map(aiResponse -> processAiResponse(activity, aiResponse))
-                            .doOnNext(rec -> log.info("RESPONSE FROM AI: {}", rec.getRecommendation()))
-                            .onErrorReturn(createDefaultRecommendation(activity));
+                            .onErrorResume(e -> {
+                                log.error("Gemini API error, using default recommendation: {}", e.getMessage());
+                                return Mono.just(createDefaultRecommendation(activity));
+                            });
                 })
                 .onErrorResume(e -> {
                     log.error("Error fetching user profile, using basic recommendation: {}", e.getMessage());
                     String prompt = createPromptForActivity(activity, null);
                     return geminiService.getAnswer(prompt)
                             .map(aiResponse -> processAiResponse(activity, aiResponse))
-                            .onErrorReturn(createDefaultRecommendation(activity));
+                            .onErrorResume(e2 -> {
+                                log.error("Gemini API failed, using default: {}", e2.getMessage());
+                                return Mono.just(createDefaultRecommendation(activity));
+                            });
                 });
     }
 
     private Mono<UserProfile> fetchUserProfile(String userId) {
         return apiGatewayWebClient.get()
             .uri("/api/users/{userId}", userId)
+                .header("X-Service-ID", "ai-service")
                 .retrieve()
                 .bodyToMono(UserProfile.class)
                 .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));
@@ -108,6 +114,7 @@ public class ActivityAIService {
                         "Stay hydrated",
                         "Listen to your body"
                 ))
+                .isGenerated(false)  // Mark as fallback/default recommendation
                 .createdAt(LocalDateTime.now())
                 .build();
     }
