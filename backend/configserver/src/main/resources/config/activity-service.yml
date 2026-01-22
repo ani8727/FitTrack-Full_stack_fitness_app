@@ -8,13 +8,15 @@ spring:
   
   data:
     mongodb:
-      uri: ${MONGO_URI:${MONGO_URI_ACTIVITY}}
+      uri: ${MONGO_URI:${MONGO_URI_ACTIVITY:mongodb+srv://activity_db_user:${MONGO_ACTIVITY_PASSWORD}@fitapp.awbcqor.mongodb.net/activity_db?retryWrites=true&w=majority&tls=true&appName=FitApp}}
   
   rabbitmq:
     addresses: ${RABBITMQ_URI}
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
     virtual-host: ${RABBITMQ_VIRTUAL_HOST}
+    ssl:
+      enabled: ${RABBITMQ_SSL_ENABLED:true}
     listener:
       simple:
         missing-queues-fatal: false

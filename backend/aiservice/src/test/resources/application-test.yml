@@ -3,9 +3,7 @@ spring:
     import: ""
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: fitness_test
+      uri: mongodb://localhost:27017/fitness_test
   rabbitmq:
     host: localhost
     listener:
