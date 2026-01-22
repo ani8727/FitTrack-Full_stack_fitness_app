@@ -10,7 +10,7 @@ spring:
   datasource:
     url: ${USER_DB_URL:jdbc:postgresql://ep-small-truth-ahb8e4vi-pooler.c-3.us-east-1.aws.neon.tech:5432/user_db?sslmode=require}
     username: ${USER_DB_USER:neondb_owner}
-    password: ${USER_DB_PASSWORD:npg_CLRh6Z5OFUGm}
+    password: ${USER_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     # Connection Pooling - HikariCP (default for Spring Boot)
     hikari:

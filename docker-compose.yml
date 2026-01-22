@@ -1,0 +1,157 @@
+version: "3.9"
+
+services:
+  gateway:
+    build: ./backend/gateway
+    ports:
+      - "8085:8085"
+    environment:
+      GATEWAY_SERVICE_PORT: 8085
+      USER_SERVICE_URL: http://userservice:8081
+      ACTIVITY_SERVICE_URL: http://activityservice:8083
+      AI_SERVICE_URL: http://aiservice:8084
+      ADMIN_SERVICE_URL: http://adminservice:8082
+      AUTH0_ISSUER_URI: ${AUTH0_ISSUER_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/}
+      AUTH0_JWK_SET_URI: ${AUTH0_JWK_SET_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-fitness_auth}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://app.fittrack.com,https://fittrack.app}
+    depends_on:
+      - userservice
+      - activityservice
+      - aiservice
+      - adminservice
+    networks:
+      - fitness-net
+
+  userservice:
+    build: ./backend/userservice
+    ports:
+      - "8081:8081"
+    environment:
+      USER_SERVICE_PORT: 8081
+      SPRING_DATASOURCE_URL: ${USER_DB_URL:-jdbc:postgresql://postgres:5432/fitness}
+      SPRING_DATASOURCE_USERNAME: ${USER_DB_USER:-fitness}
+      SPRING_DATASOURCE_PASSWORD: ${USER_DB_PASSWORD:-fitness}
+      AUTH0_ISSUER_URI: ${AUTH0_ISSUER_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/}
+      AUTH0_JWK_SET_URI: ${AUTH0_JWK_SET_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-fitness_auth}
+    depends_on:
+      - postgres
+    networks:
+      - fitness-net
+
+  adminservice:
+    build: ./backend/adminservice
+    ports:
+      - "8082:8082"
+    environment:
+      ADMIN_SERVICE_PORT: 8082
+      SPRING_DATASOURCE_URL: ${ADMIN_DB_URL:-jdbc:postgresql://postgres:5432/fitness}
+      SPRING_DATASOURCE_USERNAME: ${ADMIN_DB_USER:-fitness}
+      SPRING_DATASOURCE_PASSWORD: ${ADMIN_DB_PASSWORD:-fitness}
+      AUTH0_ISSUER_URI: ${AUTH0_ISSUER_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/}
+      AUTH0_JWK_SET_URI: ${AUTH0_JWK_SET_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-fitness_auth}
+    depends_on:
+      - postgres
+    networks:
+      - fitness-net
+
+  activityservice:
+    build: ./backend/activityservice
+    ports:
+      - "8083:8083"
+    environment:
+      ACTIVITY_SERVICE_PORT: 8083
+      SPRING_DATA_MONGODB_URI: ${MONGO_URI_ACTIVITY:-mongodb://mongo:27017/fitness}
+      SPRING_RABBITMQ_ADDRESSES: ${RABBITMQ_URI:-amqp://guest:guest@rabbitmq:5672}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VHOST: ${RABBITMQ_VIRTUAL_HOST:-/}
+      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE:-activity.exchange}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-activity.queue}
+      RABBITMQ_ROUTING_KEY: ${RABBITMQ_ROUTING_KEY:-activity.tracking}
+      RABBITMQ_DEAD_LETTER_EXCHANGE: ${RABBITMQ_DEAD_LETTER_EXCHANGE:-activity.dlx}
+      RABBITMQ_DEAD_LETTER_QUEUE: ${RABBITMQ_DEAD_LETTER_QUEUE:-activity.dlq}
+      RABBITMQ_MESSAGE_TTL_MS: ${RABBITMQ_MESSAGE_TTL_MS:-600000}
+      AUTH0_ISSUER_URI: ${AUTH0_ISSUER_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/}
+      AUTH0_JWK_SET_URI: ${AUTH0_JWK_SET_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-fitness_auth}
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - fitness-net
+
+  aiservice:
+    build: ./backend/aiservice
+    ports:
+      - "8084:8084"
+    environment:
+      AI_SERVICE_PORT: 8084
+      SPRING_DATA_MONGODB_URI: ${MONGO_URI_AI:-mongodb://mongo:27017/fitness}
+      SPRING_RABBITMQ_ADDRESSES: ${RABBITMQ_URI:-amqp://guest:guest@rabbitmq:5672}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_RABBITMQ_VHOST: ${RABBITMQ_VIRTUAL_HOST:-/}
+      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE:-activity.exchange}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-activity.queue}
+      RABBITMQ_ROUTING_KEY: ${RABBITMQ_ROUTING_KEY:-activity.tracking}
+      RABBITMQ_DEAD_LETTER_EXCHANGE: ${RABBITMQ_DEAD_LETTER_EXCHANGE:-activity.dlx}
+      RABBITMQ_DEAD_LETTER_QUEUE: ${RABBITMQ_DEAD_LETTER_QUEUE:-activity.dlq}
+      RABBITMQ_MESSAGE_TTL_MS: ${RABBITMQ_MESSAGE_TTL_MS:-600000}
+      AUTH0_ISSUER_URI: ${AUTH0_ISSUER_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/}
+      AUTH0_JWK_SET_URI: ${AUTH0_JWK_SET_URI:-https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-fitness_auth}
+      GEMINI_API_URL: ${GEMINI_API_URL:-https://generativelanguage.googleapis.com}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-replace-me}
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - fitness-net
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fitness
+      POSTGRES_USER: fitness
+      POSTGRES_PASSWORD: fitness
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - fitness-net
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - fitness-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VIRTUAL_HOST:-/}
+    networks:
+      - fitness-net
+
+volumes:
+  postgres-data:
+  mongo-data:
+
+networks:
+  fitness-net:
+    driver: bridge

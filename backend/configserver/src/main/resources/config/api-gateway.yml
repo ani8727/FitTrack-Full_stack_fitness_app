@@ -7,6 +7,8 @@ spring:
           issuer-uri: ${AUTH0_ISSUER_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/}
           jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
           audience: ${AUTH0_AUDIENCE:fitness_auth}
+          client-id: ${AUTH0_CLIENT_ID:qnXHlMOmUhSTiQx0ohzneAvZWtTm8IuS}
+          client-secret: ${AUTH0_CLIENT_SECRET:}
   
   cloud:
     gateway:
