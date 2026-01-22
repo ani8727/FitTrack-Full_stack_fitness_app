@@ -1,11 +1,12 @@
 server:
-  port: ${USER_SERVICE_PORT:8081}
+  port: ${PORT:8081}
 
 spring:
   application:
     name: user-service
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+    import: optional:configserver:${CONFIG_SERVER_URL}
+    enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
   security:
     oauth2:
       resourceserver:
@@ -14,6 +15,13 @@ spring:
           jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
   autoconfigure:
     exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+  cloud:
+    discovery:
+      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
 # EmailJS configuration (reads from environment, with sane defaults)
 emailjs:

@@ -1,17 +1,19 @@
 server:
-  port: ${GATEWAY_SERVICE_PORT:8085}
+  port: ${PORT:8085}
 
 spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+    import: optional:configserver:${CONFIG_SERVER_URL}
   security:
     oauth2:
       resourceserver:
         jwt:
           # Use AUTH0_JWK_SET_URI if provided, else default to Auth0 tenant JWKS
           jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+  autoconfigure:
+    exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
   cloud:
     config:
       enabled: false
@@ -41,8 +43,9 @@ spring:
           uri: ${AI_SERVICE_URL:http://localhost:8084}
           predicates:
             - Path=/api/daily-plans/**
-  autoconfigure:
-    exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+      httpclient:
+        pool:
+          max-connections: ${GATEWAY_MAX_CONNECTIONS:200}
 
 services:
   user-service:
