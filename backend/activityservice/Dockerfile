@@ -7,7 +7,7 @@ RUN mvn -B -DskipTests clean package
 
 FROM eclipse-temurin:21-jre
 ENV SPRING_PROFILES_ACTIVE=prod \
-    JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+UseZGC" \
+    JAVA_OPTS="-Xmx384m -Xms256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:CompressedClassSpaceSize=32m -Xss512k -XX:+TieredCompilation -XX:TieredStopAtLevel=1" \
     PORT=8083
 WORKDIR /app
 COPY --from=build /workspace/target/*.jar app.jar
