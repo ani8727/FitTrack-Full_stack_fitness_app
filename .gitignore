@@ -60,6 +60,11 @@ run-all.bat
 Guide/
 docs/
 
+# Render deployment files with production credentials
+RENDER_DEPLOYMENT_READY.md
+RENDER_ENV_VARIABLES_QUICK_REFERENCE.md
+RENDER_COMPLETE_DEPLOYMENT_GUIDE.md
+
 # Local scripts
 scripts/
 
