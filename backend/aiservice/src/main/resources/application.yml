@@ -10,6 +10,12 @@ spring:
     enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
   autoconfigure:
     exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Use AUTH0_JWK_SET_URI if provided, else default to Auth0 tenant JWKS
+          jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
   cloud:
     discovery:
       enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}
