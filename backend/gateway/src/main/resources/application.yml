@@ -5,7 +5,8 @@ spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL}
+    # Default to no external config server unless explicitly provided via SPRING_CONFIG_IMPORT
+    import: ${SPRING_CONFIG_IMPORT:optional:}
   security:
     oauth2:
       resourceserver:

@@ -5,13 +5,14 @@ spring:
   application:
     name: admin-service
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL}
+    # Default to no external config server unless explicitly provided via SPRING_CONFIG_IMPORT
+    import: ${SPRING_CONFIG_IMPORT:optional:}
     enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
   autoconfigure:
     exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
   cloud:
     discovery:
-      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:true}
+      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
