@@ -36,17 +36,12 @@ export const getActivityStats = () => api.get('/api/activities/stats');
 
 // User APIs
 export const registerUser = (userData) => api.post('/users/register', userData);
-export const registerUser = (userData) => api.post('/api/users/register', userData);
 export const getUserProfile = (userId) => api.get(`/users/${userId}`);
-export const getUserProfile = (userId) => api.get(`/api/users/${userId}`);
 export const updateUserProfile = (userId, userData) => api.put(`/users/${userId}/profile`, userData);
-export const updateUserProfile = (userId, userData) => api.put(`/api/users/${userId}/profile`, userData);
 export const validateUser = (userId) => api.get(`/users/${userId}/validate`);
-export const validateUser = (userId) => api.get(`/api/users/${userId}/validate`);
 
 // Admin Service APIs - User Management
 export const getDashboardStats = () => api.get('/users/admin/stats');
-export const getDashboardStats = () => api.get('/api/users/admin/stats');
 export const getAllUsers = (filters = {}) => {
     const params = {};
     if (filters.search) params.search = filters.search;
@@ -81,18 +76,12 @@ export const getUserDailyPlans = (userId, startDate, endDate) => {
 
 // Account Management APIs
 export const deactivateAccount = (userId, data) => api.post(`/users/${userId}/deactivate`, data);
-export const deactivateAccount = (userId, data) => api.post(`/api/users/${userId}/deactivate`, data);
 export const deleteAccount = (userId, data) => api.post(`/users/${userId}/delete`, data);
-export const deleteAccount = (userId, data) => api.post(`/api/users/${userId}/delete`, data);
 export const reactivateAccount = (userId) => api.post(`/users/${userId}/reactivate`);
-export const reactivateAccount = (userId) => api.post(`/api/users/${userId}/reactivate`);
 
 // Onboarding APIs
 export const completeOnboarding = (userId) => api.post(`/users/${userId}/onboarding/complete`);
-export const completeOnboarding = (userId) => api.post(`/api/users/${userId}/onboarding/complete`);
 export const getOnboardingStatus = (userId) => api.get(`/users/${userId}/onboarding/status`);
-export const getOnboardingStatus = (userId) => api.get(`/api/users/${userId}/onboarding/status`);
-export const generateDailyPlan = (userId, date) => api.post(`/api/daily-plans/generate/${userId}?date=${date}`);
 export const getDailyPlanByDate = (userId, date) => api.get(`/api/daily-plans/user/${userId}/date/${date}`);
 export const getUserDailyPlans = (userId, startDate, endDate) => {
     let url = `/api/daily-plans/user/${userId}`;
