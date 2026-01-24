@@ -52,16 +52,11 @@ export const getAllUsers = (filters = {}) => {
     if (filters.search) params.search = filters.search;
     if (filters.role) params.role = filters.role;
     if (filters.status) params.status = filters.status;
-    return api.get('/users/admin/all', { params });
-};
     return api.get('/api/users/admin/all', { params });
-export const getUserById = (userId) => api.get(`/users/${userId}`);
+};
 export const getUserById = (userId) => api.get(`/api/users/${userId}`);
-export const updateUserRole = (userId, role) => api.put(`/users/admin/${userId}/role`, { role });
 export const updateUserRole = (userId, role) => api.put(`/api/users/admin/${userId}/role`, { role });
-export const deleteUser = (userId) => api.delete(`/users/admin/${userId}`);
 export const deleteUser = (userId) => api.delete(`/api/users/admin/${userId}`);
-export const updateUserStatus = (userId, status, reason) => api.put(`/users/admin/${userId}/status`, { status, reason });
 export const updateUserStatus = (userId, status, reason) => api.put(`/api/users/admin/${userId}/status`, { status, reason });
 
 // Legacy Admin - Activity APIs (still from activity service)
