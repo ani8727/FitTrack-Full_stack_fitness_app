@@ -21,48 +21,50 @@ spring:
     discovery:
       enabled: false
     gateway:
-      routes:
-        - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8081}
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=0
-        - id: activity-service
-          uri: ${ACTIVITY_SERVICE_URL:http://localhost:8083}
-          predicates:
-            - Path=/api/activities/**
-          filters:
-            - StripPrefix=0
-        - id: ai-service
-          uri: ${AI_SERVICE_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/ai/**
-          filters:
-            - StripPrefix=0
-        - id: ai-recommendations
-          uri: ${AI_SERVICE_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/recommendations/**
-          filters:
-            - StripPrefix=0
-        - id: ai-daily-plans
-          uri: ${AI_SERVICE_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/daily-plans/**
-          filters:
-            - StripPrefix=0
-        - id: admin-service
-          uri: ${ADMIN_SERVICE_URL:http://localhost:8082}
-          predicates:
-            - Path=/api/admin/**
-          filters:
-            - StripPrefix=0
-      httpclient:
-        pool:
-          max-connections: ${GATEWAY_MAX_CONNECTIONS:200}
-        connect-timeout: 10000
-        response-timeout: 30s
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: ${USER_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - StripPrefix=0
+            - id: activity-service
+              uri: ${ACTIVITY_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/activities/**
+              filters:
+                - StripPrefix=0
+            - id: ai-service
+              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/ai/**
+              filters:
+                - StripPrefix=0
+            - id: ai-recommendations
+              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/recommendations/**
+              filters:
+                - StripPrefix=0
+            - id: ai-daily-plans
+              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/daily-plans/**
+              filters:
+                - StripPrefix=0
+            - id: admin-service
+              uri: ${ADMIN_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/admin/**
+              filters:
+                - StripPrefix=0
+          httpclient:
+            pool:
+              max-connections: ${GATEWAY_MAX_CONNECTIONS:200}
+            connect-timeout: 10000
+            response-timeout: 30s
 
 services:
   user-service:
