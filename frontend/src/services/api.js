@@ -64,15 +64,6 @@ export const getAdminActivityStats = () => api.get('/api/activities/admin/stats'
 export const adminDeleteActivity = (activityId) => api.delete(`/activities/admin/${activityId}`);
 
 // Daily Plan APIs
-export const generateDailyPlan = (userId, date) => api.post(`/daily-plans/generate/${userId}?date=${date}`);
-export const getDailyPlanByDate = (userId, date) => api.get(`/daily-plans/user/${userId}/date/${date}`);
-export const getUserDailyPlans = (userId, startDate, endDate) => {
-    let url = `/daily-plans/user/${userId}`;
-    if (startDate && endDate) {
-        url += `?startDate=${startDate}&endDate=${endDate}`;
-    }
-    return api.get(url);
-};
 
 // Account Management APIs
 export const deactivateAccount = (userId, data) => api.post(`/users/${userId}/deactivate`, data);
@@ -82,7 +73,6 @@ export const reactivateAccount = (userId) => api.post(`/users/${userId}/reactiva
 // Onboarding APIs
 export const completeOnboarding = (userId) => api.post(`/users/${userId}/onboarding/complete`);
 export const getOnboardingStatus = (userId) => api.get(`/users/${userId}/onboarding/status`);
-export const getDailyPlanByDate = (userId, date) => api.get(`/api/daily-plans/user/${userId}/date/${date}`);
 export const getUserDailyPlans = (userId, startDate, endDate) => {
     let url = `/api/daily-plans/user/${userId}`;
     if (startDate && endDate) {
