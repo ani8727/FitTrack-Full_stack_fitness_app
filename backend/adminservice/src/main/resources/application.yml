@@ -4,29 +4,37 @@ server:
 spring:
   application:
     name: admin-service
+
   config:
-    # Default to no external config server unless explicitly provided via SPRING_CONFIG_IMPORT
+    # No Spring Cloud Config Server in Render
     import: ${SPRING_CONFIG_IMPORT:optional:}
     enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
+
   autoconfigure:
     exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+
   security:
     oauth2:
       resourceserver:
         jwt:
-          # Use AUTH0_JWK_SET_URI if provided, else default to Auth0 tenant JWKS
+          # Auth0 public key endpoint
           jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
+
   cloud:
     discovery:
-      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}
+      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}   # Render does not use Eureka
+
   datasource:
+    # Provided by Render ENV
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+
   jpa:
-    properties:
-      hibernate:
-        dialect: ${SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
     hibernate:
       ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
     show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        # NOT NEEDED – Spring auto-detects PostgreSQL
+        # dialect: org.hibernate.dialect.PostgreSQLDialect

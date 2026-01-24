@@ -1,6 +1,3 @@
-# Production-specific overrides
-# Main configuration comes from config server
-
 management:
   endpoints:
     web:
@@ -17,12 +14,10 @@ spring:
     open-in-view: false
     show-sql: false
 
-# Logging - production level
 logging:
   level:
     root: INFO
     com.fitness: INFO
     org.springframework: WARN
     org.hibernate: WARN
-    # Enable database logging for monitoring
     com.zaxxer.hikari: INFO
