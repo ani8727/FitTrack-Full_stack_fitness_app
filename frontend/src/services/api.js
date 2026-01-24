@@ -30,18 +30,18 @@ api.interceptors.request.use((config) => {
 // Activity APIs
 export const getActivities = () => api.get('/api/activities');
 export const addActivity = (activity) => api.post('/api/activities', activity);
-export const getActivityDetail = (id) => api.get(`/activities/${id}`);
-export const deleteActivity = (id) => api.delete(`/activities/${id}`);
+export const getActivityDetail = (id) => api.get(`/api/activities/${id}`);
+export const deleteActivity = (id) => api.delete(`/api/activities/${id}`);
 export const getActivityStats = () => api.get('/api/activities/stats');
 
 // User APIs
-export const registerUser = (userData) => api.post('/users/register', userData);
-export const getUserProfile = (userId) => api.get(`/users/${userId}`);
-export const updateUserProfile = (userId, userData) => api.put(`/users/${userId}/profile`, userData);
-export const validateUser = (userId) => api.get(`/users/${userId}/validate`);
+export const registerUser = (userData) => api.post('/api/users/register', userData);
+export const getUserProfile = (userId) => api.get(`/api/users/${userId}`);
+export const updateUserProfile = (userId, userData) => api.put(`/api/users/${userId}/profile`, userData);
+export const validateUser = (userId) => api.get(`/api/users/${userId}/validate`);
 
 // Admin Service APIs - User Management
-export const getDashboardStats = () => api.get('/users/admin/stats');
+export const getDashboardStats = () => api.get('/api/users/admin/stats');
 export const getAllUsers = (filters = {}) => {
     const params = {};
     if (filters.search) params.search = filters.search;
@@ -49,7 +49,7 @@ export const getAllUsers = (filters = {}) => {
     if (filters.status) params.status = filters.status;
     return api.get('/api/users/admin/all', { params });
 };
-export const getUserById = (userId) => api.get(`/api/users/${userId}`);
+export const getUserById = (userId) => api.get(`/api/users/${userId}`); // already correct
 export const updateUserRole = (userId, role) => api.put(`/api/users/admin/${userId}/role`, { role });
 export const deleteUser = (userId) => api.delete(`/api/users/admin/${userId}`);
 export const updateUserStatus = (userId, status, reason) => api.put(`/api/users/admin/${userId}/status`, { status, reason });
@@ -58,8 +58,8 @@ export const updateUserStatus = (userId, status, reason) => api.put(`/api/users/
 export const getAllActivities = () => api.get('/api/activities/admin/all');
 
 // AI Recommendations
-export const getRecommendations = (userId) => api.get(`/recommendations/user/${userId}`);
-export const generateRecommendation = (activityId) => api.post(`/recommendations/generate/${activityId}`);
+export const getRecommendations = (userId) => api.get(`/api/recommendations/user/${userId}`);
+export const generateRecommendation = (activityId) => api.post(`/api/recommendations/generate/${activityId}`);
 export const getAdminActivityStats = () => api.get('/api/activities/admin/stats');
 export const adminDeleteActivity = (activityId) => api.delete(`/activities/admin/${activityId}`);
 
@@ -68,13 +68,13 @@ export const generateDailyPlan = (userId, date) => api.post(`/api/daily-plans/ge
 export const getDailyPlanByDate = (userId, date) => api.get(`/api/daily-plans/user/${userId}/date/${date}`);
 
 // Account Management APIs
-export const deactivateAccount = (userId, data) => api.post(`/users/${userId}/deactivate`, data);
-export const deleteAccount = (userId, data) => api.post(`/users/${userId}/delete`, data);
-export const reactivateAccount = (userId) => api.post(`/users/${userId}/reactivate`);
+export const deactivateAccount = (userId, data) => api.post(`/api/users/${userId}/deactivate`, data);
+export const deleteAccount = (userId, data) => api.post(`/api/users/${userId}/delete`, data);
+export const reactivateAccount = (userId) => api.post(`/api/users/${userId}/reactivate`);
 
 // Onboarding APIs
-export const completeOnboarding = (userId) => api.post(`/users/${userId}/onboarding/complete`);
-export const getOnboardingStatus = (userId) => api.get(`/users/${userId}/onboarding/status`);
+export const completeOnboarding = (userId) => api.post(`/api/users/${userId}/onboarding/complete`);
+export const getOnboardingStatus = (userId) => api.get(`/api/users/${userId}/onboarding/status`);
 export const getUserDailyPlans = (userId, startDate, endDate) => {
     let url = `/api/daily-plans/user/${userId}`;
     if (startDate && endDate) {
