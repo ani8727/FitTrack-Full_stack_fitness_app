@@ -64,6 +64,7 @@ export const getAdminActivityStats = () => api.get('/api/activities/admin/stats'
 export const adminDeleteActivity = (activityId) => api.delete(`/activities/admin/${activityId}`);
 
 // Daily Plan APIs
+export const getDailyPlanByDate = (userId, date) => api.get(`/api/daily-plans/user/${userId}/date/${date}`);
 
 // Account Management APIs
 export const deactivateAccount = (userId, data) => api.post(`/users/${userId}/deactivate`, data);
