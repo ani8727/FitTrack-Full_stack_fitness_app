@@ -1,10 +1,11 @@
-# Multi-stage build for userservice
+# Stage 1: Build
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 COPY pom.xml .
 COPY src ./src
 RUN mvn -B -DskipTests clean package
 
+# Stage 2: Runtime
 FROM eclipse-temurin:21-jre
 ENV SPRING_PROFILES_ACTIVE=prod \
     JAVA_OPTS="-Xmx384m -Xms256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:CompressedClassSpaceSize=32m -Xss512k -XX:+TieredCompilation -XX:TieredStopAtLevel=1" \
