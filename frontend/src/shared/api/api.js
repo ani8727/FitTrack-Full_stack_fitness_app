@@ -27,8 +27,8 @@ api.interceptors.request.use((config) => {
 );
 
 
-export const getActivities = () => api.get('/activities');
-export const addActivity = (activity) => api.post('/activities', activity);
+export const getActivities = () => api.get('/api/activities');
+export const addActivity = (activity) => api.post('/api/activities', activity);
 export const getActivity = (id) => api.get(`/activities/${id}`);
 export const getActivityRecommendation = (id) => api.get(`/recommendations/activity/${id}`);
 export const getActivityDetail = (id) => api.get(`/recommendations/activity/${id}`); // Legacy compatibility

@@ -28,11 +28,11 @@ api.interceptors.request.use((config) => {
 
 
 // Activity APIs
-export const getActivities = () => api.get('/activities');
-export const addActivity = (activity) => api.post('/activities', activity);
+export const getActivities = () => api.get('/api/activities');
+export const addActivity = (activity) => api.post('/api/activities', activity);
 export const getActivityDetail = (id) => api.get(`/activities/${id}`);
 export const deleteActivity = (id) => api.delete(`/activities/${id}`);
-export const getActivityStats = () => api.get('/activities/stats');
+export const getActivityStats = () => api.get('/api/activities/stats');
 
 // User APIs
 export const registerUser = (userData) => api.post('/users/register', userData);
@@ -55,12 +55,12 @@ export const deleteUser = (userId) => api.delete(`/users/admin/${userId}`);
 export const updateUserStatus = (userId, status, reason) => api.put(`/users/admin/${userId}/status`, { status, reason });
 
 // Legacy Admin - Activity APIs (still from activity service)
-export const getAllActivities = () => api.get('/activities/admin/all');
+export const getAllActivities = () => api.get('/api/activities/admin/all');
 
 // AI Recommendations
 export const getRecommendations = (userId) => api.get(`/recommendations/user/${userId}`);
 export const generateRecommendation = (activityId) => api.post(`/recommendations/generate/${activityId}`);
-export const getAdminActivityStats = () => api.get('/activities/admin/stats');
+export const getAdminActivityStats = () => api.get('/api/activities/admin/stats');
 export const adminDeleteActivity = (activityId) => api.delete(`/activities/admin/${activityId}`);
 
 // Daily Plan APIs
