@@ -10,7 +10,7 @@ public class WebClientConfig {
 
     // Direct URL for local/dev to avoid service discovery dependency
     @Bean
-    public WebClient apiGatewayWebClient(@Value("${API_GATEWAY_URL:http://localhost:8085}") String apiGatewayUrl) {
+    public WebClient apiGatewayWebClient(@Value("${API_GATEWAY_URL:https://fittrack-gateway.onrender.com}") String apiGatewayUrl) {
         return WebClient.builder()
                 .baseUrl(apiGatewayUrl)
                 .build();

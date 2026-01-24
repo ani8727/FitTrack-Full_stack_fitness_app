@@ -25,37 +25,37 @@ spring:
         webflux:
           routes:
             - id: user-service
-              uri: ${USER_SERVICE_URL:http://localhost:8081}
+              uri: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
               predicates:
                 - Path=/api/users/**
               filters:
                 - StripPrefix=0
             - id: activity-service
-              uri: ${ACTIVITY_SERVICE_URL:http://localhost:8083}
+              uri: ${ACTIVITY_SERVICE_URL:https://fittrack-activityservice.onrender.com}
               predicates:
                 - Path=/api/activities/**
               filters:
                 - StripPrefix=0
             - id: ai-service
-              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
               predicates:
                 - Path=/api/ai/**
               filters:
                 - StripPrefix=0
             - id: ai-recommendations
-              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
               predicates:
                 - Path=/api/recommendations/**
               filters:
                 - StripPrefix=0
             - id: ai-daily-plans
-              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
               predicates:
                 - Path=/api/daily-plans/**
               filters:
                 - StripPrefix=0
             - id: admin-service
-              uri: ${ADMIN_SERVICE_URL:http://localhost:8082}
+              uri: ${ADMIN_SERVICE_URL:https://fittrack-adminservice.onrender.com}
               predicates:
                 - Path=/api/admin/**
               filters:
@@ -68,7 +68,7 @@ spring:
 
 services:
   user-service:
-    url: ${USER_SERVICE_URL:http://localhost:8081}
+    url: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
 
 eureka:
   client:

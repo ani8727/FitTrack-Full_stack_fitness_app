@@ -18,7 +18,7 @@ public class UserService {
 
     // Constructor for dependency injection with configurable base URL
     @Autowired
-    public UserService(@Value("${services.user-service.url:http://localhost:8081}") String userServiceUrl) {
+    public UserService(@Value("${services.user-service.url:https://fittrack-userservice.onrender.com}") String userServiceUrl) {
         this.userServiceWebClient = WebClient.builder()
             .baseUrl(userServiceUrl)
             .build();
