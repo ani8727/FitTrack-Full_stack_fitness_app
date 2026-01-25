@@ -9,11 +9,6 @@ spring:
   spring:
     application:
       name: api-gateway
-  user-service:
-    url: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
 
-eureka:
-  client:
-    enabled: false
-    register-with-eureka: false
-    fetch-registry: false
+  application:
+    name: api-gateway

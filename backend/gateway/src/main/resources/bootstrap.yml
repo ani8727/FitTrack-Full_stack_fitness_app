@@ -1,12 +1,3 @@
-  spring:
-    application:
-      name: api-gateway
-    cloud:
-      config:
-        enabled: false
-      discovery:
-        enabled: false
-
-  eureka:
-    client:
-      enabled: false
+spring:
+  application:
+    name: api-gateway
