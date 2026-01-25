@@ -2,71 +2,21 @@ server:
   port: ${PORT:8085}
 
 spring:
-  application:
-    name: api-gateway
-  config:
-    # Default to no external config server unless explicitly provided via SPRING_CONFIG_IMPORT
-    import: ${SPRING_CONFIG_IMPORT:optional:}
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # Use AUTH0_JWK_SET_URI if provided, else default to Auth0 tenant JWKS
-          jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
-  autoconfigure:
-    exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
-  cloud:
-    config:
-      enabled: false
-    discovery:
-      enabled: false
-    gateway:
-      server:
-        webflux:
-          routes:
-            - id: user-service
-              uri: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
-              predicates:
-                - Path=/api/users/**
-              filters:
-                - StripPrefix=0
-            - id: activity-service
-              uri: ${ACTIVITY_SERVICE_URL:https://fittrack-activityservice.onrender.com}
-              predicates:
-                - Path=/api/activities/**
-              filters:
-                - StripPrefix=0
-            - id: ai-service
-              uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
-              predicates:
-                - Path=/api/ai/**
-              filters:
-                - StripPrefix=0
-            - id: ai-recommendations
-              uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
-              predicates:
-                - Path=/api/recommendations/**
-              filters:
-                - StripPrefix=0
-            - id: ai-daily-plans
-              uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
-              predicates:
-                - Path=/api/daily-plans/**
-              filters:
-                - StripPrefix=0
-            - id: admin-service
-              uri: ${ADMIN_SERVICE_URL:https://fittrack-adminservice.onrender.com}
-              predicates:
-                - Path=/api/admin/**
-              filters:
-                - StripPrefix=0
-          httpclient:
-            pool:
-              max-connections: ${GATEWAY_MAX_CONNECTIONS:200}
-            connect-timeout: 10000
-            response-timeout: 30s
 
-services:
+  spring:
+    application:
+      name: api-gateway
+    cloud:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info
   user-service:
     url: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
 
