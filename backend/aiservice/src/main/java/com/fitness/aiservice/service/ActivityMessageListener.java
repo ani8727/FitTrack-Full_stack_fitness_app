@@ -5,7 +5,7 @@ import com.fitness.aiservice.repository.RecommendationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import com.fitness.aiservice.config.RabbitMqConfig.RabbitMQProperties;
+// Removed custom RabbitMQProperties
 import org.springframework.stereotype.Service;
 import reactor.core.scheduler.Schedulers;
 
@@ -16,15 +16,12 @@ public class ActivityMessageListener {
 
     private final ActivityAIService aiService;
     private final RecommendationRepository recommendationRepository;
-    private final RabbitMQProperties rabbitProps;
-
-    public ActivityMessageListener(ActivityAIService aiService, RecommendationRepository recommendationRepository, RabbitMQProperties rabbitProps) {
+    public ActivityMessageListener(ActivityAIService aiService, RecommendationRepository recommendationRepository) {
         this.aiService = aiService;
         this.recommendationRepository = recommendationRepository;
-        this.rabbitProps = rabbitProps;
     }
 
-    @RabbitListener(queues = "#{@rabbitMqConfig.RabbitMQProperties.queue}", autoStartup = "true")
+    @RabbitListener(queues = "${activity.rabbitmq.queue}", autoStartup = "true")
     public void processActivity(Activity activity) {
         log.info("Received activity for processing: {}", activity.getId());
 
