@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
+import com.fitness.activityservice.config.RabbitMqConfig.RabbitMQProperties;
 import org.springframework.stereotype.Service;
 
 import com.fitness.activityservice.dto.ActivityRequest;
@@ -23,12 +23,7 @@ public class ActivityService {
     private final ActivityRepository activityRepository;
     private final UserValidationService userValidationService;
     private final RabbitTemplate rabbitTemplate;
-
-    @Value("${rabbitmq.exchange.name}")
-    private String exchange;
-
-    @Value("${rabbitmq.routing.key}")
-    private String routingKey;
+    private final RabbitMQProperties rabbitProps;
 
     public ActivityResponse trackActivity(ActivityRequest request) {
 
@@ -57,7 +52,7 @@ public class ActivityService {
 
         // Publish to RabbitMQ for AI Processing
         try {
-            rabbitTemplate.convertAndSend(exchange, routingKey, savedActivity);
+            rabbitTemplate.convertAndSend(rabbitProps.getExchange(), rabbitProps.getRoutingKey(), savedActivity);
         } catch(Exception e) {
             log.error("Failed to publish activity to RabbitMQ : ", e);
         }
