@@ -3,20 +3,12 @@ server:
 
 spring:
 
+  server:
+    port: 8085
+
   spring:
     application:
       name: api-gateway
-    cloud:
-      discovery:
-        enabled: false
-      config:
-        enabled: false
-
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health,info
   user-service:
     url: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
 
