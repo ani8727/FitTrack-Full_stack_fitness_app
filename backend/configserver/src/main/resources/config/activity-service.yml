@@ -31,12 +31,3 @@ eureka:
     hostname: ${EUREKA_HOST:localhost}
     prefer-ip-address: ${EUREKA_PREFER_IP:false}
 
-rabbitmq:
-  exchange:
-    name: ${RABBITMQ_EXCHANGE:activity.exchange}
-  queue:
-    name: ${RABBITMQ_QUEUE:activity.queue}
-  routing:
-    key: ${RABBITMQ_ROUTING_KEY:activity.tracking}
-  listener:
-    auto-startup: ${RABBITMQ_LISTENER_AUTO_START:true}

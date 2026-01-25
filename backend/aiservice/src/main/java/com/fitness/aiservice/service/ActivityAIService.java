@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.dto.UserProfile;
 import com.fitness.aiservice.model.Activity;
 import com.fitness.aiservice.model.Recommendation;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -16,13 +14,19 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class ActivityAIService {
-
     private final GeminiService geminiService;
     private final WebClient apiGatewayWebClient;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public ActivityAIService(GeminiService geminiService, WebClient apiGatewayWebClient) {
+        this.geminiService = geminiService;
+        this.apiGatewayWebClient = apiGatewayWebClient;
+    }
+
+    private void logError(String message, Throwable e) {
+        System.err.println(message + (e != null ? (": " + e.getMessage()) : ""));
+    }
 
     public Mono<Recommendation> generateRecommendation(Activity activity) {
         return fetchUserProfile(activity.getUserId())
@@ -31,17 +35,17 @@ public class ActivityAIService {
                     return geminiService.getAnswer(prompt)
                             .map(aiResponse -> processAiResponse(activity, aiResponse))
                             .onErrorResume(e -> {
-                                log.error("Gemini API error, using default recommendation: {}", e.getMessage());
+                                logError("Gemini API error, using default recommendation", e);
                                 return Mono.just(createDefaultRecommendation(activity));
                             });
                 })
                 .onErrorResume(e -> {
-                    log.error("Error fetching user profile, using basic recommendation: {}", e.getMessage());
+                    logError("Error fetching user profile, using basic recommendation", e);
                     String prompt = createPromptForActivity(activity, null);
                     return geminiService.getAnswer(prompt)
                             .map(aiResponse -> processAiResponse(activity, aiResponse))
                             .onErrorResume(e2 -> {
-                                log.error("Gemini API failed, using default: {}", e2.getMessage());
+                                logError("Gemini API failed, using default", e2);
                                 return Mono.just(createDefaultRecommendation(activity));
                             });
                 });
@@ -53,7 +57,7 @@ public class ActivityAIService {
                 .header("X-Service-ID", "ai-service")
                 .retrieve()
                 .bodyToMono(UserProfile.class)
-                .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));
+                .doOnError(e -> logError("Error fetching user profile", e));
     }
 
     private Recommendation processAiResponse(Activity activity, String aiResponse){
@@ -84,39 +88,40 @@ public class ActivityAIService {
             List<String> suggestions = extractSuggestions(analysisJson.path("suggestions"));
             List<String> safety = extractSafetyGuidelines(analysisJson.path("safety"));
 
-            return Recommendation.builder()
-                    .activityId(activity.getId())
-                    .userId(activity.getUserId())
-                    .activityType(activity.getType())
-                    .recommendation(fullAnalysis.toString().trim())
-                    .improvements(improvements)
-                    .suggestions(suggestions)
-                    .safety(safety)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+                Recommendation rec = new Recommendation();
+                rec.setActivityId(activity.getId());
+                rec.setUserId(activity.getUserId());
+                rec.setActivityType(activity.getType());
+                rec.setRecommendation(fullAnalysis.toString().trim());
+                rec.setImprovements(improvements);
+                rec.setSuggestions(suggestions);
+                rec.setSafety(safety);
+                rec.setCreatedAt(LocalDateTime.now());
+                rec.setGenerated(true);
+                return rec;
 
         } catch (IOException | IllegalArgumentException e){
-            log.error("Error occurred while generating recommendation: {}", e.getMessage(), e);
+            logError("Error occurred while generating recommendation", e);
             return createDefaultRecommendation(activity);
         }
     }
 
     private Recommendation createDefaultRecommendation(Activity activity) {
-        return Recommendation.builder()
-                .activityId(activity.getId())
-                .userId(activity.getUserId())
-                .activityType(activity.getType())
-                .recommendation("Unable to generate detailed analysis")
-                .improvements(Collections.singletonList("Continue with your current routine"))
-                .suggestions(Collections.singletonList("Consider consulting a fitness professional"))
-                .safety(Arrays.asList(
-                        "Always warm up before exercise",
-                        "Stay hydrated",
-                        "Listen to your body"
-                ))
-                .isGenerated(false)  // Mark as fallback/default recommendation
-                .createdAt(LocalDateTime.now())
-                .build();
+        Recommendation rec = new Recommendation();
+        rec.setActivityId(activity.getId());
+        rec.setUserId(activity.getUserId());
+        rec.setActivityType(activity.getType());
+        rec.setRecommendation("Unable to generate detailed analysis");
+        rec.setImprovements(Collections.singletonList("Continue with your current routine"));
+        rec.setSuggestions(Collections.singletonList("Consider consulting a fitness professional"));
+        rec.setSafety(Arrays.asList(
+            "Always warm up before exercise",
+            "Stay hydrated",
+            "Listen to your body"
+        ));
+        rec.setGenerated(false);
+        rec.setCreatedAt(LocalDateTime.now());
+        return rec;
     }
 
     private List<String> extractSafetyGuidelines(JsonNode safetyNode) {

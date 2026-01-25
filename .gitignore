@@ -1,3 +1,5 @@
+# Adminservice env file
+backend/adminservice/.env
 # Build outputs
 target/
 **/target/

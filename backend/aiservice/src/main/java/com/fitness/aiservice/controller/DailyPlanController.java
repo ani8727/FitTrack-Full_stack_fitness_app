@@ -2,7 +2,7 @@ package com.fitness.aiservice.controller;
 
 import com.fitness.aiservice.model.DailyPlan;
 import com.fitness.aiservice.service.DailyPlanService;
-import lombok.RequiredArgsConstructor;
+// Lombok removed, explicit constructor used
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +13,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/daily-plans")
-@RequiredArgsConstructor
 public class DailyPlanController {
-
     private final DailyPlanService dailyPlanService;
+
+    public DailyPlanController(DailyPlanService dailyPlanService) {
+        this.dailyPlanService = dailyPlanService;
+    }
 
     @PostMapping("/generate/{userId}")
     public Mono<ResponseEntity<DailyPlan>> generateDailyPlan(

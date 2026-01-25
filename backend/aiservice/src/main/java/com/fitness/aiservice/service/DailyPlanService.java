@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.dto.UserProfile;
 import com.fitness.aiservice.model.DailyPlan;
 import com.fitness.aiservice.repository.DailyPlanRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+// Lombok annotations not required for constructor or logging
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -20,13 +19,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class DailyPlanService {
     private final DailyPlanRepository dailyPlanRepository;
     private final GeminiService geminiService;
     private final WebClient apiGatewayWebClient;
     private final ObjectMapper mapper;
+
+    public DailyPlanService(DailyPlanRepository dailyPlanRepository, GeminiService geminiService, WebClient apiGatewayWebClient) {
+        this.dailyPlanRepository = dailyPlanRepository;
+        this.geminiService = geminiService;
+        this.apiGatewayWebClient = apiGatewayWebClient;
+        this.mapper = new ObjectMapper();
+    }
+
+    private void logError(String message, Throwable e) {
+        System.err.println(message + (e != null ? (": " + e.getMessage()) : ""));
+    }
 
     @SuppressWarnings("null")
     public Mono<DailyPlan> generateDailyPlan(String userId, LocalDate planDate) {
@@ -46,7 +54,8 @@ public class DailyPlanService {
                             .doOnNext(plan -> {
                                 if (plan != null) {
                                     dailyPlanRepository.save(plan);
-                                    log.debug("Daily plan saved for user: {}", userId);
+                                    // log.debug("Daily plan saved for user: {}", userId);
+                                    System.out.println("Daily plan saved for user: " + userId);
                                 }
                             })
                             .onErrorReturn(createDefaultDailyPlan(userId, planDate, userProfile));
@@ -60,7 +69,7 @@ public class DailyPlanService {
                 .header("X-Service-ID", "ai-service")
                 .retrieve()
                 .bodyToMono(UserProfile.class)
-                .doOnError(e -> log.error("Error fetching user profile: {}", e.getMessage()));
+                .doOnError(e -> logError("Error fetching user profile", e));
     }
 
     private DailyPlan processDailyPlanResponse(String userId, LocalDate planDate, String aiResponse, UserProfile userProfile) {
@@ -123,7 +132,7 @@ public class DailyPlanService {
             return plan;
 
         } catch (Exception e) {
-            log.error("Error processing daily plan response: {}", e.getMessage());
+            logError("Error processing daily plan response", e);
             return createDefaultDailyPlan(userId, planDate, userProfile);
         }
     }

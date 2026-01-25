@@ -31,15 +31,6 @@ eureka:
     hostname: ${EUREKA_HOST:localhost}
     prefer-ip-address: ${EUREKA_PREFER_IP:false}
 
-rabbitmq:
-  exchange:
-    name: ${AI_RABBITMQ_EXCHANGE:${RABBITMQ_EXCHANGE:activity.exchange}}
-  queue:
-    name: ${AI_RABBITMQ_QUEUE:${RABBITMQ_QUEUE:activity.queue}}
-  routing:
-    key: ${AI_RABBITMQ_ROUTING_KEY:${RABBITMQ_ROUTING_KEY:activity.tracking}}
-  listener:
-    auto-startup: ${RABBITMQ_LISTENER_AUTO_START:true}
 
 gemini:
   api:

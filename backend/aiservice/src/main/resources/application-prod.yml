@@ -6,3 +6,13 @@ management:
     web:
       exposure:
         include: health,info
+
+spring:
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST}
+    ssl:
+      enabled: ${SPRING_RABBITMQ_SSL_ENABLED:true}

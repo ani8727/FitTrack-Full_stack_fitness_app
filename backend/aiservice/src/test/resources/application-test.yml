@@ -5,12 +5,16 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/fitness_test
   rabbitmq:
-    host: localhost
-    listener:
-      simple:
-        auto-startup: false
-      direct:
-        auto-startup: false
+    addresses: amqp://localhost:5672
+    username: guest
+    password: guest
+    virtual-host: /
+    ssl:
+      enabled: false
+  rabbitmq.custom:
+    queue: activity.queue
+    exchange: activity.exchange
+    routingKey: activity.tracking
   cloud:
     config:
       enabled: false
