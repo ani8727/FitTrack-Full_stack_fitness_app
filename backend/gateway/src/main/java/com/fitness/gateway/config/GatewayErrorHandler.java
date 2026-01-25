@@ -1,4 +1,4 @@
-package com.fitness.gateway;
+package com.fitness.gateway.config;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -16,6 +16,7 @@ import org.springframework.web.server.WebExceptionHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fitness.gateway.filter.CorrelationIdWebFilter;
 
 import reactor.core.publisher.Mono;
 

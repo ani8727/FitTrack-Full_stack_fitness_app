@@ -1,6 +1,7 @@
 package com.fitness.gateway;
 
 import com.fitness.gateway.user.UserService;
+import com.fitness.gateway.filter.KeycloakUserSyncFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;

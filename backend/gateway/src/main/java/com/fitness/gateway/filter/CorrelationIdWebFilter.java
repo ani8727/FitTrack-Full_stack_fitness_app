@@ -1,4 +1,4 @@
-package com.fitness.gateway;
+package com.fitness.gateway.filter;
 
 import java.util.UUID;
 

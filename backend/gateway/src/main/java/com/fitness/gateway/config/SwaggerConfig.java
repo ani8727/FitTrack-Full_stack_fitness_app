@@ -1,4 +1,4 @@
-package com.fitness.gateway;
+package com.fitness.gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

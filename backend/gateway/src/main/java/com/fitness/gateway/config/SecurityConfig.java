@@ -1,4 +1,4 @@
-package com.fitness.gateway;
+package com.fitness.gateway.config;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,8 +21,6 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import reactor.core.publisher.Mono;
-
-// ...existing code...
 
 @Configuration
 @EnableWebFluxSecurity
