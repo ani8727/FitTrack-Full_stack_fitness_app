@@ -51,22 +51,22 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                      globalcors:
-                        corsConfigurations:
-                          '[/**]':
-                            allowedOrigins: ${CORS_ALLOWED_ORIGINS}
-                            allowedMethods:
-                              - GET
-                              - POST
-                              - PUT
-                              - DELETE
-                              - OPTIONS
-                            allowedHeaders:
-                              - Authorization
-                              - Content-Type
-                              - X-Requested-With
-                              - Accept
-                            allowCredentials: true
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: ${CORS_ALLOWED_ORIGINS}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - Authorization
+              - Content-Type
+              - X-Requested-With
+              - Accept
+            allowCredentials: true
 
                 resilience4j:
                   circuitbreaker:
