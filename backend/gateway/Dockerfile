@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /build/target/*.jar app.jar
 ENV JAVA_OPTS=""
 EXPOSE 8085
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"]
