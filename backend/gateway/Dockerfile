@@ -1,15 +1,6 @@
-# Multi-stage build for api gateway
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-WORKDIR /workspace
-COPY pom.xml .
-COPY src ./src
-RUN mvn -B -DskipTests clean package
-
-FROM eclipse-temurin:17-jre
-ENV SPRING_PROFILES_ACTIVE=prod \
-    JAVA_OPTS="-Xmx384m -Xms256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:CompressedClassSpaceSize=32m -Xss512k -XX:+TieredCompilation -XX:TieredStopAtLevel=1" \
-    PORT=8085
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/target/*.jar app.jar
+COPY target/*.jar app.jar
+ENV JAVA_OPTS=""
 EXPOSE ${PORT}
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"]
