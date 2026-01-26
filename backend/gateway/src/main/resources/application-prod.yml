@@ -1,56 +1,15 @@
 server:
   port: ${PORT}
-  
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
+
 spring:
-  profiles:
-    active: prod
   application:
     name: api-gateway
   main:
     web-application-type: reactive
+  profiles:
+    active: prod
   cloud:
     gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
-      httpclient:
-        connect-timeout: 5000
-        response-timeout: 30s
-      routes:
-        - id: user-service
-          uri: ${USER_SERVICE_URL}
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: userService
-        - id: admin-service
-          uri: ${ADMIN_SERVICE_URL}
-          predicates:
-            - Path=/api/admin/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: adminService
-        - id: activity-service
-          uri: ${ACTIVITY_SERVICE_URL}
-          predicates:
-            - Path=/api/activities/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: activityService
-        - id: ai-service
-          uri: ${AI_SERVICE_URL}
-          predicates:
-            - Path=/api/recommendations/**
-            - Path=/api/daily-plans/**
-          filters:
-            - name: CircuitBreaker
-              args:
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -67,29 +26,52 @@ spring:
               - X-Requested-With
               - Accept
             allowCredentials: true
+      routes:
+        - id: user-service
+          uri: ${USER_SERVICE_URL}
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - CircuitBreaker=name=userService
+        - id: admin-service
+          uri: ${ADMIN_SERVICE_URL}
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - CircuitBreaker=name=adminService
+        - id: activity-service
+          uri: ${ACTIVITY_SERVICE_URL}
+          predicates:
+            - Path=/api/activities/**
+          filters:
+            - CircuitBreaker=name=activityService
+        - id: ai-service
+          uri: ${AI_SERVICE_URL}
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - CircuitBreaker=name=aiService
 
-                resilience4j:
-                  circuitbreaker:
-                    instances:
-                      userService:
-                        failureRateThreshold: 50
-                        waitDurationInOpenState: 10s
-                      adminService:
-                        failureRateThreshold: 50
-                        waitDurationInOpenState: 10s
-                      activityService:
-                        failureRateThreshold: 50
-                        waitDurationInOpenState: 10s
-                      aiService:
-                        failureRateThreshold: 50
-                        waitDurationInOpenState: 10s
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      adminService:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      activityService:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      aiService:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
 
-                spring:
-                  security:
-                    oauth2:
-                      resourceserver:
-                        jwt:
-                          jwk-set-uri: ${AUTH0_JWK_SET_URI}
-                name: aiService
-  
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
 

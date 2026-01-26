@@ -1,31 +1,20 @@
 server:
   port: 8085
-  
+
 spring:
   application:
-    name: api-gateway
+    name: gateway
   main:
     web-application-type: reactive
 
 management:
   endpoints:
     web:
-    application:
-      name: gateway
-    main:
-      web-application-type: reactive
-        connect-timeout: 5000
-        response-timeout: 30s
-      jwt:
-        issuer-uri: ${AUTH0_JWK_SET_URI}
-
-management:
-  endpoints:
-    web:
       exposure:
-        include: health, info
+        include: health,info
 
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+        
 
