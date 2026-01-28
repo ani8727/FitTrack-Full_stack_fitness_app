@@ -17,7 +17,7 @@ if (-Not (Test-Path $envFile)) {
     Write-Host ""
     Write-Host "Create .env.local with the following content:" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "VITE_API_BASE_URL=http://localhost:8085/api" -ForegroundColor Gray
+    Write-Host "VITE_API_BASE_URL=http://localhost:8085" -ForegroundColor Gray
     Write-Host "VITE_AUTH0_DOMAIN=dev-5s2csl8rpq2phx88.us.auth0.com" -ForegroundColor Gray
     Write-Host "VITE_AUTH0_CLIENT_ID=qnXHlMOmUhSTiQx0ohzneAvZWtTm8IuS" -ForegroundColor Gray
     Write-Host "VITE_AUTH0_AUDIENCE=fitness_auth" -ForegroundColor Gray

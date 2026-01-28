@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FiUsers, FiActivity, FiTrendingUp, FiAward, FiArrowRight } from 'react-icons/fi'
-import { getDashboardStats, getAllUsers, getAllActivities } from '../services/api'
+import { getDashboardStats, getAllUsers, getAllActivities } from '../services/apiClient'
 import { useNavigate } from 'react-router-dom'
 
 const StatCard = ({ icon, title, value, color, gradient }) => {

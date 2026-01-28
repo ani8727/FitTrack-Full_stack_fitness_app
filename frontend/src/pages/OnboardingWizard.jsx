@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FiCheck, FiUser, FiTarget, FiActivity, FiTrendingUp } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { updateUserProfile, completeOnboarding } from '../services/api'
+import { updateUserProfile, completeOnboarding } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const OnboardingWizard = ({ onComplete }) => {

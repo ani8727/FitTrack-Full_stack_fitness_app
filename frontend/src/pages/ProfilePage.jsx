@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { getUserProfile, updateUserProfile } from '../services/api'
+import { getUserProfile, updateUserProfile } from '../services/apiClient'
 import Toast from '../components/Toast'
 import { FiUser, FiMail, FiActivity, FiTarget, FiHeart, FiAlertCircle, FiSave } from 'react-icons/fi'
 

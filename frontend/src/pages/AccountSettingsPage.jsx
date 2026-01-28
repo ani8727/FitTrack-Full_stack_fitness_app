@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FiAlertTriangle, FiLock, FiLogOut, FiTrash2, FiPauseCircle } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { deactivateAccount, deleteAccount } from '../services/api'
+import { deactivateAccount, deleteAccount } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const AccountSettingsPage = () => {

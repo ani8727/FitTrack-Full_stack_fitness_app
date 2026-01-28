@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FiUser, FiMail, FiSave, FiEdit2, FiActivity, FiTrendingUp, FiAward, FiMapPin, FiTarget, FiAlertCircle, FiHeart } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { getUserProfile, updateUserProfile, getActivityStats } from '../services/api'
+import { getUserProfile, updateUserProfile, getActivityStats } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const ProfilePage = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiUserPlus } from 'react-icons/fi'
-import { registerUser } from '../services/api'
+import { registerUser } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const RegisterPage = ({ onSuccess }) => {

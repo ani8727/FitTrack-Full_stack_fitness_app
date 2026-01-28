@@ -6,7 +6,7 @@ import { useLocation } from 'react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 import HealthInsights from '../components/HealthInsights'
 import Achievements from '../components/Achievements'
-import { getActivities } from '../services/api'
+import { getActivities } from '../services/apiClient'
 
 const Dashboard = () => {
   const location = useLocation()

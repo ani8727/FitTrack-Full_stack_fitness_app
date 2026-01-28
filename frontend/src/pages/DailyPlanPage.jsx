@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { FiCalendar, FiClock, FiActivity, FiCheckCircle, FiTrendingUp, FiCoffee, FiDroplet, FiHeart, FiSun, FiMoon } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { generateDailyPlan, getDailyPlanByDate } from '../services/api'
+import { generateDailyPlan, getDailyPlanByDate } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const DailyPlanPage = () => {

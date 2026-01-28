@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FiActivity, FiTrendingUp, FiAlertCircle, FiCheckCircle, FiZap } from 'react-icons/fi'
-import { getRecommendations } from '../services/api'
+import { getRecommendations } from '../services/apiClient'
 
 const Recommendations = () => {
   const [recommendations, setRecommendations] = useState([])

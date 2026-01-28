@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { FiMail, FiCalendar, FiShield, FiUser, FiArrowLeft, FiTrash2, FiCheckCircle, FiAlertTriangle, FiSlash, FiClock } from 'react-icons/fi'
-import { getAllUsers, updateUserRole, deleteUser, updateUserStatus } from '../services/api'
+import { getAllUsers, updateUserRole, deleteUser, updateUserStatus } from '../services/apiClient'
 import { useNavigate } from 'react-router-dom'
 
 const AdminUsersPage = () => {

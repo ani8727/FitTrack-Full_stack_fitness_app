@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 import HealthInsights from '../components/HealthInsights'
 import Achievements from '../components/Achievements'
-import { getActivities, getActivityStats } from '../services/api'
+import { getActivities, getActivityStats } from '../services/apiClient'
 import { FiActivity, FiTrendingUp, FiAward, FiCalendar, FiArrowRight } from 'react-icons/fi'
 
 const Dashboard = () => {
