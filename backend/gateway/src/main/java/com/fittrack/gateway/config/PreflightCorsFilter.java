@@ -1,5 +1,7 @@
 package com.fittrack.gateway.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +18,8 @@ import reactor.core.publisher.Mono;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class PreflightCorsFilter implements WebFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(PreflightCorsFilter.class);
+
     private static final String ALLOWED_ORIGIN = "https://fittrack-nine-phi.vercel.app";
     private static final String ALLOWED_METHODS = "GET,POST,PUT,DELETE,OPTIONS";
     private static final String ALLOWED_HEADERS = "Authorization,Content-Type,X-Requested-With,X-User-ID,Accept";
@@ -23,6 +27,7 @@ public class PreflightCorsFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+            log.info("Handling preflight OPTIONS for {}", exchange.getRequest().getPath());
             HttpHeaders headers = exchange.getResponse().getHeaders();
             headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOWED_ORIGIN);
             headers.add(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
