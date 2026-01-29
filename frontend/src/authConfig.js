@@ -21,7 +21,7 @@ export const auth0Config = {
   useRefreshTokens: true
 }
 
-export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+export const apiBaseUrl = import.meta.env.VITE_API_URL
 if (!apiBaseUrl) {
-  console.warn('[API] Missing VITE_API_BASE_URL – set it in your .env file')
+  console.warn('[API] Missing VITE_API_URL – set it in your .env file')
 }

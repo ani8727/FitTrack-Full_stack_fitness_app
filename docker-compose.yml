@@ -1,3 +1,0 @@
-# Local infrastructure has been intentionally removed.
-# This file is kept as a placeholder to avoid accidental recreation of local Postgres/Mongo/RabbitMQ.
-# Deploy using cloud-managed services (Neon, MongoDB Atlas, CloudAMQP) and per-service Dockerfiles.
