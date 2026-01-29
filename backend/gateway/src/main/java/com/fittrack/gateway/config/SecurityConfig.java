@@ -23,7 +23,8 @@ public class SecurityConfig {
                 // Allow preflight requests without authentication
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .pathMatchers("/api/**").authenticated()
+                // Protect API routes proxied by gateway
+                .pathMatchers("/users/**", "/activities/**", "/admin/**", "/ai/**", "/auth/**").authenticated()
                 .anyExchange().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

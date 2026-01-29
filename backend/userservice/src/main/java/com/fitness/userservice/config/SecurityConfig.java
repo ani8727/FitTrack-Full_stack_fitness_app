@@ -53,11 +53,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/*/validate").permitAll()
+                .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/contact").permitAll()
+                .requestMatchers(HttpMethod.GET, "/users/*/validate").permitAll()
                 // Internal service-to-service calls can pass X-Service-ID to bypass JWT
-                .requestMatchers("/api/users/**").access((authentication, context) -> {
+                .requestMatchers("/users/**").access((authentication, context) -> {
                     String serviceId = context.getRequest().getHeader("X-Service-ID");
                     if (serviceId != null && !serviceId.isBlank()) {
                         return new AuthorizationDecision(true);
@@ -65,10 +65,10 @@ public class SecurityConfig {
                     var authn = authentication.get();
                     return new AuthorizationDecision(authn != null && authn.isAuthenticated());
                 })
-                .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/users/*/deactivate").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/users/*/delete").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/users/*/reactivate").authenticated()
+                .requestMatchers("/users/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/users/*/deactivate").authenticated()
+                .requestMatchers(HttpMethod.POST, "/users/*/delete").authenticated()
+                .requestMatchers(HttpMethod.POST, "/users/*/reactivate").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

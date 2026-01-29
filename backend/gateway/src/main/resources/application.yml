@@ -9,23 +9,51 @@ spring:
 
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins:
+              - "https://fittrack-nine-phi.vercel.app"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
       routes:
-        - id: user-service
-          uri: ${USER_SERVICE_URL}
-          predicates:
-            - Path=/users/**
-        - id: admin-service
-          uri: ${ADMIN_SERVICE_URL}
-          predicates:
-            - Path=/admin/**
         - id: activity-service
-          uri: ${ACTIVITY_SERVICE_URL}
+          uri: https://fittrack-activity-service.onrender.com
           predicates:
             - Path=/activities/**
+          filters:
+            - StripPrefix=1
+        - id: user-service
+          uri: https://fittrack-user-service.onrender.com
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=1
+        - id: auth-service
+          uri: https://fittrack-auth-service.onrender.com
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        - id: admin-service
+          uri: https://fittrack-admin-service.onrender.com
+          predicates:
+            - Path=/admin/**
+          filters:
+            - StripPrefix=1
         - id: ai-service
-          uri: ${AI_SERVICE_URL}
+          uri: https://fittrack-ai-service.onrender.com
           predicates:
             - Path=/ai/**
+          filters:
+            - StripPrefix=1
 
   # Removed spring.webflux.cors - Spring Cloud Gateway ignores WebFlux CORS.
 

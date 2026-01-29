@@ -18,7 +18,7 @@ public class UserValidationService {
         log.info("Calling User Validation API for userId: {}", userId);
         try{
                 return apiGatewayWebClient.get()
-                    .uri("/api/users/{userId}/validate", userId)
+                    .uri("/users/{userId}/validate", userId)
                     .header("X-Service-ID", "activity-service")
                     .retrieve()
                     .bodyToMono(Boolean.class)

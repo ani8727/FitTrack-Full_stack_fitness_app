@@ -53,7 +53,7 @@ public class ActivityAIService {
 
     private Mono<UserProfile> fetchUserProfile(String userId) {
         return apiGatewayWebClient.get()
-            .uri("/api/users/{userId}", userId)
+            .uri("/users/{userId}", userId)
                 .header("X-Service-ID", "ai-service")
                 .retrieve()
                 .bodyToMono(UserProfile.class)
