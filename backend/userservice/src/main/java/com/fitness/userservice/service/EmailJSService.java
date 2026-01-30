@@ -10,9 +10,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
+/**
+ * EmailJS integration deprecated for this trimmed-down userservice.
+ * Kept as a placeholder (no external calls) to avoid removing code paths abruptly.
+ */
+@Deprecated
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class EmailJSService {
 
     @Value("${emailjs.service-id}")
@@ -35,52 +38,10 @@ public class EmailJSService {
     }
 
     public void sendContactFormEmail(String name, String email, String reason, String message) {
-        try {
-            // Admin notification
-            JsonObject adminParams = new JsonObject();
-            adminParams.addProperty("user_name", name);
-            adminParams.addProperty("user_email", email);
-            adminParams.addProperty("reason", reason);
-            adminParams.addProperty("message", message);
-            adminParams.addProperty("admin_email", adminEmail);
-            adminParams.addProperty("timestamp", System.currentTimeMillis());
-            sendEmail(templateAdminId, adminParams);
-
-            // User confirmation
-            JsonObject userParams = new JsonObject();
-            userParams.addProperty("user_name", name);
-            userParams.addProperty("user_email", email);
-            userParams.addProperty("reason", reason);
-            userParams.addProperty("message", message);
-            userParams.addProperty("timestamp", System.currentTimeMillis());
-            sendEmail(templateUserId, userParams);
-
-            log.info("EmailJS: sent contact emails for {}", email);
-        } catch (Exception ex) {
-            // Non-blocking: log and continue
-            log.error("EmailJS: failed to send contact emails", ex);
-        }
+        // intentionally no-op in production trimmed service
     }
 
     private void sendEmail(String templateId, JsonObject templateParams) {
-        try {
-            JsonObject request = new JsonObject();
-            request.addProperty("service_id", serviceId);
-            request.addProperty("template_id", templateId);
-            request.addProperty("user_id", publicKey);
-            request.add("template_params", templateParams);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<String> entity = new HttpEntity<>(request.toString(), headers);
-
-            restTemplate().postForObject(
-                "https://api.emailjs.com/api/v1.0/email/send",
-                entity,
-                String.class
-            );
-        } catch (Exception e) {
-            log.error("EmailJS: failed to send template {}", templateId, e);
-        }
+        // no-op
     }
 }

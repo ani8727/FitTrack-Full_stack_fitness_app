@@ -10,11 +10,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-/**
- * Startup Validation for User Service Database Connection
- * Ensures database is reachable before application starts accepting requests
- * Fails fast if database is unavailable
- */
 @Slf4j
 @Component
 public class UserDatabaseStartupValidator {

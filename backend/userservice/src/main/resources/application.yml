@@ -3,36 +3,4 @@ server:
 
 spring:
   application:
-    name: user-service
-  config:
-    import: ${SPRING_CONFIG_IMPORT:optional:}
-    enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${AUTH0_JWK_SET_URI}
-  autoconfigure:
-    exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
-  cloud:
-    discovery:
-      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
-    show-sql: ${SPRING_JPA_SHOW_SQL:false}
-
-emailjs:
-  enabled: ${EMAILJS_BACKEND_ENABLED:false}
-  service-id: ${EMAILJS_SERVICE_ID}
-  template-admin: ${EMAILJS_TEMPLATE_ADMIN}
-  template-user: ${EMAILJS_TEMPLATE_USER}
-  public-key: ${EMAILJS_PUBLIC_KEY}
-  admin-email: ${EMAILJS_ADMIN_EMAIL}
+    name: userservice
