@@ -13,3 +13,10 @@ spring:
 app:
   auth0:
     audience: ${AUTH0_AUDIENCE}
+
+emailjs:
+  service-id: ${EMAILJS_SERVICE_ID}
+  template-id: ${EMAILJS_TEMPLATE_ID}
+  public-key: ${EMAILJS_PUBLIC_KEY}
+  template-admin: ${EMAILJS_TEMPLATE_ADMIN}
+  template-user: ${EMAILJS_TEMPLATE_USER}
