@@ -2,22 +2,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: when-authorized
-      probes:
-        enabled: true
+        include: health,info
 
 spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
   jpa:
-    open-in-view: false
+    hibernate:
+      ddl-auto: update
     show-sql: false
 
-logging:
-  level:
-    root: INFO
-    com.fitness: INFO
-    org.springframework: WARN
-    org.hibernate: WARN
-    com.zaxxer.hikari: INFO
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_DOMAIN}
+
+auth0:
+  audience: ${AUTH0_AUDIENCE}

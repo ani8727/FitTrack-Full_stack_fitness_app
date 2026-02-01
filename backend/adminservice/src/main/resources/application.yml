@@ -1,40 +1,6 @@
-server:
-  port: ${PORT:8082}
-
 spring:
   application:
     name: admin-service
 
-  config:
-    # No Spring Cloud Config Server in Render
-    import: ${SPRING_CONFIG_IMPORT:optional:}
-    enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
-
-  autoconfigure:
-    exclude: io.sentry.spring.boot.jakarta.SentryAutoConfiguration
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # Auth0 public key endpoint
-          jwk-set-uri: ${AUTH0_JWK_SET_URI:https://dev-5s2csl8rpq2phx88.us.auth0.com/.well-known/jwks.json}
-
-  cloud:
-    discovery:
-      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}   # Render does not use Eureka
-
-  datasource:
-    # Provided by Render ENV
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
-    show-sql: ${SPRING_JPA_SHOW_SQL:false}
-    properties:
-      hibernate:
-        # NOT NEEDED – Spring auto-detects PostgreSQL
-        # dialect: org.hibernate.dialect.PostgreSQLDialect
+server:
+  port: ${PORT:8082}

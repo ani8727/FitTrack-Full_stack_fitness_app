@@ -1,38 +1,51 @@
 package com.fitness.adminservice.entity;
 
+import jakarta.persistence.*;
 import java.time.Instant;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "admin_audit_logs")
-@Getter
-@Setter
 public class AdminAuditLog {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(name = "admin_keycloak_id", nullable = false, length = 128)
-    private String adminKeycloakId;
+	@Column(name = "target_user_id", length = 64)
+	private String targetUserId;
 
-    @Column(name = "action", nullable = false, length = 64)
-    private String action;
+	@Column(length = 128)
+	private String action;
 
-    @Column(name = "target_user_id", length = 64)
-    private String targetUserId;
+	@Column(name = "performed_by", length = 64)
+	private String performedBy;
 
-    @Column(name = "metadata", columnDefinition = "TEXT")
-    private String metadata;
+	@Column(length = 2000)
+	private String details;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private Instant createdAt;
+
+	@PrePersist
+	public void prePersist() {
+		this.createdAt = Instant.now();
+	}
+
+	// getters and setters
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
+
+	public String getTargetUserId() { return targetUserId; }
+	public void setTargetUserId(String targetUserId) { this.targetUserId = targetUserId; }
+
+	public String getAction() { return action; }
+	public void setAction(String action) { this.action = action; }
+
+	public String getPerformedBy() { return performedBy; }
+	public void setPerformedBy(String performedBy) { this.performedBy = performedBy; }
+
+	public String getDetails() { return details; }
+	public void setDetails(String details) { this.details = details; }
+
+	public Instant getCreatedAt() { return createdAt; }
 }
