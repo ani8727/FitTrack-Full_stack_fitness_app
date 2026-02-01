@@ -1,25 +1,20 @@
 package com.fitness.adminservice.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import com.fitness.adminservice.dto.ActivityDTO;
+import com.fitness.adminservice.dto.UserDTO;
+import com.fitness.adminservice.dto.WorkoutDTO;
+import com.fitness.adminservice.service.AdminFacadeService;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fitness.adminservice.dto.AdminRequestDTO;
-import com.fitness.adminservice.dto.AdminResponseDTO;
-import com.fitness.adminservice.dto.UserDTO;
-import com.fitness.adminservice.entity.Activity;
-import com.fitness.adminservice.service.ActivityService;
-import com.fitness.adminservice.service.AdminService;
-import com.fitness.adminservice.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,75 +23,53 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final AdminService adminService;
-    private final UserService userService;
-    private final ActivityService activityService;
+    private final AdminFacadeService facade;
 
-    @GetMapping("/me")
-    public ResponseEntity<AdminResponseDTO> getMe(@AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(adminService.getMe(jwt));
-    }
+    // All /admin/** endpoints require ADMIN role via SecurityConfig
 
-    @PostMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<AdminResponseDTO> createAdmin(@RequestBody AdminRequestDTO request, @AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(adminService.createAdmin(request, jwt));
-    }
-
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<AdminResponseDTO> getAdminById(@PathVariable Long id) {
-        return ResponseEntity.ok(adminService.getAdminById(id));
-    }
-
-    // User management
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<java.util.List<UserDTO>> listUsers() {
-        return ResponseEntity.ok(userService.listAll());
-    }
-
-    @GetMapping("/users/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<UserDTO> getUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getById(id));
-    }
-
-    @PutMapping("/users/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO dto) {
-        return ResponseEntity.ok(userService.update(id, dto));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDTO>> listUsers() {
+        return ResponseEntity.ok(facade.listUsers());
     }
 
     @DeleteMapping("/users/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.softDelete(id);
+        facade.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Activity
-    @GetMapping("/activity")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<java.util.List<Activity>> listActivity() {
-        return ResponseEntity.ok(activityService.listAll());
+    @GetMapping("/activities")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ActivityDTO>> listActivities() {
+        return ResponseEntity.ok(facade.listActivities());
     }
 
-    @GetMapping("/activity/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<java.util.List<Activity>> listActivityForUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(activityService.listByUser(userId));
+    @DeleteMapping("/activities/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
+        facade.deleteActivity(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/workouts")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<WorkoutDTO>> listWorkouts() {
+        return ResponseEntity.ok(facade.listWorkouts());
+    }
+
+    @DeleteMapping("/workouts/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteWorkout(@PathVariable Long id) {
+        facade.deleteWorkout(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<java.util.Map<String, Object>> stats() {
-        // simple aggregated stats
-        java.util.Map<String, Object> m = java.util.Map.of(
-            "totalUsers", userService.listAll().size(),
-            "totalActivities", activityService.listAll().size()
-        );
-        return ResponseEntity.ok(m);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> stats() {
+        return ResponseEntity.ok(facade.stats());
     }
 }
 

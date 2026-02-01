@@ -1,53 +1,54 @@
 What this service does
 ----------------------
-The Admin Service provides a small set of endpoints for managing and querying admin user records. It runs as a Spring Boot resource-server (no login/redirect flow) and accepts JWTs issued by Auth0 forwarded by the Gateway.
+The Admin Service is a control-plane (admin-only) microservice that manages and inspects other services via REST. It does NOT own business data or database tables. It reads and modifies user/activity/workout data by calling the corresponding microservices.
 
-Tech stack
-----------
-- Java 21
-- Spring Boot
-- Spring Data JPA (PostgreSQL)
-- Spring Security OAuth2 Resource Server
-- Actuator
+Architecture
+------------
+- controller → service → client → dto
+- No JPA, no repositories, no entities, no database connection
+- Communicates to other microservices via OpenFeign (Web REST)
 
-Endpoints
----------
-- GET /admin/me -> returns the logged-in admin (uses Auth0 `sub` as auth0Id)
-- POST /admin -> create new admin (requires SUPER_ADMIN)
-- GET /admin/{id} -> fetch admin by id (requires SUPER_ADMIN)
+Responsibilities
+----------------
+- View all users: `GET /admin/users`
+- Delete user: `DELETE /admin/users/{id}`
+- View all activities: `GET /admin/activities`
+- Delete activity: `DELETE /admin/activities/{id}`
+- View all workouts: `GET /admin/workouts`
+- Delete workout: `DELETE /admin/workouts/{id}`
+- System stats (aggregated): `GET /admin/stats`
 
-User management (requires ADMIN or SUPER_ADMIN):
-- GET /admin/users -> list all users
-- GET /admin/users/{id} -> get user by id
-- PUT /admin/users/{id} -> update user
-- DELETE /admin/users/{id} -> soft-delete user (SUPER_ADMIN only)
+How it talks to other services
+-----------------------------
+- Uses OpenFeign clients bound to environment URLs:
+	- `USER_SERVICE_URL` → `UserServiceClient`
+	- `ACTIVITY_SERVICE_URL` → `ActivityServiceClient`
+	- `WORKOUT_SERVICE_URL` → `WorkoutServiceClient`
+- All data is proxied; this service only maps DTOs and aggregates counts.
 
-Activity / Logs (requires ADMIN or SUPER_ADMIN):
-- GET /admin/activity -> list recent activities
-- GET /admin/activity/{userId} -> list activities for a specific user
-
-Statistics:
-- GET /admin/stats -> aggregated stats (total users, total activities)
+Auth0 Security (Resource Server)
+--------------------------------
+- This service is a Resource Server only (no interactive login).
+- It validates JWTs forwarded by the Gateway using `AUTH0_DOMAIN` (issuer) and `AUTH0_AUDIENCE`.
+- All `/admin/**` endpoints require the `ADMIN` role.
+- `/actuator/health` is public.
 
 Environment variables
 ---------------------
-- DB_URL - JDBC URL to Postgres (e.g. jdbc:postgresql://host:5432/db)
-- DB_USERNAME
-- DB_PASSWORD
-- AUTH0_DOMAIN - Auth0 issuer domain (e.g. https://your-tenant.us.auth0.com)
-- AUTH0_AUDIENCE - expected audience in incoming tokens
-- EMAILJS_SERVICE_ID
-- EMAILJS_TEMPLATE_ID
-- EMAILJS_PUBLIC_KEY
-- EMAILJS_PRIVATE_KEY
+- `AUTH0_DOMAIN` (issuer URI, e.g. https://your-tenant.us.auth0.com)
+- `AUTH0_AUDIENCE` (expected audience in tokens)
+- `USER_SERVICE_URL` (base URL of UserService)
+- `ACTIVITY_SERVICE_URL` (base URL of ActivityService)
+- `WORKOUT_SERVICE_URL` (base URL of WorkoutService)
 
-How it works with Gateway and Auth0
-----------------------------------
-The Gateway is responsible for CORS, login redirects and presenting the OAuth2 login flow. The Gateway issues or forwards JWTs to downstream services. This Admin Service is configured as a resource server only and validates incoming JWTs (issuer + audience).
+Deploying on Render
+-------------------
+1. Add environment variables in the Render service settings from `.env.example`.
+2. Build with Maven: `mvn -DskipTests package` or use the provided `Dockerfile`.
+3. Ensure the Gateway forwards the `Authorization: Bearer <token>` header to this service.
+4. Expose only `/actuator/health` publicly; keep `/admin/**` protected behind the Gateway.
 
-How to deploy on Render
------------------------
-1. Set environment variables from `.env.example` in the Render dashboard.
-2. Build with Maven and deploy the produced JAR or use the Dockerfile provided.
-3. Ensure the Gateway forwards Authorization: Bearer <token> header to this service.
-4. Expose only necessary actuator endpoints (`/actuator/health`) publicly.
+Notes
+-----
+- The admin service intentionally contains no database configuration and no JPA or Hibernate artifacts.
+- If upstream service endpoints differ from `/users`, `/activities`, `/workouts`, update the corresponding Feign client `url` or method mappings.

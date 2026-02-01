@@ -5,16 +5,6 @@ management:
         include: health,info
 
 spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-
   security:
     oauth2:
       resourceserver:
@@ -23,3 +13,8 @@ spring:
 
 auth0:
   audience: ${AUTH0_AUDIENCE}
+
+services:
+  user: ${USER_SERVICE_URL}
+  activity: ${ACTIVITY_SERVICE_URL}
+  workout: ${WORKOUT_SERVICE_URL}

@@ -1,1 +1,1 @@
-## test configuration removed - use application.yml and application-prod.yml
+## test configuration removed - admin service is production-only config in application-prod.yml
