@@ -70,6 +70,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Add H2 for tests to allow in-memory DB during test profile -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<!-- H2 removed for production-ready PostgreSQL-only service -->
 		<!-- Sentry monitoring -->
 		<dependency>

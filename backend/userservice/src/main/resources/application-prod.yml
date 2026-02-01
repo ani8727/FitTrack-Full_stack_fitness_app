@@ -20,3 +20,5 @@ emailjs:
   public-key: ${EMAILJS_PUBLIC_KEY}
   template-admin: ${EMAILJS_TEMPLATE_ADMIN}
   template-user: ${EMAILJS_TEMPLATE_USER}
+  admin-email: ${EMAILJS_ADMIN_EMAIL}
+
