@@ -14,8 +14,6 @@ Responsibilities
 - Delete user: `DELETE /admin/users/{id}`
 - View all activities: `GET /admin/activities`
 - Delete activity: `DELETE /admin/activities/{id}`
-- View all workouts: `GET /admin/workouts`
-- Delete workout: `DELETE /admin/workouts/{id}`
 - System stats (aggregated): `GET /admin/stats`
 
 How it talks to other services
@@ -23,7 +21,6 @@ How it talks to other services
 - Uses OpenFeign clients bound to environment URLs:
 	- `USER_SERVICE_URL` → `UserServiceClient`
 	- `ACTIVITY_SERVICE_URL` → `ActivityServiceClient`
-	- `WORKOUT_SERVICE_URL` → `WorkoutServiceClient`
 - All data is proxied; this service only maps DTOs and aggregates counts.
 
 Auth0 Security (Resource Server)

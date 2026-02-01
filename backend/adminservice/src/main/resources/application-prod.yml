@@ -1,20 +1,23 @@
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
 
 spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${AUTH0_DOMAIN}
-
-auth0:
-  audience: ${AUTH0_AUDIENCE}
-
-services:
-  user: ${USER_SERVICE_URL}
-  activity: ${ACTIVITY_SERVICE_URL}
-  workout: ${WORKOUT_SERVICE_URL}
+          issuer-uri: https://${AUTH0_DOMAIN}/
+          audience: ${AUTH0_AUDIENCE}

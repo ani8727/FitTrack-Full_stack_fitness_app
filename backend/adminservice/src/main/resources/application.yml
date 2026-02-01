@@ -3,4 +3,4 @@ spring:
     name: admin-service
 
 server:
-  port: ${PORT:8082}
+  port: 8082

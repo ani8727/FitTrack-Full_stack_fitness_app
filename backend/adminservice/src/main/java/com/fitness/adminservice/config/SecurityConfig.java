@@ -1,15 +1,14 @@
 package com.fitness.adminservice.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -17,13 +16,24 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.core.OAuth2Error;
 
-import java.util.Objects;
+import java.util.Collection;
+import java.util.ArrayList;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}")
+    private String issuerUri;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience:}")
+    private String audience;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,29 +56,28 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean(JwtDecoder.class)
     public JwtDecoder jwtDecoder() {
-        String domain = System.getenv("AUTH0_DOMAIN");
-        String audience = System.getenv("AUTH0_AUDIENCE");
-        if (domain == null) {
-            throw new IllegalStateException("AUTH0_DOMAIN must be set");
+        if (issuerUri == null || issuerUri.isBlank()) {
+            throw new IllegalStateException("spring.security.oauth2.resourceserver.jwt.issuer-uri must be set");
         }
-        String jwkSetUri = domain.endsWith("/") ? domain + ".well-known/jwks.json" : domain + "/.well-known/jwks.json";
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        JwtDecoder decoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(domain);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
         OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-        decoder.setJwtValidator(withAudience);
+
+        if (decoder instanceof org.springframework.security.oauth2.jwt.NimbusJwtDecoder jwtDecoder) {
+            jwtDecoder.setJwtValidator(withAudience);
+        }
         return decoder;
     }
 
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            var authorities = new java.util.ArrayList<org.springframework.security.core.GrantedAuthority>();
-            Object roles = jwt.getClaims().get("roles");
-            if (roles instanceof java.util.Collection<?> col) {
+            ArrayList<org.springframework.security.core.GrantedAuthority> authorities = new ArrayList<>();
+            Object claim = jwt.getClaim("https://fittrack.app/roles");
+            if (claim instanceof Collection<?> col) {
                 for (Object r : col) {
                     if (r != null) {
                         String role = r.toString();
@@ -76,15 +85,6 @@ public class SecurityConfig {
                             role = "ROLE_" + role;
                         }
                         authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
-                    }
-                }
-            }
-            // Fallback: check for 'permissions' or 'scope' claims
-            Object perms = jwt.getClaims().get("permissions");
-            if (perms instanceof java.util.Collection<?> pcol) {
-                for (Object p : pcol) {
-                    if (p != null) {
-                        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(p.toString()));
                     }
                 }
             }
@@ -106,12 +106,12 @@ public class SecurityConfig {
                 return OAuth2TokenValidatorResult.success();
             }
             Object aud = token.getClaims().get("aud");
-            if (aud instanceof String && Objects.equals(aud, audience)) {
+            if (aud instanceof String && audience.equals(aud)) {
                 return OAuth2TokenValidatorResult.success();
             }
             if (aud instanceof Iterable<?>) {
                 for (Object a : (Iterable<?>) aud) {
-                    if (Objects.equals(a, audience)) {
+                    if (audience.equals(a)) {
                         return OAuth2TokenValidatorResult.success();
                     }
                 }

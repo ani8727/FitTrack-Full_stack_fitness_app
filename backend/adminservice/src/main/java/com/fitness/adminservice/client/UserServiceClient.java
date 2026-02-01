@@ -21,6 +21,9 @@ public interface UserServiceClient {
     @DeleteMapping("/users/{id}")
     void deleteUser(@PathVariable("id") Long id);
 
+    @org.springframework.web.bind.annotation.PutMapping("/users/{id}")
+    void updateUser(@PathVariable("id") Long id, @org.springframework.web.bind.annotation.RequestBody UserDTO user);
+
     // Optional: ban endpoint; some user services use this pattern
     @GetMapping("/users/search")
     List<UserDTO> search(@RequestParam("q") String q);

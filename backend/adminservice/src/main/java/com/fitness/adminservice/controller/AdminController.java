@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.fitness.adminservice.dto.ActivityDTO;
 import com.fitness.adminservice.dto.UserDTO;
-import com.fitness.adminservice.dto.WorkoutDTO;
+// workouts removed (no upstream workout service)
 import com.fitness.adminservice.service.AdminFacadeService;
 
 import org.springframework.http.ResponseEntity;
@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,10 +34,23 @@ public class AdminController {
         return ResponseEntity.ok(facade.listUsers());
     }
 
+    @GetMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDTO> getUser(@PathVariable Long id) {
+        return ResponseEntity.ok(facade.getUser(id));
+    }
+
     @DeleteMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         facade.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateUser(@PathVariable Long id, @org.springframework.web.bind.annotation.RequestBody UserDTO user) {
+        facade.updateUser(id, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -53,18 +67,7 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/workouts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<WorkoutDTO>> listWorkouts() {
-        return ResponseEntity.ok(facade.listWorkouts());
-    }
-
-    @DeleteMapping("/workouts/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteWorkout(@PathVariable Long id) {
-        facade.deleteWorkout(id);
-        return ResponseEntity.noContent().build();
-    }
+    // Workout endpoints removed — no workout microservice available
 
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,1 +1,9 @@
-## bootstrap configuration removed - Gateway and Render provide discovery/config
+spring:
+  application:
+    name: adminservice
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
