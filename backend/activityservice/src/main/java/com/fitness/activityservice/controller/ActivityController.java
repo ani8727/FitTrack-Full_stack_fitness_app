@@ -1,20 +1,29 @@
 package com.fitness.activityservice.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.fitness.activityservice.dto.ActivityRequest;
 import com.fitness.activityservice.dto.ActivityResponse;
 import com.fitness.activityservice.service.ActivityService;
-import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/")
-@AllArgsConstructor
+@RequestMapping("/activities")
+@RequiredArgsConstructor
 public class ActivityController {
 
-    private ActivityService activityService;
+    private final ActivityService activityService;
 
     @PostMapping
     public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request, @RequestHeader("X-User-ID") String userId){
@@ -60,12 +69,12 @@ public class ActivityController {
 
     // ADMIN ENDPOINTS
     
-    @GetMapping("/admin/all")
+    @GetMapping("/admin/activities")
     public ResponseEntity<List<ActivityResponse>> getAllActivities(){
         return ResponseEntity.ok(activityService.getAllActivities());
     }
 
-    @GetMapping("/admin/stats")
+    @GetMapping("/admin/activities/stats")
     public ResponseEntity<?> getAdminStats(){
         List<ActivityResponse> activities = activityService.getAllActivities();
         
@@ -82,7 +91,7 @@ public class ActivityController {
         }});
     }
 
-    @DeleteMapping("/admin/{activityId}")
+    @DeleteMapping("/admin/activities/{activityId}")
     public ResponseEntity<Void> adminDeleteActivity(@PathVariable String activityId){
         activityService.adminDeleteActivity(activityId);
         return ResponseEntity.ok().build();

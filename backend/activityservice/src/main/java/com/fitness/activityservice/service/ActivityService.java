@@ -3,8 +3,6 @@ package com.fitness.activityservice.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fitness.activityservice.dto.ActivityRequest;
@@ -12,32 +10,23 @@ import com.fitness.activityservice.dto.ActivityResponse;
 import com.fitness.activityservice.model.Activity;
 import com.fitness.activityservice.repository.ActivityRepository;
 
-// import lombok.RequiredArgsConstructor;
-// import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ActivityService {
 
-    private ActivityRepository activityRepository;
-    private UserValidationService userValidationService;
-    // private final RabbitTemplate rabbitTemplate;
-
-    @Value("${rabbitmq.custom.exchange:activity.exchange}")
-    private String exchange;
-
-    @Value("${rabbitmq.custom.routingKey:activity.tracking}")
-    private String routingKey;
-
-    public ActivityService(ActivityRepository activityRepository, UserValidationService userValidationService) {
-        this.activityRepository = activityRepository;
-        this.userValidationService = userValidationService;
-    }
+    private final ActivityRepository activityRepository;
+    private final UserValidationService userValidationService;
+    // RabbitMQ integration is optional; keep config keys for future use
 
     public ActivityResponse trackActivity(ActivityRequest request) {
         // Validate user exists before creating activity
         boolean isValidUser = userValidationService.validateUser(request.getUserId());
         if (!isValidUser) {
-            System.out.println("User not found, will skip validation: " + request.getUserId());
+            log.warn("User not found or validation failed, continuing: {}", request.getUserId());
             // Don't throw error, just log warning and continue
             // This allows activities to be created even if user validation fails
         }
@@ -51,18 +40,12 @@ public class ActivityService {
                 .additionalMetrics(request.getAdditionalMetrics())
                 .build();
 
-        // Fixed null type safety issue
         Activity savedActivity = activityRepository.save(activity);
         if (savedActivity == null) {
             throw new IllegalStateException("Failed to save activity");
         }
 
-        // Publish to RabbitMQ for AI Processing (disabled: let Spring Boot auto-configure RabbitMQ)
-        // try {
-        //     rabbitTemplate.convertAndSend(exchange, routingKey, savedActivity);
-        // } catch(Exception e) {
-        //     log.error("Failed to publish activity to RabbitMQ : ", e);
-        // }
+        // (Optional) publish to RabbitMQ for downstream processing if enabled by configuration
 
         return mapToResponse(savedActivity);
     }
@@ -112,7 +95,7 @@ public class ActivityService {
         }
         
         activityRepository.deleteById(activityId);
-        System.out.println("Activity deleted: " + activityId + " by user: " + userId);
+        log.info("Activity deleted: {} by user: {}", activityId, userId);
     }
 
     // ADMIN METHODS
@@ -129,6 +112,6 @@ public class ActivityService {
             throw new IllegalArgumentException("Activity ID cannot be null");
         }
         activityRepository.deleteById(activityId);
-        System.out.println("Activity deleted by admin: " + activityId);
+        log.info("Activity deleted by admin: {}", activityId);
     }
 }
