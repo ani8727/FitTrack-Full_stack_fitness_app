@@ -1,0 +1,11 @@
+# Ignore environment secrets
+.env
+
+# Maven / Java
+target/
+*.jar
+
+# IDE
+*.iml
+.idea/
+.vscode/
