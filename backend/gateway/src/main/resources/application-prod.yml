@@ -1,54 +1,60 @@
-server:
-  port: ${PORT:8080}
-
 spring:
   application:
     name: gateway
-
   cloud:
     gateway:
       globalcors:
         corsConfigurations:
           "[/**]":
             allowedOrigins:
-              - "https://fittrack-nine-phi.vercel.app"
+              - "${FRONTEND_URL}"
             allowedMethods:
               - GET
               - POST
               - PUT
               - DELETE
               - OPTIONS
+              - PATCH
             allowedHeaders:
-              - "*"
+              - Authorization
+              - Content-Type
+              - Accept
             allowCredentials: true
       routes:
-        - id: activity-service
-          uri: https://fittrack-activity-service.onrender.com
+        - id: userservice
+          uri: lb://userservice
           predicates:
-            - Path=/activities/**
+            - Path=/api/users/**
           filters:
             - StripPrefix=1
-        - id: user-service
-          uri: https://fittrack-user-service.onrender.com
+        - id: adminservice
+          uri: lb://adminservice
           predicates:
-            - Path=/users/**
+            - Path=/api/admin/**
           filters:
             - StripPrefix=1
-        - id: auth-service
-          uri: https://fittrack-auth-service.onrender.com
+        - id: activityservice
+          uri: lb://activityservice
           predicates:
-            - Path=/auth/**
+            - Path=/api/activity/**
           filters:
             - StripPrefix=1
-        - id: admin-service
-          uri: https://fittrack-admin-service.onrender.com
-          predicates:
-            - Path=/admin/**
-          filters:
-            - StripPrefix=1
-        - id: ai-service
-          uri: https://fittrack-ai-service.onrender.com
-          predicates:
-            - Path=/ai/**
-          filters:
-            - StripPrefix=1
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+
+server:
+  port: ${PORT:8085}
