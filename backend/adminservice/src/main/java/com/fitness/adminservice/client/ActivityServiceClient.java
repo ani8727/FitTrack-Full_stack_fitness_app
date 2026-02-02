@@ -1,12 +1,18 @@
 package com.fitness.adminservice.client;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.fitness.adminservice.dto.ActivityDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,18 +20,20 @@ import org.springframework.web.client.RestTemplate;
 public class ActivityServiceClient {
 
     private final RestTemplate restTemplate;
-    private final String baseUrl;
+    private final String gatewayUrl;
 
-    public ActivityServiceClient(RestTemplate restTemplate, @Value("${ACTIVITY_SERVICE_URL:}") String baseUrl) {
+    public ActivityServiceClient(RestTemplate restTemplate, @Value("${GATEWAY_URL:https://fittrack-gateway.onrender.com}") String gatewayUrl) {
         this.restTemplate = restTemplate;
-        this.baseUrl = baseUrl != null ? baseUrl.replaceAll("/$", "") : "";
+        this.gatewayUrl = gatewayUrl != null ? gatewayUrl.replaceAll("/$", "") : "";
     }
 
     public List<ActivityDTO> listActivities() {
+        String url = gatewayUrl + "/activity-service/activities";
+        HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
         ResponseEntity<List<ActivityDTO>> resp = restTemplate.exchange(
-                baseUrl + "/activities",
+                url,
                 HttpMethod.GET,
-                null,
+                entity,
                 new ParameterizedTypeReference<List<ActivityDTO>>() {
                 }
         );
@@ -33,10 +41,25 @@ public class ActivityServiceClient {
     }
 
     public ActivityDTO getActivity(Long id) {
-        return restTemplate.getForObject(baseUrl + "/activities/" + id, ActivityDTO.class);
+        String url = gatewayUrl + "/activity-service/activities/" + id;
+        HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
+        ResponseEntity<ActivityDTO> resp = restTemplate.exchange(url, HttpMethod.GET, entity, ActivityDTO.class);
+        return resp.getBody();
     }
 
     public void deleteActivity(Long id) {
-        restTemplate.delete(baseUrl + "/activities/" + id);
+        String url = gatewayUrl + "/activity-service/activities/" + id;
+        HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
+        restTemplate.exchange(url, HttpMethod.DELETE, entity, Void.class);
+    }
+
+    private HttpHeaders buildHeadersWithBearer() {
+        HttpHeaders headers = new HttpHeaders();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken) {
+            String token = ((JwtAuthenticationToken) auth).getToken().getTokenValue();
+            headers.setBearerAuth(token);
+        }
+        return headers;
     }
 }
