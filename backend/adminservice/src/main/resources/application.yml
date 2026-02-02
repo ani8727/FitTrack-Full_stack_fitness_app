@@ -4,3 +4,8 @@ spring:
 
 server:
   port: ${PORT:8082}
+
+service:
+  gateway-url: ${GATEWAY_URL:https://fittrack-gateway.onrender.com}
+  user-service-url: ${USER_SERVICE_URL:${GATEWAY_URL:https://fittrack-gateway.onrender.com}/user-service}
+  activity-service-url: ${ACTIVITY_SERVICE_URL:${GATEWAY_URL:https://fittrack-gateway.onrender.com}/activity-service}

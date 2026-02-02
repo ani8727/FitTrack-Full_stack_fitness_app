@@ -19,3 +19,9 @@ spring:
           issuer-uri: https://${AUTH0_DOMAIN}/
           audience: ${AUTH0_AUDIENCE}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
