@@ -2,22 +2,41 @@ package com.fitness.adminservice.client;
 
 import java.util.List;
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
 import com.fitness.adminservice.dto.ActivityDTO;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-@FeignClient(name = "activity-service-client", url = "${ACTIVITY_SERVICE_URL}")
-public interface ActivityServiceClient {
+@Component
+public class ActivityServiceClient {
 
-    @GetMapping("/activities")
-    List<ActivityDTO> listActivities();
+    private final RestTemplate restTemplate;
+    private final String baseUrl;
 
-    @GetMapping("/activities/{id}")
-    ActivityDTO getActivity(@PathVariable("id") Long id);
+    public ActivityServiceClient(RestTemplate restTemplate, @Value("${ACTIVITY_SERVICE_URL:}") String baseUrl) {
+        this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl != null ? baseUrl.replaceAll("/$", "") : "";
+    }
 
-    @DeleteMapping("/activities/{id}")
-    void deleteActivity(@PathVariable("id") Long id);
+    public List<ActivityDTO> listActivities() {
+        ResponseEntity<List<ActivityDTO>> resp = restTemplate.exchange(
+                baseUrl + "/activities",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ActivityDTO>>() {
+                }
+        );
+        return resp.getBody();
+    }
+
+    public ActivityDTO getActivity(Long id) {
+        return restTemplate.getForObject(baseUrl + "/activities/" + id, ActivityDTO.class);
+    }
+
+    public void deleteActivity(Long id) {
+        restTemplate.delete(baseUrl + "/activities/" + id);
+    }
 }
