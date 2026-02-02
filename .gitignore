@@ -79,3 +79,4 @@ Logs/
 # Database dumps
 *.sql.bak
 *.db
+"backend/aiservice/.env" 
