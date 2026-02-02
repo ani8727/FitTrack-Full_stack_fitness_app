@@ -5,16 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.dto.UserProfile;
 import com.fitness.aiservice.model.Activity;
 import com.fitness.aiservice.model.Recommendation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 public class ActivityAIService {
+    private static final Logger log = LoggerFactory.getLogger(ActivityAIService.class);
     private final GeminiService geminiService;
     private final WebClient apiGatewayWebClient;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -25,7 +27,11 @@ public class ActivityAIService {
     }
 
     private void logError(String message, Throwable e) {
-        System.err.println(message + (e != null ? (": " + e.getMessage()) : ""));
+        if (e != null) {
+            log.error(message, e);
+        } else {
+            log.error(message);
+        }
     }
 
     public Mono<Recommendation> generateRecommendation(Activity activity) {
@@ -100,7 +106,7 @@ public class ActivityAIService {
                 rec.setGenerated(true);
                 return rec;
 
-        } catch (IOException | IllegalArgumentException e){
+        } catch (Exception e){
             logError("Error occurred while generating recommendation", e);
             return createDefaultRecommendation(activity);
         }

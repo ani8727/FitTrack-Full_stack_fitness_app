@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fitness.aiservice.dto.UserProfile;
 import com.fitness.aiservice.model.DailyPlan;
 import com.fitness.aiservice.repository.DailyPlanRepository;
-// Lombok annotations not required for constructor or logging
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 @Service
 public class DailyPlanService {
+    private static final Logger log = LoggerFactory.getLogger(DailyPlanService.class);
     private final DailyPlanRepository dailyPlanRepository;
     private final GeminiService geminiService;
     private final WebClient apiGatewayWebClient;
@@ -33,7 +35,11 @@ public class DailyPlanService {
     }
 
     private void logError(String message, Throwable e) {
-        System.err.println(message + (e != null ? (": " + e.getMessage()) : ""));
+        if (e != null) {
+            log.error(message, e);
+        } else {
+            log.error(message);
+        }
     }
 
     @SuppressWarnings("null")
@@ -49,18 +55,17 @@ public class DailyPlanService {
             .publishOn(Schedulers.boundedElastic())
                 .flatMap(userProfile -> {
                     String prompt = createDailyPlanPrompt(userProfile, planDate);
-                    return geminiService.getAnswer(prompt)
+                        return geminiService.getAnswer(prompt)
                             .map(aiResponse -> processDailyPlanResponse(userId, planDate, aiResponse, userProfile))
                             .doOnNext(plan -> {
                                 if (plan != null) {
                                     dailyPlanRepository.save(plan);
-                                    // log.debug("Daily plan saved for user: {}", userId);
-                                    System.out.println("Daily plan saved for user: " + userId);
+                                    log.info("Daily plan saved for user: {}", userId);
                                 }
                             })
-                            .onErrorReturn(createDefaultDailyPlan(userId, planDate, userProfile));
+                            .onErrorReturn(createDefaultDailyPlan(userId, planDate));
                 })
-                .onErrorReturn(createDefaultDailyPlan(userId, planDate, null));
+                .onErrorReturn(createDefaultDailyPlan(userId, planDate));
     }
 
     private Mono<UserProfile> fetchUserProfile(String userId) {
@@ -133,11 +138,11 @@ public class DailyPlanService {
 
         } catch (Exception e) {
             logError("Error processing daily plan response", e);
-            return createDefaultDailyPlan(userId, planDate, userProfile);
+            return createDefaultDailyPlan(userId, planDate);
         }
     }
 
-    private DailyPlan createDefaultDailyPlan(String userId, LocalDate planDate, UserProfile userProfile) {
+    private DailyPlan createDefaultDailyPlan(String userId, LocalDate planDate) {
         List<DailyPlan.WorkoutPlan> defaultWorkouts = new ArrayList<>();
         
         DailyPlan.WorkoutPlan workout1 = new DailyPlan.WorkoutPlan();
@@ -243,10 +248,10 @@ public class DailyPlanService {
     public DailyPlan getOrGeneratePlanByDate(String userId, LocalDate planDate) {
         return dailyPlanRepository.findByUserIdAndPlanDate(userId, planDate)
                 .orElseGet(() -> {
-                    DailyPlan generated = generateDailyPlan(userId, planDate)
-                            .onErrorReturn(createDefaultDailyPlan(userId, planDate, null))
+                        DailyPlan generated = generateDailyPlan(userId, planDate)
+                                .onErrorReturn(createDefaultDailyPlan(userId, planDate))
                             .block();
-                    return generated != null ? generated : createDefaultDailyPlan(userId, planDate, null);
+                            return generated != null ? generated : createDefaultDailyPlan(userId, planDate);
                 });
     }
 
@@ -255,7 +260,7 @@ public class DailyPlanService {
      */
     public DailyPlan updatePlan(String userId, LocalDate planDate, DailyPlan request) {
         DailyPlan plan = dailyPlanRepository.findByUserIdAndPlanDate(userId, planDate)
-                .orElse(createDefaultDailyPlan(userId, planDate, null));
+            .orElse(createDefaultDailyPlan(userId, planDate));
 
         // Overwrite full sections when provided
         if (request.getMorningRoutine() != null) plan.setMorningRoutine(request.getMorningRoutine());
