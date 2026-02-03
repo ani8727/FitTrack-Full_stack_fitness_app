@@ -47,7 +47,7 @@ const RegisterPage = ({ onSuccess }) => {
       // Create username from email
       const username = formData.email.split('@')[0]
       
-      const response = await registerUser({
+      await registerUser({
         username,
         firstName: formData.firstName,
         lastName: formData.lastName,

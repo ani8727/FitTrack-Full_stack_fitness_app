@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { getActivity, getActivityRecommendation } from '../shared/api/api'
 
 const ActivityDetail = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [activity, setActivity] = useState(null);
-  const [recommendation, setRecommendation] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+ const { id } = useParams();
+ const navigate = useNavigate();
+
+ const [activity, setActivity] = useState(null);
+ const [recommendation, setRecommendation] = useState(null);
+ const [loading, setLoading] = useState(true);
+ const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchActivityData = async () => {
@@ -23,12 +24,12 @@ const ActivityDetail = () => {
         try {
           const recResponse = await getActivityRecommendation(id);
           setRecommendation(recResponse.data);
-        } catch (recError) {
+        } catch {
           // Recommendation might not exist yet - that's okay
         }
       } catch (error) {
         console.error('Error fetching activity:', error);
-        setError(error.message);
+        setError('Failed to load activity details');
       } finally {
         setLoading(false);
       }
