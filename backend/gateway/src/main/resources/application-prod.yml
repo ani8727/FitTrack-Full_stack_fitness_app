@@ -30,6 +30,15 @@ spring:
             - Path=/api/users/**
           filters:
             - StripPrefix=1
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,PUT
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+                backoff:
+                  firstBackoff: 200ms
+                  maxBackoff: 2s
+                  factor: 2
         - id: contact
           uri: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
           predicates:
@@ -48,18 +57,45 @@ spring:
             - Path=/api/activities/**
           filters:
             - StripPrefix=1
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,PUT
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+                backoff:
+                  firstBackoff: 200ms
+                  maxBackoff: 2s
+                  factor: 2
         - id: ai-service-recommendations
           uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
             - Path=/api/recommendations/**
           filters:
             - StripPrefix=1
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+                backoff:
+                  firstBackoff: 200ms
+                  maxBackoff: 2s
+                  factor: 2
         - id: ai-service-recommendations-legacy
           uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
             - Path=/api/ai/recommendations/**
           filters:
             - StripPrefix=2
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+                backoff:
+                  firstBackoff: 200ms
+                  maxBackoff: 2s
+                  factor: 2
         - id: ai-service-daily-plans
           uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
