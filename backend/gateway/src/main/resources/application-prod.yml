@@ -16,9 +16,7 @@ spring:
               - OPTIONS
               - PATCH
             allowedHeaders:
-              - Authorization
-              - Content-Type
-              - Accept
+              - "*"
             allowCredentials: true
       routes:
         - id: userservice

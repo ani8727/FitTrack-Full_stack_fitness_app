@@ -12,17 +12,12 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const userId = sessionStorage.getItem("userId");
   const token = sessionStorage.getItem("token");
 
   config.headers = config.headers || {};
 
   if (token) {
     config.headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  if (userId) {
-    config.headers["X-User-ID"] = userId;
   }
 
   return config;
