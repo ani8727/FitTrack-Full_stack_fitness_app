@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -35,8 +37,16 @@ public class DownstreamWarmupScheduler {
     @Value("${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}")
     private String aiServiceUrl;
 
-    public DownstreamWarmupScheduler(WebClient.Builder builder) {
-        this.webClient = builder.build();
+    public DownstreamWarmupScheduler() {
+        // Use a dedicated client so we don't accidentally inherit load-balancer filters.
+        this.webClient = WebClient.builder().build();
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpOnStartup() {
+        // Fire once right after startup so the logs clearly show whether
+        // the gateway can reach each downstream service.
+        warmUp();
     }
 
     // Every 4 minutes by default; keeps free-tier services warm.

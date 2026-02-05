@@ -51,6 +51,15 @@ spring:
             - Path=/api/admin/**
           filters:
             - StripPrefix=1
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,PUT
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+                backoff:
+                  firstBackoff: 200ms
+                  maxBackoff: 2s
+                  factor: 2
         - id: activityservice
           uri: ${ACTIVITY_SERVICE_URL:https://fittrack-activityservice.onrender.com}
           predicates:
@@ -102,6 +111,15 @@ spring:
             - Path=/api/daily-plans/**
           filters:
             - StripPrefix=2
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET
+                statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+                backoff:
+                  firstBackoff: 200ms
+                  maxBackoff: 2s
+                  factor: 2
 
   security:
     oauth2:
