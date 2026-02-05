@@ -47,8 +47,8 @@ public class GatewayRequestLoggingFilter implements GlobalFilter {
                 // Help debugging from browser without leaking details in the body.
                 // Only set headers if the response isn't committed.
                 if (!exchange.getResponse().isCommitted()) {
-                exchange.getResponse().setStatusCode(HttpStatus.BAD_GATEWAY);
-                exchange.getResponse().getHeaders().set("X-Gateway-Error", ex.getClass().getSimpleName());
+                    exchange.getResponse().setStatusCode(HttpStatus.BAD_GATEWAY);
+                    exchange.getResponse().getHeaders().set("X-Gateway-Error", ex.getClass().getSimpleName());
                 }
 
                 return exchange.getResponse().setComplete();
