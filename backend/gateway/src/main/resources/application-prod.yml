@@ -72,10 +72,13 @@ spring:
           issuer-uri: https://${AUTH0_DOMAIN}/
 
 management:
+  endpoint:
+    gateway:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,gateway
 
 logging:
   level:
