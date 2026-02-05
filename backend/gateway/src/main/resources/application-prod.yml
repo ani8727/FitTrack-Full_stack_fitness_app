@@ -20,41 +20,47 @@ spring:
             allowCredentials: true
       routes:
         - id: userservice
-          uri: lb://userservice
+          uri: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
           predicates:
             - Path=/api/users/**
           filters:
             - StripPrefix=1
         - id: contact
-          uri: lb://userservice
+          uri: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
           predicates:
             - Path=/api/contact/**
           filters:
             - StripPrefix=1
         - id: adminservice
-          uri: lb://admin-service
+          uri: ${ADMIN_SERVICE_URL:https://fittrack-adminservice.onrender.com}
           predicates:
             - Path=/api/admin/**
           filters:
             - StripPrefix=1
         - id: activityservice
-          uri: lb://activity-service
+          uri: ${ACTIVITY_SERVICE_URL:https://fittrack-activityservice.onrender.com}
           predicates:
             - Path=/api/activities/**
           filters:
             - StripPrefix=1
         - id: ai-service-recommendations
-          uri: lb://ai-service
+          uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
             - Path=/api/recommendations/**
           filters:
             - StripPrefix=1
+        - id: ai-service-recommendations-legacy
+          uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
+          predicates:
+            - Path=/api/ai/recommendations/**
+          filters:
+            - StripPrefix=2
         - id: ai-service-daily-plans
-          uri: lb://ai-service
+          uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
             - Path=/api/daily-plans/**
           filters:
-            - StripPrefix=1
+            - StripPrefix=2
 
   security:
     oauth2:
