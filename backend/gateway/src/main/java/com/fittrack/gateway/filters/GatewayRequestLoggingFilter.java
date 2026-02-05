@@ -9,13 +9,14 @@ import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
 import reactor.core.publisher.Mono;
 
 @Component
-@Order(Ordered.LOWEST_PRECEDENCE)
+@Order(Ordered.LOWEST_PRECEDENCE - 10)
 public class GatewayRequestLoggingFilter implements GlobalFilter {
     private static final Logger logger = LoggerFactory.getLogger(GatewayRequestLoggingFilter.class);
 
@@ -27,33 +28,54 @@ public class GatewayRequestLoggingFilter implements GlobalFilter {
         String path = exchange.getRequest().getURI().getRawPath();
 
         return chain.filter(exchange)
-                .doOnError(ex -> {
-                    String routeId = resolveRouteId(exchange);
-                    long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-                    logger.warn("Gateway request failed: method={} path={} routeId={} elapsedMs={} errorType={} error={} ",
-                            method,
-                            path,
-                            routeId,
-                            elapsedMs,
-                            ex.getClass().getSimpleName(),
-                            ex.getMessage());
-                })
-                .doFinally(signalType -> {
-                    String routeId = resolveRouteId(exchange);
-                    HttpStatusCode status = exchange.getResponse().getStatusCode();
-                    long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-                    logger.info("Gateway request: method={} path={} routeId={} status={} elapsedMs={} signal={} ",
-                            method,
-                            path,
-                            routeId,
-                            status == null ? "?" : status.value(),
-                            elapsedMs,
-                            signalType);
-                });
+            .onErrorResume(ex -> {
+                String routeId = resolveRouteId(exchange);
+                String targetUrl = resolveTargetUrl(exchange);
+                long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+
+                logger.warn(
+                    "Gateway proxy failed: method={} path={} routeId={} targetUrl={} elapsedMs={} errorType={} error={} ",
+                    method,
+                    path,
+                    routeId,
+                    targetUrl,
+                    elapsedMs,
+                    ex.getClass().getName(),
+                    ex.getMessage(),
+                    ex);
+
+                // Help debugging from browser without leaking details in the body.
+                // Only set headers if the response isn't committed.
+                if (!exchange.getResponse().isCommitted()) {
+                exchange.getResponse().setStatusCode(HttpStatus.BAD_GATEWAY);
+                exchange.getResponse().getHeaders().set("X-Gateway-Error", ex.getClass().getSimpleName());
+                }
+
+                return exchange.getResponse().setComplete();
+            })
+            .doFinally(signalType -> {
+                String routeId = resolveRouteId(exchange);
+                String targetUrl = resolveTargetUrl(exchange);
+                HttpStatusCode status = exchange.getResponse().getStatusCode();
+                long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+                logger.info("Gateway request: method={} path={} routeId={} targetUrl={} status={} elapsedMs={} signal={} ",
+                    method,
+                    path,
+                    routeId,
+                    targetUrl,
+                    status == null ? "?" : status.value(),
+                    elapsedMs,
+                    signalType);
+            });
     }
 
     private static String resolveRouteId(ServerWebExchange exchange) {
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
         return route == null ? "-" : route.getId();
+    }
+
+    private static String resolveTargetUrl(ServerWebExchange exchange) {
+        Object uri = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
+        return uri == null ? "-" : uri.toString();
     }
 }
