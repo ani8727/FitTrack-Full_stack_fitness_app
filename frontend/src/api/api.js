@@ -1,35 +1,28 @@
 import axios from "axios";
 
+const rawBaseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "";
+const normalizedBaseUrl = rawBaseUrl
+  ? rawBaseUrl.replace(/\/+$/, "").endsWith("/api")
+    ? rawBaseUrl.replace(/\/+$/, "")
+    : `${rawBaseUrl.replace(/\/+$/, "")}/api`
+  : "";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: normalizedBaseUrl,
 });
 
 api.interceptors.request.use((config) => {
-  const userId = sessionStorage.getItem('userId');
-  const token = sessionStorage.getItem('token');
+  const userId = sessionStorage.getItem("userId");
+  const token = sessionStorage.getItem("token");
 
-  // Only attach auth/custom headers for mutating methods to keep GETs simple (no preflight).
-  const mutatingMethods = new Set(['post', 'put', 'patch', 'delete']);
-  const method = (config.method || 'get').toLowerCase();
+  config.headers = config.headers || {};
 
-  if (mutatingMethods.has(method)) {
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
 
-    if (userId) {
-      config.headers = config.headers || {};
-      config.headers['X-User-ID'] = userId;
-    }
-  } else {
-    // Ensure no Content-Type or custom headers are present on GET/HEAD to avoid preflight
-    if (config.headers) {
-      const safe = {};
-      // preserve standard accept header if present; drop others
-      if (config.headers.Accept) safe.Accept = config.headers.Accept;
-      config.headers = safe;
-    }
+  if (userId) {
+    config.headers["X-User-ID"] = userId;
   }
 
   return config;

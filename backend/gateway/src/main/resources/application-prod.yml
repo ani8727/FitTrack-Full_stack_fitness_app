@@ -27,16 +27,34 @@ spring:
             - Path=/api/users/**
           filters:
             - StripPrefix=1
+        - id: contact
+          uri: lb://userservice
+          predicates:
+            - Path=/api/contact/**
+          filters:
+            - StripPrefix=1
         - id: adminservice
-          uri: lb://adminservice
+          uri: lb://admin-service
           predicates:
             - Path=/api/admin/**
           filters:
             - StripPrefix=1
         - id: activityservice
-          uri: lb://activityservice
+          uri: lb://activity-service
           predicates:
-            - Path=/api/activity/**
+            - Path=/api/activities/**
+          filters:
+            - StripPrefix=1
+        - id: ai-service-recommendations
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/recommendations/**
+          filters:
+            - StripPrefix=1
+        - id: ai-service-daily-plans
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/daily-plans/**
           filters:
             - StripPrefix=1
 

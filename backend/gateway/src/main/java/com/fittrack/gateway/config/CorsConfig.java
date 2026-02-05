@@ -19,7 +19,18 @@ public class CorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList(frontendUrl));
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            config.setAllowedOriginPatterns(Arrays.asList(
+                frontendUrl,
+                "https://*.vercel.app",
+                "http://localhost:5173"
+            ));
+        } else {
+            config.setAllowedOriginPatterns(Arrays.asList(
+                "https://*.vercel.app",
+                "http://localhost:5173"
+            ));
+        }
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, HttpHeaders.ACCEPT));
         config.setAllowCredentials(true);
