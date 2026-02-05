@@ -8,6 +8,6 @@ RUN mvn -B -DskipTests clean package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /build/target/*.jar app.jar
-ENV JAVA_OPTS=""
+ENV JAVA_OPTS="-Djava.net.preferIPv4Stack=true"
 EXPOSE 8085
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"]
