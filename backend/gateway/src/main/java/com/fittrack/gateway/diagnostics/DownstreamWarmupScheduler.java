@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,9 @@ public class DownstreamWarmupScheduler {
     private static final int[] RETRYABLE_STATUS_CODES = new int[] { 502, 503, 504 };
 
     private final WebClient webClient;
+
+    private final AtomicBoolean warmupInProgress = new AtomicBoolean(false);
+    private final AtomicLong warmupRunSeq = new AtomicLong(0);
 
     @Value("${DOWNSTREAM_WARMUP_ENABLED:true}")
     private boolean warmupEnabled;
@@ -95,6 +100,13 @@ public class DownstreamWarmupScheduler {
             return;
         }
 
+        if (!warmupInProgress.compareAndSet(false, true)) {
+            logger.info("Downstream warmup skipped (already running)");
+            return;
+        }
+
+        long runId = warmupRunSeq.incrementAndGet();
+
         List<ServiceTarget> targets = List.of(
             new ServiceTarget("userservice", userServiceUrl),
             new ServiceTarget("adminservice", adminServiceUrl),
@@ -104,14 +116,31 @@ public class DownstreamWarmupScheduler {
 
         Duration between = Duration.ofMillis(Math.max(0, warmupBetweenDelayMs));
 
-        Mono<Void> run = (warmupSerial ? Flux.fromIterable(targets).concatMap(t -> probeMono(t.name(), t.baseUrl()).delayElement(between))
-            : Flux.fromIterable(targets).flatMap(t -> probeMono(t.name(), t.baseUrl())))
-            .then();
+        logger.info(
+            "Downstream warmup started: runId={} serial={} betweenDelayMs={} timeoutMs={} retries={} firstBackoffMs={} maxBackoffMs={} jitter={}",
+            runId,
+            warmupSerial,
+            warmupBetweenDelayMs,
+            warmupTimeoutMs,
+            warmupRetries,
+            warmupFirstBackoffMs,
+            warmupMaxBackoffMs,
+            warmupRetryJitter
+        );
+
+        Mono<Void> run = (warmupSerial
+            ? Flux.fromIterable(targets).concatMap(t -> probeMono(runId, t.name(), t.baseUrl()).delayElement(between))
+            : Flux.fromIterable(targets).flatMap(t -> probeMono(runId, t.name(), t.baseUrl())))
+            .then()
+            .doFinally(signalType -> {
+                warmupInProgress.set(false);
+                logger.info("Downstream warmup finished: runId={} signal={}", runId, signalType);
+            });
 
         run.subscribe();
     }
 
-    private Mono<Void> probeMono(String name, String baseUrl) {
+    private Mono<Void> probeMono(long runId, String name, String baseUrl) {
         if (baseUrl == null || baseUrl.isBlank()) {
             return Mono.empty();
         }
@@ -154,7 +183,8 @@ public class DownstreamWarmupScheduler {
                         String failureType = (failure == null) ? "<null>" : failure.getClass().getName();
                         String failureMsg = (failure == null) ? "<null>" : failure.getMessage();
                         logger.info(
-                            "Downstream warmup retrying: service={} url={} retry={} errorType={} error={} ",
+                            "Downstream warmup retrying: runId={} service={} url={} retry={} errorType={} error={} ",
+                            runId,
                             name,
                             url,
                             signal.totalRetries() + 1,
@@ -170,7 +200,8 @@ public class DownstreamWarmupScheduler {
                 HttpStatusCode code = HttpStatusCode.valueOf(status);
                 if (status == 200) {
                     logger.info(
-                        "Downstream warmup: service={} url={} status={} attempts={} elapsedMs={} startedAt={} ",
+                        "Downstream warmup: runId={} service={} url={} status={} attempts={} elapsedMs={} startedAt={} ",
+                        runId,
                         name,
                         url,
                         code.value(),
@@ -180,7 +211,8 @@ public class DownstreamWarmupScheduler {
                     );
                 } else {
                     logger.warn(
-                        "Downstream warmup non-200: service={} url={} status={} attempts={} elapsedMs={} startedAt={} ",
+                        "Downstream warmup non-200: runId={} service={} url={} status={} attempts={} elapsedMs={} startedAt={} ",
+                        runId,
                         name,
                         url,
                         code.value(),
@@ -199,7 +231,8 @@ public class DownstreamWarmupScheduler {
                     failureMsg = rse.getMessage();
                 }
                 logger.warn(
-                    "Downstream warmup failed: service={} url={} attempts={} elapsedMs={} errorType={} error={} ",
+                    "Downstream warmup failed: runId={} service={} url={} attempts={} elapsedMs={} errorType={} error={} ",
+                    runId,
                     name,
                     url,
                     attempts.get(),
