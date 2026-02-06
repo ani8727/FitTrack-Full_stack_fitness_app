@@ -2,6 +2,7 @@ package com.fittrack.gateway.diagnostics;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +20,7 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import reactor.util.retry.Retry;
 
 @Component
@@ -60,6 +62,12 @@ public class DownstreamWarmupScheduler {
     @Value("${DOWNSTREAM_WARMUP_RETRY_JITTER:0.5}")
     private double warmupRetryJitter;
 
+    @Value("${DOWNSTREAM_WARMUP_SERIAL:true}")
+    private boolean warmupSerial;
+
+    @Value("${DOWNSTREAM_WARMUP_BETWEEN_DELAY_MS:500}")
+    private long warmupBetweenDelayMs;
+
     public DownstreamWarmupScheduler() {
         // Use a dedicated client so we don't accidentally inherit load-balancer filters.
         this.webClient = WebClient.builder().build();
@@ -87,15 +95,25 @@ public class DownstreamWarmupScheduler {
             return;
         }
 
-        probe("userservice", userServiceUrl);
-        probe("adminservice", adminServiceUrl);
-        probe("activityservice", activityServiceUrl);
-        probe("aiservice", aiServiceUrl);
+        List<ServiceTarget> targets = List.of(
+            new ServiceTarget("userservice", userServiceUrl),
+            new ServiceTarget("adminservice", adminServiceUrl),
+            new ServiceTarget("activityservice", activityServiceUrl),
+            new ServiceTarget("aiservice", aiServiceUrl)
+        );
+
+        Duration between = Duration.ofMillis(Math.max(0, warmupBetweenDelayMs));
+
+        Mono<Void> run = (warmupSerial ? Flux.fromIterable(targets).concatMap(t -> probeMono(t.name(), t.baseUrl()).delayElement(between))
+            : Flux.fromIterable(targets).flatMap(t -> probeMono(t.name(), t.baseUrl())))
+            .then();
+
+        run.subscribe();
     }
 
-    private void probe(String name, String baseUrl) {
+    private Mono<Void> probeMono(String name, String baseUrl) {
         if (baseUrl == null || baseUrl.isBlank()) {
-            return;
+            return Mono.empty();
         }
 
         String url = baseUrl.replaceAll("/+$", "") + "/actuator/health";
@@ -125,7 +143,7 @@ public class DownstreamWarmupScheduler {
                 .timeout(timeout);
         });
 
-        attempt
+        return attempt
             .retryWhen(
                 Retry.backoff(Math.max(0, warmupRetries), firstBackoff)
                     .maxBackoff(maxBackoff)
@@ -191,8 +209,10 @@ public class DownstreamWarmupScheduler {
                 );
             })
             .onErrorResume(ex -> Mono.empty())
-            .subscribe();
+            .then();
     }
+
+    private record ServiceTarget(String name, String baseUrl) {}
 
     private boolean isRetryableStatus(int status) {
         for (int code : RETRYABLE_STATUS_CODES) {
