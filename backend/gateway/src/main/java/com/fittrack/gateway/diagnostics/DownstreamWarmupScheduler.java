@@ -48,14 +48,17 @@ public class DownstreamWarmupScheduler {
     @Value("${DOWNSTREAM_WARMUP_TIMEOUT_MS:30000}")
     private long warmupTimeoutMs;
 
-    @Value("${DOWNSTREAM_WARMUP_RETRIES:6}")
+    @Value("${DOWNSTREAM_WARMUP_RETRIES:10}")
     private int warmupRetries;
 
     @Value("${DOWNSTREAM_WARMUP_FIRST_BACKOFF_MS:500}")
     private long warmupFirstBackoffMs;
 
-    @Value("${DOWNSTREAM_WARMUP_MAX_BACKOFF_MS:5000}")
+    @Value("${DOWNSTREAM_WARMUP_MAX_BACKOFF_MS:15000}")
     private long warmupMaxBackoffMs;
+
+    @Value("${DOWNSTREAM_WARMUP_RETRY_JITTER:0.5}")
+    private double warmupRetryJitter;
 
     public DownstreamWarmupScheduler() {
         // Use a dedicated client so we don't accidentally inherit load-balancer filters.
@@ -76,7 +79,7 @@ public class DownstreamWarmupScheduler {
     // Every 4 minutes by default; keeps free-tier services warm.
     // Use Render env var DOWNSTREAM_WARMUP_ENABLED=false to disable.
     @Scheduled(
-        initialDelayString = "${DOWNSTREAM_WARMUP_INITIAL_DELAY_MS:240000}",
+        initialDelayString = "${DOWNSTREAM_WARMUP_INITIAL_DELAY_MS:60000}",
         fixedDelayString = "${DOWNSTREAM_WARMUP_DELAY_MS:240000}"
     )
     public void warmUp() {
@@ -126,7 +129,23 @@ public class DownstreamWarmupScheduler {
             .retryWhen(
                 Retry.backoff(Math.max(0, warmupRetries), firstBackoff)
                     .maxBackoff(maxBackoff)
+                    .jitter(Math.min(1.0, Math.max(0.0, warmupRetryJitter)))
                     .filter(this::isRetryableFailure)
+                    .doBeforeRetry(signal -> {
+                        Throwable failure = signal.failure();
+                        String failureType = (failure == null) ? "<null>" : failure.getClass().getName();
+                        String failureMsg = (failure == null) ? "<null>" : failure.getMessage();
+                        logger.info(
+                            "Downstream warmup retrying: service={} url={} retry={} errorType={} error={} ",
+                            name,
+                            url,
+                            signal.totalRetries() + 1,
+                            failureType,
+                            failureMsg
+                        );
+                    })
+                    // Throw the last failure so logs show the real cause (timeout, 502, DNS, etc).
+                    .onRetryExhaustedThrow((spec, signal) -> signal.failure())
             )
             .doOnNext(status -> {
                 long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
@@ -155,14 +174,20 @@ public class DownstreamWarmupScheduler {
             })
             .doOnError(ex -> {
                 long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+                String failureType = ex.getClass().getName();
+                String failureMsg = ex.getMessage();
+                if (ex instanceof RetryableStatusException rse) {
+                    failureType = ex.getClass().getName() + "(status=" + rse.getStatus() + ")";
+                    failureMsg = rse.getMessage();
+                }
                 logger.warn(
                     "Downstream warmup failed: service={} url={} attempts={} elapsedMs={} errorType={} error={} ",
                     name,
                     url,
                     attempts.get(),
                     elapsedMs,
-                    ex.getClass().getName(),
-                    ex.getMessage()
+                    failureType,
+                    failureMsg
                 );
             })
             .onErrorResume(ex -> Mono.empty())
@@ -204,12 +229,10 @@ public class DownstreamWarmupScheduler {
             this.url = url;
         }
 
-        @SuppressWarnings("unused")
         public int getStatus() {
             return status;
         }
 
-        @SuppressWarnings("unused")
         public String getUrl() {
             return url;
         }

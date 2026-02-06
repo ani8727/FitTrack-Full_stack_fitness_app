@@ -51,6 +51,9 @@ public class DownstreamProbeController {
     @Value("${DOWNSTREAM_PROBE_MAX_BACKOFF_MS:1500}")
     private long probeMaxBackoffMs;
 
+    @Value("${DOWNSTREAM_PROBE_RETRY_JITTER:0.3}")
+    private double probeRetryJitter;
+
     @GetMapping
     public Mono<Map<String, Object>> probeAll() {
         Mono<Map<String, Object>> users = probe("userservice", userServiceUrl);
@@ -98,7 +101,10 @@ public class DownstreamProbeController {
             .retryWhen(
                 Retry.backoff(Math.max(0, probeRetries), firstBackoff)
                     .maxBackoff(maxBackoff)
+                    .jitter(Math.min(1.0, Math.max(0.0, probeRetryJitter)))
                     .filter(this::isRetryableFailure)
+                    // Throw the last failure so the JSON error is meaningful.
+                    .onRetryExhaustedThrow((spec, signal) -> signal.failure())
             )
             .map(status -> {
                 long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
