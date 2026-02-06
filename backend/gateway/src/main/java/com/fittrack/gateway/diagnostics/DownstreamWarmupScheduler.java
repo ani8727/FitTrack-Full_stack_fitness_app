@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -164,7 +165,8 @@ public class DownstreamWarmupScheduler {
                 .exchangeToMono(resp -> {
                     int status = resp.statusCode().value();
                     if (isRetryableStatus(status)) {
-                        return resp.releaseBody().then(Mono.error(new RetryableStatusException(status, url)));
+                        String edge = summarizeEdgeHeaders(resp.headers().asHttpHeaders());
+                        return resp.releaseBody().then(Mono.error(new RetryableStatusException(status, url, edge)));
                     }
 
                     return resp.releaseBody().thenReturn(status);
@@ -275,11 +277,13 @@ public class DownstreamWarmupScheduler {
     private static final class RetryableStatusException extends RuntimeException {
         private final int status;
         private final String url;
+        private final String edge;
 
-        private RetryableStatusException(int status, String url) {
-            super("Retryable status=" + status + " from " + url);
+        private RetryableStatusException(int status, String url, String edge) {
+            super("Retryable status=" + status + " from " + url + (edge == null || edge.isBlank() ? "" : (" (edge: " + edge + ")")));
             this.status = status;
             this.url = url;
+            this.edge = edge;
         }
 
         public int getStatus() {
@@ -289,5 +293,44 @@ public class DownstreamWarmupScheduler {
         public String getUrl() {
             return url;
         }
+
+        @SuppressWarnings("unused")
+        public String getEdge() {
+            return edge;
+        }
+    }
+
+    private static String summarizeEdgeHeaders(HttpHeaders headers) {
+        if (headers == null || headers.isEmpty()) {
+            return "";
+        }
+
+        // A small, stable set of headers that helps identify Cloudflare/edge vs origin.
+        // Keep this compact because it ends up in exceptions + logs.
+        String server = headers.getFirst("server");
+        String cfRay = headers.getFirst("cf-ray");
+        String cfCache = headers.getFirst("cf-cache-status");
+        String via = headers.getFirst("via");
+        String requestId = headers.getFirst("x-request-id");
+        String renderRequestId = headers.getFirst("x-render-request-id");
+
+        StringBuilder sb = new StringBuilder();
+        appendKv(sb, "server", server);
+        appendKv(sb, "cf-ray", cfRay);
+        appendKv(sb, "cf-cache", cfCache);
+        appendKv(sb, "via", via);
+        appendKv(sb, "x-request-id", requestId);
+        appendKv(sb, "x-render-request-id", renderRequestId);
+        return sb.toString();
+    }
+
+    private static void appendKv(StringBuilder sb, String k, String v) {
+        if (v == null || v.isBlank()) {
+            return;
+        }
+        if (sb.length() > 0) {
+            sb.append(' ');
+        }
+        sb.append(k).append('=').append(v);
     }
 }
