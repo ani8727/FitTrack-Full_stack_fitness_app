@@ -1,6 +1,9 @@
 package com.fittrack.gateway.diagnostics;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +15,18 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 @Component
 @Profile("prod")
 public class DownstreamWarmupScheduler {
     private static final Logger logger = LoggerFactory.getLogger(DownstreamWarmupScheduler.class);
+
+    private static final int[] RETRYABLE_STATUS_CODES = new int[] { 502, 503, 504 };
 
     private final WebClient webClient;
 
@@ -37,6 +45,18 @@ public class DownstreamWarmupScheduler {
     @Value("${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}")
     private String aiServiceUrl;
 
+    @Value("${DOWNSTREAM_WARMUP_TIMEOUT_MS:30000}")
+    private long warmupTimeoutMs;
+
+    @Value("${DOWNSTREAM_WARMUP_RETRIES:6}")
+    private int warmupRetries;
+
+    @Value("${DOWNSTREAM_WARMUP_FIRST_BACKOFF_MS:500}")
+    private long warmupFirstBackoffMs;
+
+    @Value("${DOWNSTREAM_WARMUP_MAX_BACKOFF_MS:5000}")
+    private long warmupMaxBackoffMs;
+
     public DownstreamWarmupScheduler() {
         // Use a dedicated client so we don't accidentally inherit load-balancer filters.
         this.webClient = WebClient.builder().build();
@@ -44,6 +64,10 @@ public class DownstreamWarmupScheduler {
 
     @EventListener(ApplicationReadyEvent.class)
     public void warmUpOnStartup() {
+        if (!warmupEnabled) {
+            return;
+        }
+
         // Fire once right after startup so the logs clearly show whether
         // the gateway can reach each downstream service.
         warmUp();
@@ -51,7 +75,10 @@ public class DownstreamWarmupScheduler {
 
     // Every 4 minutes by default; keeps free-tier services warm.
     // Use Render env var DOWNSTREAM_WARMUP_ENABLED=false to disable.
-    @Scheduled(fixedDelayString = "${DOWNSTREAM_WARMUP_DELAY_MS:240000}")
+    @Scheduled(
+        initialDelayString = "${DOWNSTREAM_WARMUP_INITIAL_DELAY_MS:240000}",
+        fixedDelayString = "${DOWNSTREAM_WARMUP_DELAY_MS:240000}"
+    )
     public void warmUp() {
         if (!warmupEnabled) {
             return;
@@ -70,27 +97,121 @@ public class DownstreamWarmupScheduler {
 
         String url = baseUrl.replaceAll("/+$", "") + "/actuator/health";
 
+        Duration timeout = Duration.ofMillis(Math.max(1000, warmupTimeoutMs));
+        Duration firstBackoff = Duration.ofMillis(Math.max(0, warmupFirstBackoffMs));
+        Duration maxBackoff = Duration.ofMillis(Math.max(firstBackoff.toMillis(), warmupMaxBackoffMs));
+
         long startNanos = System.nanoTime();
-        webClient.get()
-            .uri(url)
-            .retrieve()
-            .toBodilessEntity()
-            .timeout(Duration.ofSeconds(15))
-            .doOnNext(resp -> {
+        Instant startedAt = Instant.now();
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        Mono<Integer> attempt = Mono.defer(() -> {
+            attempts.incrementAndGet();
+            return webClient.get()
+                .uri(url)
+                .header("Cache-Control", "no-cache")
+                .header("User-Agent", "fittrack-gateway-warmup")
+                .exchangeToMono(resp -> {
+                    int status = resp.statusCode().value();
+                    if (isRetryableStatus(status)) {
+                        return resp.releaseBody().then(Mono.error(new RetryableStatusException(status, url)));
+                    }
+
+                    return resp.releaseBody().thenReturn(status);
+                })
+                .timeout(timeout);
+        });
+
+        attempt
+            .retryWhen(
+                Retry.backoff(Math.max(0, warmupRetries), firstBackoff)
+                    .maxBackoff(maxBackoff)
+                    .filter(this::isRetryableFailure)
+            )
+            .doOnNext(status -> {
                 long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-                HttpStatusCode code = resp.getStatusCode();
-                logger.info("Downstream warmup: service={} url={} status={} elapsedMs={} ", name, url, code.value(), elapsedMs);
+                HttpStatusCode code = HttpStatusCode.valueOf(status);
+                if (status == 200) {
+                    logger.info(
+                        "Downstream warmup: service={} url={} status={} attempts={} elapsedMs={} startedAt={} ",
+                        name,
+                        url,
+                        code.value(),
+                        attempts.get(),
+                        elapsedMs,
+                        startedAt
+                    );
+                } else {
+                    logger.warn(
+                        "Downstream warmup non-200: service={} url={} status={} attempts={} elapsedMs={} startedAt={} ",
+                        name,
+                        url,
+                        code.value(),
+                        attempts.get(),
+                        elapsedMs,
+                        startedAt
+                    );
+                }
             })
             .doOnError(ex -> {
                 long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-                logger.warn("Downstream warmup failed: service={} url={} elapsedMs={} errorType={} error={} ",
+                logger.warn(
+                    "Downstream warmup failed: service={} url={} attempts={} elapsedMs={} errorType={} error={} ",
                     name,
                     url,
+                    attempts.get(),
                     elapsedMs,
                     ex.getClass().getName(),
-                    ex.getMessage());
+                    ex.getMessage()
+                );
             })
             .onErrorResume(ex -> Mono.empty())
             .subscribe();
+    }
+
+    private boolean isRetryableStatus(int status) {
+        for (int code : RETRYABLE_STATUS_CODES) {
+            if (code == status) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isRetryableFailure(Throwable ex) {
+        if (ex instanceof RetryableStatusException) {
+            return true;
+        }
+        if (ex instanceof TimeoutException) {
+            return true;
+        }
+        if (ex instanceof WebClientRequestException) {
+            return true;
+        }
+        if (ex instanceof WebClientResponseException wcre) {
+            return isRetryableStatus(wcre.getStatusCode().value());
+        }
+        return false;
+    }
+
+    private static final class RetryableStatusException extends RuntimeException {
+        private final int status;
+        private final String url;
+
+        private RetryableStatusException(int status, String url) {
+            super("Retryable status=" + status + " from " + url);
+            this.status = status;
+            this.url = url;
+        }
+
+        @SuppressWarnings("unused")
+        public int getStatus() {
+            return status;
+        }
+
+        @SuppressWarnings("unused")
+        public String getUrl() {
+            return url;
+        }
     }
 }
