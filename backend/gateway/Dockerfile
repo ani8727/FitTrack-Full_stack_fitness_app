@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /build/target/*.jar app.jar
 ENV JAVA_OPTS="-Djava.net.preferIPv4Stack=true"
 EXPOSE 8085
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"]
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Dspring.profiles.active=prod -Dserver.address=0.0.0.0 -Dserver.port=$PORT -jar app.jar"]
