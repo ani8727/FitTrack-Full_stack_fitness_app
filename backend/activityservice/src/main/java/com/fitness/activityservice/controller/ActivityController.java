@@ -1,5 +1,7 @@
 package com.fitness.activityservice.controller;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -23,10 +25,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ActivityController {
 
+    private static final String B64_PREFIX = "b64_";
+
     private final ActivityService activityService;
 
     @PostMapping
     public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request, @RequestHeader("X-User-ID") String userId){
+        userId = decodeUserIdHeader(userId);
         if (userId != null) {
             request.setUserId(userId);
         }
@@ -35,7 +40,7 @@ public class ActivityController {
 
     @GetMapping
     public ResponseEntity<List<ActivityResponse>> getUserActivities(@RequestHeader("X-User-ID") String userId){
-        return ResponseEntity.ok(activityService.getUserActivities(userId));
+        return ResponseEntity.ok(activityService.getUserActivities(decodeUserIdHeader(userId)));
     }
 
 
@@ -46,6 +51,7 @@ public class ActivityController {
 
     @GetMapping("/stats")
     public ResponseEntity<?> getUserStats(@RequestHeader("X-User-ID") String userId){
+        userId = decodeUserIdHeader(userId);
         List<ActivityResponse> activities = activityService.getUserActivities(userId);
         
         int count = activities.size();
@@ -63,8 +69,34 @@ public class ActivityController {
 
     @DeleteMapping("/{activityId}")
     public ResponseEntity<Void> deleteActivity(@PathVariable String activityId, @RequestHeader("X-User-ID") String userId){
-        activityService.deleteActivity(activityId, userId);
+        activityService.deleteActivity(activityId, decodeUserIdHeader(userId));
         return ResponseEntity.ok().build();
+    }
+
+    private static String decodeUserIdHeader(String headerValue) {
+        if (headerValue == null) {
+            return null;
+        }
+        String value = headerValue.trim();
+        if (value.isEmpty()) {
+            return value;
+        }
+        if (!value.startsWith(B64_PREFIX)) {
+            return value;
+        }
+
+        String b64 = value.substring(B64_PREFIX.length()).trim();
+        if (b64.isEmpty()) {
+            return "";
+        }
+
+        try {
+            byte[] decoded = Base64.getUrlDecoder().decode(b64);
+            return new String(decoded, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            // Backward/forward compatibility: if decoding fails, fall back to the raw value.
+            return value;
+        }
     }
 
     // ADMIN ENDPOINTS
