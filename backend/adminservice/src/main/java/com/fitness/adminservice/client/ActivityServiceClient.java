@@ -1,9 +1,5 @@
 package com.fitness.adminservice.client;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.fitness.adminservice.dto.ActivityDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
+@SuppressWarnings("null")
 public class ActivityServiceClient {
 
     private final RestTemplate restTemplate;
@@ -27,14 +24,14 @@ public class ActivityServiceClient {
         this.gatewayUrl = gatewayUrl != null ? gatewayUrl.replaceAll("/$", "") : "";
     }
 
-    public List<ActivityDTO> listActivities() {
+    public java.util.List<ActivityDTO> listActivities() {
         String url = gatewayUrl + "/activity-service/activities";
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
-        ResponseEntity<List<ActivityDTO>> resp = restTemplate.exchange(
+        ResponseEntity<java.util.List<ActivityDTO>> resp = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 entity,
-                new ParameterizedTypeReference<List<ActivityDTO>>() {
+                new ParameterizedTypeReference<java.util.List<ActivityDTO>>() {
                 }
         );
         return resp.getBody();
@@ -56,8 +53,8 @@ public class ActivityServiceClient {
     private HttpHeaders buildHeadersWithBearer() {
         HttpHeaders headers = new HttpHeaders();
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof JwtAuthenticationToken) {
-            String token = ((JwtAuthenticationToken) auth).getToken().getTokenValue();
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            String token = jwtAuth.getToken().getTokenValue();
             headers.setBearerAuth(token);
         }
         return headers;

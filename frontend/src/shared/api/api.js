@@ -1,10 +1,15 @@
-import api from "../../api/api";
+import {
+	addActivity,
+	getActivities,
+	getActivityDetail as getActivityById,
+	getActivityRecommendation,
+	sendContactMessage,
+} from "../../services/apiClient";
 
-export const getActivities = () => api.get('/activities');
-export const addActivity = (activity) => api.post('/activities', activity);
-export const getActivity = (id) => api.get(`/activities/${id}`);
-export const getActivityRecommendation = (id) => api.get(`/ai/recommendations/activity/${id}`);
-export const getActivityDetail = (id) => api.get(`/ai/recommendations/activity/${id}`); // Legacy compatibility
+export { getActivities, addActivity, getActivityRecommendation, sendContactMessage };
 
-// Contact API (public)
-export const sendContactMessage = (payload) => api.post('/contact', payload);
+// Keep existing component imports working
+export const getActivity = (id) => getActivityById(id);
+
+// Legacy compatibility: historically used for recommendation payload
+export const getActivityDetail = (id) => getActivityRecommendation(id);

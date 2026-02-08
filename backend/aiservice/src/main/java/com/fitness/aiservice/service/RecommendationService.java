@@ -2,10 +2,9 @@ package com.fitness.aiservice.service;
 
 import com.fitness.aiservice.model.Recommendation;
 import com.fitness.aiservice.repository.RecommendationRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,9 +21,13 @@ public class RecommendationService {
 
     public Recommendation getActivityRecommendation(String activityId) {
         return recommendationRepository.findByActivityId(activityId)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No recommendation found for activity " + activityId
-            ));
+            .orElseGet(() -> {
+                Recommendation fallback = new Recommendation();
+                fallback.setActivityId(activityId);
+                fallback.setGenerated(false);
+                fallback.setRecommendation("No AI recommendation generated for this activity yet.");
+                fallback.setCreatedAt(LocalDateTime.now());
+                return fallback;
+            });
     }
 }

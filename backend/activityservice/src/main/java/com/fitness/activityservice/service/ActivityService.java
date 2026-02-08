@@ -22,6 +22,7 @@ public class ActivityService {
     private final UserValidationService userValidationService;
     // RabbitMQ integration is optional; keep config keys for future use
 
+    @SuppressWarnings("null")
     public ActivityResponse trackActivity(ActivityRequest request) {
         // Validate user exists before creating activity
         boolean isValidUser = userValidationService.validateUser(request.getUserId());
@@ -41,9 +42,6 @@ public class ActivityService {
                 .build();
 
         Activity savedActivity = activityRepository.save(activity);
-        if (savedActivity == null) {
-            throw new IllegalStateException("Failed to save activity");
-        }
 
         // (Optional) publish to RabbitMQ for downstream processing if enabled by configuration
 

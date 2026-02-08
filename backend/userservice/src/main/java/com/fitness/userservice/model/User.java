@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +36,7 @@ public class User {
     private String name;
 
     // role as simple string (e.g. ROLE_USER, ROLE_ADMIN)
+    @Builder.Default
     private String role = "ROLE_USER";
 
     @CreationTimestamp

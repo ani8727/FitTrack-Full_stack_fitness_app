@@ -7,6 +7,9 @@ export const getActivityDetail = (id) => api.get(`/activities/${id}`);
 export const deleteActivity = (id) => api.delete(`/activities/${id}`);
 export const getActivityStats = () => api.get('/activities/stats');
 
+// AI activity recommendation (legacy UI call)
+export const getActivityRecommendation = (activityId) => api.get(`/ai/recommendations/activity/${activityId}`);
+
 // User APIs
 export const registerUser = (userData) => api.post('/users/register', userData);
 export const getUserProfile = (userId) => api.get(`/users/${userId}`);
