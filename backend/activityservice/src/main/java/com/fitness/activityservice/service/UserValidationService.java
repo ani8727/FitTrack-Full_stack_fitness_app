@@ -1,9 +1,11 @@
 package com.fitness.activityservice.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,19 +18,39 @@ public class UserValidationService {
 
     public boolean validateUser(String userId) {
         log.info("Calling User Validation API for userId: {}", userId);
-        try{
-                return apiGatewayWebClient.get()
-                    .uri("/users/{userId}/validate", userId)
-                    .header("X-Service-ID", "activity-service")
-                    .retrieve()
-                    .bodyToMono(Boolean.class)
-                    .block();
-        } catch (WebClientResponseException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND)
-                throw new RuntimeException("User Not Found: " + userId);
-            else if (e.getStatusCode() == HttpStatus.BAD_REQUEST)
-                throw new RuntimeException("Invalid Request: " + userId);
+        if (userId == null || userId.isBlank()) {
+            return false;
         }
-        return false;
+
+        try {
+            // userservice returns JSON like: {"valid": true}
+            Map<String, Object> resp = apiGatewayWebClient.get()
+                .uri("/users/{userId}/validate", userId)
+                .header("X-Service-ID", "activity-service")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
+
+            if (resp == null) {
+                return false;
+            }
+
+            Object valid = resp.get("valid");
+            if (valid instanceof Boolean b) {
+                return b;
+            }
+            if (valid instanceof String s) {
+                return Boolean.parseBoolean(s);
+            }
+            return false;
+        } catch (WebClientResponseException e) {
+            // Any 4xx/5xx from userservice/gateway should not break activity tracking.
+            log.warn("User validation failed (status={}): {}", e.getStatusCode(), e.getMessage());
+            return false;
+        } catch (Exception e) {
+            // Includes JSON decoding issues, timeouts, etc.
+            log.warn("User validation failed (exception): {}", e.toString());
+            return false;
+        }
     }
 }
