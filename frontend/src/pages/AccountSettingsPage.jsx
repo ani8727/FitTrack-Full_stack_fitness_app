@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FiAlertTriangle, FiLock, FiLogOut, FiTrash2, FiPauseCircle } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { deactivateAccount, deleteAccount } from '../services/apiClient'
+import { deactivateMyAccount, deleteMyAccount } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const AccountSettingsPage = () => {
@@ -22,7 +22,7 @@ const AccountSettingsPage = () => {
   const handleDeactivate = async () => {
     try {
       setLoading(true)
-      await deactivateAccount(userId, { password: deactivatePassword, reason: deactivateReason })
+      await deactivateMyAccount({ password: deactivatePassword, reason: deactivateReason })
       setToast({ message: 'Account deactivated successfully', type: 'success' })
       setTimeout(() => {
         logOut()
@@ -38,7 +38,7 @@ const AccountSettingsPage = () => {
   const handleDelete = async () => {
     try {
       setLoading(true)
-      await deleteAccount(userId, { password: deletePassword, reason: deleteReason })
+      await deleteMyAccount({ password: deletePassword, reason: deleteReason })
       setToast({ message: 'Account marked for deletion. You will be logged out.', type: 'success' })
       setTimeout(() => {
         logOut()

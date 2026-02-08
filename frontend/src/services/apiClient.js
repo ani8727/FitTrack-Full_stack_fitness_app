@@ -16,6 +16,10 @@ export const getUserProfile = (userId) => api.get(`/users/${userId}`);
 export const updateUserProfile = (userId, userData) => api.put(`/users/${userId}/profile`, userData);
 export const validateUser = (userId) => api.get(`/users/${userId}/validate`);
 
+// Self-profile APIs (avoid passing Auth0 id in path)
+export const getMyProfile = () => api.get('/users/me/profile');
+export const updateMyProfile = (userData) => api.put('/users/me/profile', userData);
+
 // Admin Service APIs - User Management (route through gateway /admin)
 export const getDashboardStats = () => api.get('/admin/stats');
 export const getAllUsers = (filters = {}) => {
@@ -48,9 +52,16 @@ export const deactivateAccount = (userId, data) => api.post(`/users/${userId}/de
 export const deleteAccount = (userId, data) => api.post(`/users/${userId}/delete`, data);
 export const reactivateAccount = (userId) => api.post(`/users/${userId}/reactivate`);
 
+// Self account management APIs (avoid passing Auth0 id in path)
+export const deactivateMyAccount = (data) => api.post('/users/me/deactivate', data);
+export const deleteMyAccount = (data) => api.post('/users/me/delete', data);
+export const reactivateMyAccount = () => api.post('/users/me/reactivate');
+
 // Onboarding APIs
 export const completeOnboarding = (userId) => api.post(`/users/${userId}/onboarding/complete`);
 export const getOnboardingStatus = (userId) => api.get(`/users/${userId}/onboarding/status`);
+export const completeMyOnboarding = () => api.post('/users/me/onboarding/complete');
+export const getMyOnboardingStatus = () => api.get('/users/me/onboarding/status');
 export const getUserDailyPlans = (userId, startDate, endDate) => {
   let url = `/daily-plans/user/${userId}`;
   if (startDate && endDate) {

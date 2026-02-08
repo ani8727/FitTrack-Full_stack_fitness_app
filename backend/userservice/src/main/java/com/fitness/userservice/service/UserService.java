@@ -1,7 +1,9 @@
 package com.fitness.userservice.service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -107,6 +109,34 @@ public class UserService {
     @SuppressWarnings("null")
     public Optional<UserResponse> findById(Long id) {
         return repository.findById(Objects.requireNonNull(id, "id")).map(this::toResponse);
+    }
+
+    public List<UserResponse> listAll() {
+        return repository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteById(Long id) {
+        repository.deleteById(Objects.requireNonNull(id, "id"));
+    }
+
+    @Transactional
+    public UserResponse updateRole(Long id, String roleInput) {
+        User user = repository.findById(Objects.requireNonNull(id, "id"))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String normalized = roleInput == null ? "" : roleInput.trim();
+        if (normalized.equalsIgnoreCase("ADMIN") || normalized.equalsIgnoreCase("ROLE_ADMIN")) {
+            user.setRole("ROLE_ADMIN");
+        } else if (normalized.equalsIgnoreCase("USER") || normalized.equalsIgnoreCase("ROLE_USER") || normalized.isBlank()) {
+            user.setRole("ROLE_USER");
+        } else {
+            // fallback: accept already-prefixed custom roles
+            user.setRole(normalized.startsWith("ROLE_") ? normalized : ("ROLE_" + normalized.toUpperCase()));
+        }
+
+        User saved = repository.save(user);
+        return toResponse(saved);
     }
 
     private UserResponse toResponse(User user) {

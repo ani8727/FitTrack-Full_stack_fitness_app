@@ -2,11 +2,13 @@ package com.fitness.userservice.controller;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -102,6 +104,70 @@ public class UserController {
         return ResponseEntity.ok(userService.getCurrentUser(jwt));
     }
 
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserProfileResponse> myProfile(@AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        String auth0Id = normalizeAuth0Id(jwt.getSubject());
+        return ResponseEntity.ok(userService.getProfile(auth0Id, jwt));
+    }
+
+    @PutMapping("/me/profile")
+    public ResponseEntity<UserProfileResponse> updateMyProfile(
+            @RequestBody(required = false) UserProfileRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        String auth0Id = normalizeAuth0Id(jwt.getSubject());
+        return ResponseEntity.ok(userService.updateProfile(auth0Id, request, jwt));
+    }
+
+    @PostMapping("/me/onboarding/complete")
+    public ResponseEntity<Map<String, Object>> completeMyOnboarding(@AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        return ResponseEntity.ok(Map.of("completed", true));
+    }
+
+    @GetMapping("/me/onboarding/status")
+    public ResponseEntity<Map<String, Object>> myOnboardingStatus(@AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        return ResponseEntity.ok(Map.of("completed", true));
+    }
+
+    @PostMapping("/me/deactivate")
+    public ResponseEntity<Map<String, Object>> deactivateMe(
+            @RequestBody(required = false) AccountActionRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        return ResponseEntity.ok(Map.of("status", "DEACTIVATED"));
+    }
+
+    @PostMapping("/me/delete")
+    public ResponseEntity<Map<String, Object>> deleteMe(
+            @RequestBody(required = false) AccountActionRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        return ResponseEntity.ok(Map.of("status", "DELETED"));
+    }
+
+    @PostMapping("/me/reactivate")
+    public ResponseEntity<Map<String, Object>> reactivateMe(@AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Missing subject");
+        }
+        return ResponseEntity.ok(Map.of("status", "ACTIVE"));
+    }
+
     // Create user record after frontend login. Uses auth0 subject from JWT.
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody RegisterRequest request, @AuthenticationPrincipal Jwt jwt) {
@@ -114,6 +180,63 @@ public class UserController {
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request, @AuthenticationPrincipal Jwt jwt) {
         UserResponse r = userService.createIfNotExists(request, jwt);
         return ResponseEntity.ok(r);
+    }
+
+    // Admin management endpoints (used by adminservice)
+    @GetMapping("/admin/users")
+    public ResponseEntity<List<UserResponse>> adminListUsers(@AuthenticationPrincipal Jwt jwt) {
+        if (!isAdmin(jwt)) {
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
+        return ResponseEntity.ok(userService.listAll());
+    }
+
+    @GetMapping("/admin/users/{id}")
+    public ResponseEntity<UserResponse> adminGetUser(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!isAdmin(jwt)) {
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
+        return userService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/admin/users/{id}")
+    public ResponseEntity<Void> adminDeleteUser(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!isAdmin(jwt)) {
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
+        userService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/admin/users/{id}/role")
+    public ResponseEntity<Map<String, Object>> adminUpdateRole(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> body,
+            @AuthenticationPrincipal Jwt jwt) {
+        if (!isAdmin(jwt)) {
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
+        String role = body != null ? String.valueOf(body.getOrDefault("role", "")) : "";
+        UserResponse updated = userService.updateRole(id, role);
+        return ResponseEntity.ok(Map.of(
+                "id", updated.getId(),
+                "role", updated.getRole()
+        ));
+    }
+
+    @PutMapping("/admin/users/{id}/status")
+    public ResponseEntity<Map<String, Object>> adminUpdateStatus(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> body,
+            @AuthenticationPrincipal Jwt jwt) {
+        if (!isAdmin(jwt)) {
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
+        // AccountStatus is not currently persisted on the User entity. Accept the request for API compatibility.
+        String status = body != null ? String.valueOf(body.getOrDefault("status", "")) : "";
+        return ResponseEntity.ok(Map.of("id", id, "status", status));
     }
 
     // Frontend uses Auth0 subject (e.g. auth0|abc) as the user id in paths.

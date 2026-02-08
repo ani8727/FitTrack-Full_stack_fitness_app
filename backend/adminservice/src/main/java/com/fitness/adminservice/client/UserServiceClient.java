@@ -1,7 +1,6 @@
 package com.fitness.adminservice.client;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 
 import com.fitness.adminservice.dto.UserDTO;
@@ -29,49 +28,87 @@ public class UserServiceClient {
     }
 
     public List<UserDTO> listUsers() {
-        String url = gatewayUrl + "/user-service/users";
+        // Calls userservice admin endpoint through gateway route: /api/users/** -> /users/**
+        String url = gatewayUrl + "/api/users/admin/users";
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
-        ResponseEntity<List<UserDTO>> resp = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<List<UserDTO>>() {
-                }
+        ResponseEntity<List<java.util.Map<String, Object>>> resp = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            entity,
+            new ParameterizedTypeReference<List<java.util.Map<String, Object>>>() {}
         );
-        return resp.getBody();
+
+        List<java.util.Map<String, Object>> body = resp.getBody();
+        if (body == null) return List.of();
+        java.util.List<UserDTO> out = new java.util.ArrayList<>(body.size());
+        for (java.util.Map<String, Object> row : body) {
+            if (row == null) continue;
+            UserDTO dto = new UserDTO();
+            dto.setId(row.get("id") == null ? null : String.valueOf(row.get("id")));
+            dto.setAuth0Id(row.get("auth0Id") == null ? null : String.valueOf(row.get("auth0Id")));
+            dto.setEmail(row.get("email") == null ? null : String.valueOf(row.get("email")));
+
+            String name = row.get("name") == null ? null : String.valueOf(row.get("name"));
+            if (name != null && !name.isBlank()) {
+                String[] parts = name.trim().split("\\s+", 2);
+                dto.setFirstName(parts[0]);
+                if (parts.length > 1) dto.setLastName(parts[1]);
+            }
+
+            String roleRaw = row.get("role") == null ? null : String.valueOf(row.get("role"));
+            if (roleRaw != null && roleRaw.toUpperCase().contains("ADMIN")) {
+                dto.setRole("ADMIN");
+            } else {
+                dto.setRole("USER");
+            }
+
+            // createdAt may come as ISO string or null; best-effort parse
+            Object createdAt = row.get("createdAt");
+            if (createdAt instanceof String s) {
+                try { dto.setCreatedAt(Instant.parse(s)); } catch (Exception ignored) {}
+            }
+            out.add(dto);
+        }
+        return out;
     }
 
     public UserDTO getUser(Long id) {
-        String url = gatewayUrl + "/user-service/users/" + id;
+        String url = gatewayUrl + "/api/users/admin/users/" + id;
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
         ResponseEntity<UserDTO> resp = restTemplate.exchange(url, HttpMethod.GET, entity, UserDTO.class);
         return resp.getBody();
     }
 
     public void deleteUser(Long id) {
-        String url = gatewayUrl + "/user-service/users/" + id;
+        String url = gatewayUrl + "/api/users/admin/users/" + id;
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
         restTemplate.exchange(url, HttpMethod.DELETE, entity, Void.class);
     }
 
     public void updateUser(Long id, UserDTO user) {
-        String url = gatewayUrl + "/user-service/users/" + id;
-        HttpEntity<UserDTO> entity = new HttpEntity<>(user, buildHeadersWithBearer());
+        // Not supported by userservice at this time
+        throw new UnsupportedOperationException("updateUser not implemented");
+    }
+
+    public void updateUserRole(Long id, String role) {
+        String url = gatewayUrl + "/api/users/admin/users/" + id + "/role";
+        HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(
+                java.util.Map.of("role", role),
+                buildHeadersWithBearer()
+        );
         restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
     }
 
-    public List<UserDTO> search(String q) {
-        String encoded = URLEncoder.encode(q == null ? "" : q, StandardCharsets.UTF_8);
-        String url = gatewayUrl + "/user-service/users/search?q=" + encoded;
-        HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
-        ResponseEntity<List<UserDTO>> resp = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<List<UserDTO>>() {
-                }
+    public void updateUserStatus(Long id, String status, String reason) {
+        String url = gatewayUrl + "/api/users/admin/users/" + id + "/status";
+        HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(
+                java.util.Map.of(
+                        "status", status,
+                        "reason", reason
+                ),
+                buildHeadersWithBearer()
         );
-        return resp.getBody();
+        restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
     }
 
     private HttpHeaders buildHeadersWithBearer() {

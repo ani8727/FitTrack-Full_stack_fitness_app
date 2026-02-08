@@ -25,27 +25,43 @@ public class ActivityServiceClient {
     }
 
     public java.util.List<ActivityDTO> listActivities() {
-        String url = gatewayUrl + "/activity-service/activities";
+        // Calls activityservice admin endpoint through gateway route: /api/activities/** -> /activities/**
+        String url = gatewayUrl + "/api/activities/admin/activities";
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
-        ResponseEntity<java.util.List<ActivityDTO>> resp = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<java.util.List<ActivityDTO>>() {
-                }
+        ResponseEntity<java.util.List<java.util.Map<String, Object>>> resp = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            entity,
+            new ParameterizedTypeReference<java.util.List<java.util.Map<String, Object>>>() {}
         );
-        return resp.getBody();
+
+        java.util.List<java.util.Map<String, Object>> body = resp.getBody();
+        if (body == null) return java.util.List.of();
+
+        java.util.List<ActivityDTO> out = new java.util.ArrayList<>(body.size());
+        for (java.util.Map<String, Object> row : body) {
+            if (row == null) continue;
+            ActivityDTO dto = new ActivityDTO();
+            dto.setId(row.get("id") == null ? null : String.valueOf(row.get("id")));
+            dto.setUserId(row.get("userId") == null ? null : String.valueOf(row.get("userId")));
+            dto.setType(row.get("type") == null ? null : String.valueOf(row.get("type")));
+            dto.setDuration(row.get("duration") instanceof Number n ? n.intValue() : null);
+            dto.setCaloriesBurned(row.get("caloriesBurned") instanceof Number n ? n.intValue() : null);
+            // createdAt may deserialize as String; leave null if not directly mapped.
+            out.add(dto);
+        }
+        return out;
     }
 
-    public ActivityDTO getActivity(Long id) {
-        String url = gatewayUrl + "/activity-service/activities/" + id;
+    public ActivityDTO getActivity(String id) {
+        String url = gatewayUrl + "/api/activities/" + id;
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
         ResponseEntity<ActivityDTO> resp = restTemplate.exchange(url, HttpMethod.GET, entity, ActivityDTO.class);
         return resp.getBody();
     }
 
-    public void deleteActivity(Long id) {
-        String url = gatewayUrl + "/activity-service/activities/" + id;
+    public void deleteActivity(String id) {
+        String url = gatewayUrl + "/api/activities/admin/activities/" + id;
         HttpEntity<Void> entity = new HttpEntity<>(buildHeadersWithBearer());
         restTemplate.exchange(url, HttpMethod.DELETE, entity, Void.class);
     }

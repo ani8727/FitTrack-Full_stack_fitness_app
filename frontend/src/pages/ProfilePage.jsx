@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { getUserProfile, updateUserProfile } from '../services/apiClient'
+import { getMyProfile, updateMyProfile } from '../services/apiClient'
 import Toast from '../components/Toast'
 import { FiUser, FiMail, FiActivity, FiTarget, FiHeart, FiAlertCircle, FiSave } from 'react-icons/fi'
 
@@ -27,20 +27,18 @@ const ProfilePage = () => {
     targetWeeklyWorkouts: ''
   })
 
-  const userId = tokenData?.sub
-
   const fetchProfile = useCallback(async () => {
-    if (!userId) return
+    if (!tokenData?.sub) return
     try {
       setLoading(true)
-      const response = await getUserProfile(userId)
+      const response = await getMyProfile()
       setProfile(response.data)
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [tokenData?.sub])
 
   useEffect(() => {
     fetchProfile()
@@ -67,7 +65,7 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!userId) return
+    if (!tokenData?.sub) return
     
     try {
       setSaving(true)
@@ -88,7 +86,7 @@ const ProfilePage = () => {
         activityLevel: toNullString(profile.activityLevel)
       }
 
-      await updateUserProfile(userId, payload)
+      await updateMyProfile(payload)
       setToast({ message: 'Profile updated successfully!', type: 'success' })
     } catch (error) {
       console.error('Error updating profile:', error)

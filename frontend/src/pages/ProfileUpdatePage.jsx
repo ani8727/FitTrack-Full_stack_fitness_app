@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FiUser, FiMail, FiSave, FiEdit2, FiActivity, FiTrendingUp, FiAward, FiMapPin, FiTarget, FiAlertCircle, FiHeart } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { getUserProfile, updateUserProfile, getActivityStats } from '../services/apiClient'
+import { getMyProfile, updateMyProfile, getActivityStats } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const ProfilePage = () => {
@@ -29,13 +29,11 @@ const ProfilePage = () => {
     targetWeeklyWorkouts: '',
   })
 
-  const userId = tokenData?.sub
-
   useEffect(() => {
     const fetchProfile = async () => {
-      if (userId) {
+      if (tokenData?.sub) {
         try {
-          const response = await getUserProfile(userId)
+          const response = await getMyProfile()
           const userData = response.data
           setProfile({
             firstName: userData.firstName || tokenData.given_name || '',
@@ -78,7 +76,7 @@ const ProfilePage = () => {
       }
     }
     fetchProfile()
-  }, [tokenData, userId])
+  }, [tokenData])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -103,7 +101,7 @@ const ProfilePage = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      await updateUserProfile(userId, profile)
+      await updateMyProfile(profile)
       setToast({ message: 'Profile updated successfully!', type: 'success' })
       setEditing(false)
     } catch (error) {

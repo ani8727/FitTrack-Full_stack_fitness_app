@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FiCheck, FiUser, FiTarget, FiActivity, FiTrendingUp } from 'react-icons/fi'
 import { useAuth0 } from '@auth0/auth0-react'
-import { updateUserProfile, completeOnboarding } from '../services/apiClient'
+import { updateMyProfile, completeMyOnboarding } from '../services/apiClient'
 import Toast from '../components/Toast'
 
 const OnboardingWizard = ({ onComplete }) => {
@@ -18,8 +18,6 @@ const OnboardingWizard = ({ onComplete }) => {
     fitnessGoals: '',
     targetWeeklyWorkouts: 3
   })
-
-  const userId = tokenData?.sub
 
   const steps = [
     { id: 1, title: 'Basic Info', icon: FiUser },
@@ -51,8 +49,8 @@ const OnboardingWizard = ({ onComplete }) => {
 
   const handleComplete = async () => {
     try {
-      await updateUserProfile(userId, formData)
-      await completeOnboarding(userId)
+      await updateMyProfile(formData)
+      await completeMyOnboarding()
       setToast({ message: 'Welcome to FitTrack! Your profile is ready!', type: 'success' })
       setTimeout(() => {
         onComplete()
