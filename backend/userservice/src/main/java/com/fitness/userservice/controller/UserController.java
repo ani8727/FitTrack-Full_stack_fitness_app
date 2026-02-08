@@ -1,9 +1,10 @@
 package com.fitness.userservice.controller;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,21 +32,51 @@ public class UserController {
 
     private final UserService userService;
 
+    private static String normalizeAuth0Id(String value) {
+        if (value == null) {
+            return null;
+        }
+        // Spring MVC should decode @PathVariable values, but in some proxy setups
+        // the raw encoded form (e.g. auth0%7C...) can still reach the controller.
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ex) {
+            return value;
+        }
+    }
+
     private boolean isAdmin(Jwt jwt) {
         if (jwt == null) return false;
 
+        // Keep claim names in sync with frontend + gateway + adminservice.
         Object roles = jwt.getClaims().get("https://fitness-app/roles");
-        if (roles == null) {
-            roles = jwt.getClaims().get("fitness_auth/roles");
-        }
-        if (roles == null) {
-            roles = jwt.getClaims().get("roles");
-        }
+        if (roles == null) roles = jwt.getClaims().get("fitness_auth/roles");
+        if (roles == null) roles = jwt.getClaims().get("roles");
+        if (roles == null) roles = jwt.getClaims().get("https://fitness.app/roles");
+        if (roles == null) roles = jwt.getClaims().get("https://fittrack.app/roles");
+
         if (roles instanceof Iterable<?> iterable) {
             for (Object role : iterable) {
                 if (role == null) continue;
-                String r = String.valueOf(role);
+                String r = String.valueOf(role).trim();
                 if (r.equalsIgnoreCase("admin") || r.equalsIgnoreCase("ROLE_ADMIN") || r.equalsIgnoreCase("ADMIN")) {
+                    return true;
+                }
+            }
+        } else if (roles instanceof String s) {
+            String r = s.trim();
+            if (r.equalsIgnoreCase("admin") || r.equalsIgnoreCase("ROLE_ADMIN") || r.equalsIgnoreCase("ADMIN")) {
+                return true;
+            }
+        }
+
+        // Fallback: some Auth0 configurations add permissions instead of roles.
+        Object permissions = jwt.getClaims().get("permissions");
+        if (permissions instanceof Iterable<?> iterable) {
+            for (Object p : iterable) {
+                if (p == null) continue;
+                String perm = String.valueOf(p).trim();
+                if (perm.equalsIgnoreCase("admin") || perm.equalsIgnoreCase("ROLE_ADMIN") || perm.equalsIgnoreCase("ADMIN")) {
                     return true;
                 }
             }
@@ -58,7 +89,9 @@ public class UserController {
         if (jwt == null || jwt.getSubject() == null) {
             throw new org.springframework.security.access.AccessDeniedException("Missing subject");
         }
-        if (jwt.getSubject().equals(auth0Id)) return;
+        String requested = normalizeAuth0Id(auth0Id);
+        String subject = normalizeAuth0Id(jwt.getSubject());
+        if (subject != null && subject.equals(requested)) return;
         if (isAdmin(jwt)) return;
         throw new org.springframework.security.access.AccessDeniedException("Forbidden");
     }
@@ -146,9 +179,11 @@ public class UserController {
     }
 
     // Optional: admin-only lookup by DB id
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/id/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!isAdmin(jwt)) {
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
         return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

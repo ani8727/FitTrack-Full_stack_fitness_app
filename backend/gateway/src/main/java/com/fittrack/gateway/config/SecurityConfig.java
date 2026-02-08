@@ -1,11 +1,21 @@
 package com.fittrack.gateway.config;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,17 +27,6 @@ import org.springframework.security.oauth2.server.resource.authentication.Reacti
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import com.fittrack.gateway.config.validators.AudienceValidator;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -89,6 +88,8 @@ public class SecurityConfig {
             roles.addAll(extractStringListClaim(jwt, "https://fitness-app/roles"));
             roles.addAll(extractStringListClaim(jwt, "roles"));
             roles.addAll(extractStringListClaim(jwt, "fitness_auth/roles"));
+            roles.addAll(extractStringListClaim(jwt, "https://fitness.app/roles"));
+            roles.addAll(extractStringListClaim(jwt, "https://fittrack.app/roles"));
 
             // Some Auth0 setups use permissions instead of roles. Map those to PERMISSION_*.
             List<String> permissions = extractStringListClaim(jwt, "permissions");

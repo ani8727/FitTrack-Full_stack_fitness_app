@@ -2,6 +2,10 @@ package com.fitness.adminservice.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -72,22 +76,51 @@ public class SecurityConfig {
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            ArrayList<org.springframework.security.core.GrantedAuthority> authorities = new ArrayList<>();
-            Object claim = jwt.getClaim("https://fittrack.app/roles");
-            if (claim instanceof Collection<?> col) {
-                for (Object r : col) {
-                    if (r != null) {
-                        String role = r.toString();
-                        if (!role.startsWith("ROLE_")) {
-                            role = "ROLE_" + role;
-                        }
-                        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
-                    }
-                }
+            // Keep claim names in sync with frontend + gateway.
+            List<String> roles = new ArrayList<>();
+            roles.addAll(extractStringListClaim(jwt, "https://fitness-app/roles"));
+            roles.addAll(extractStringListClaim(jwt, "fitness_auth/roles"));
+            roles.addAll(extractStringListClaim(jwt, "roles"));
+            roles.addAll(extractStringListClaim(jwt, "https://fitness.app/roles"));
+            roles.addAll(extractStringListClaim(jwt, "https://fittrack.app/roles"));
+
+            LinkedHashSet<org.springframework.security.core.GrantedAuthority> authorities = new LinkedHashSet<>();
+            for (String role : roles) {
+                if (role == null || role.isBlank()) continue;
+                String normalized = role.trim().toUpperCase(Locale.ROOT);
+                authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + normalized));
             }
-            return authorities;
+
+            return new ArrayList<>(authorities);
         });
         return converter;
+    }
+
+    private static List<String> extractStringListClaim(Jwt jwt, String claimName) {
+        Object value = jwt.getClaim(claimName);
+        if (value == null) {
+            return List.of();
+        }
+
+        if (value instanceof String) {
+            String s = ((String) value).trim();
+            return s.isEmpty() ? List.of() : List.of(s);
+        }
+
+        if (value instanceof Collection<?> collection) {
+            List<String> out = new ArrayList<>(collection.size());
+            for (Object o : collection) {
+                if (o == null) continue;
+                String s = Objects.toString(o, "").trim();
+                if (!s.isEmpty()) {
+                    out.add(s);
+                }
+            }
+            return out;
+        }
+
+        String s = Objects.toString(value, "").trim();
+        return s.isEmpty() ? List.of() : List.of(s);
     }
 
     static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
