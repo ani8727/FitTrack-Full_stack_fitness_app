@@ -119,8 +119,9 @@ public class UserController {
     // Frontend uses Auth0 subject (e.g. auth0|abc) as the user id in paths.
     @GetMapping("/{auth0Id}")
     public ResponseEntity<UserProfileResponse> getProfile(@PathVariable String auth0Id, @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
-        return ResponseEntity.ok(userService.getProfile(auth0Id, jwt));
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
+        return ResponseEntity.ok(userService.getProfile(normalizedAuth0Id, jwt));
     }
 
     @PutMapping("/{auth0Id}/profile")
@@ -128,14 +129,16 @@ public class UserController {
             @PathVariable String auth0Id,
             @RequestBody(required = false) UserProfileRequest request,
             @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
-        return ResponseEntity.ok(userService.updateProfile(auth0Id, request, jwt));
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
+        return ResponseEntity.ok(userService.updateProfile(normalizedAuth0Id, request, jwt));
     }
 
     @GetMapping("/{auth0Id}/validate")
     public ResponseEntity<Map<String, Object>> validate(@PathVariable String auth0Id, @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
-        boolean exists = userService.existsByAuth0Id(auth0Id);
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
+        boolean exists = userService.existsByAuth0Id(normalizedAuth0Id);
         if (!exists) {
             return ResponseEntity.notFound().build();
         }
@@ -147,7 +150,8 @@ public class UserController {
             @PathVariable String auth0Id,
             @RequestBody(required = false) AccountActionRequest request,
             @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
         return ResponseEntity.ok(Map.of("status", "DEACTIVATED"));
     }
 
@@ -156,25 +160,29 @@ public class UserController {
             @PathVariable String auth0Id,
             @RequestBody(required = false) AccountActionRequest request,
             @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
         return ResponseEntity.ok(Map.of("status", "DELETED"));
     }
 
     @PostMapping("/{auth0Id}/reactivate")
     public ResponseEntity<Map<String, Object>> reactivate(@PathVariable String auth0Id, @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
         return ResponseEntity.ok(Map.of("status", "ACTIVE"));
     }
 
     @PostMapping("/{auth0Id}/onboarding/complete")
     public ResponseEntity<Map<String, Object>> completeOnboarding(@PathVariable String auth0Id, @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
         return ResponseEntity.ok(Map.of("completed", true));
     }
 
     @GetMapping("/{auth0Id}/onboarding/status")
     public ResponseEntity<Map<String, Object>> onboardingStatus(@PathVariable String auth0Id, @AuthenticationPrincipal Jwt jwt) {
-        requireSelfOrAdmin(jwt, auth0Id);
+        String normalizedAuth0Id = normalizeAuth0Id(auth0Id);
+        requireSelfOrAdmin(jwt, normalizedAuth0Id);
         return ResponseEntity.ok(Map.of("completed", true));
     }
 
