@@ -32,13 +32,13 @@ spring:
             - StripPrefix=1
             - name: Retry
               args:
-                retries: 3
+                retries: ${GATEWAY_ROUTE_RETRIES:10}
                 methods: GET,PUT
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
                 backoff:
-                  firstBackoff: 200ms
-                  maxBackoff: 2s
-                  factor: 2
+                  firstBackoff: ${GATEWAY_RETRY_FIRST_BACKOFF:500ms}
+                  maxBackoff: ${GATEWAY_RETRY_MAX_BACKOFF:15s}
+                  factor: ${GATEWAY_RETRY_FACTOR:2}
         - id: contact
           uri: ${USER_SERVICE_URL:https://fittrack-userservice.onrender.com}
           predicates:
@@ -53,13 +53,13 @@ spring:
             - StripPrefix=1
             - name: Retry
               args:
-                retries: 3
+                retries: ${GATEWAY_ROUTE_RETRIES:10}
                 methods: GET,PUT
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
                 backoff:
-                  firstBackoff: 200ms
-                  maxBackoff: 2s
-                  factor: 2
+                  firstBackoff: ${GATEWAY_RETRY_FIRST_BACKOFF:500ms}
+                  maxBackoff: ${GATEWAY_RETRY_MAX_BACKOFF:15s}
+                  factor: ${GATEWAY_RETRY_FACTOR:2}
         - id: activityservice
           uri: ${ACTIVITY_SERVICE_URL:https://fittrack-activityservice.onrender.com}
           predicates:
@@ -68,13 +68,13 @@ spring:
             - StripPrefix=1
             - name: Retry
               args:
-                retries: 3
+                retries: ${GATEWAY_ROUTE_RETRIES:10}
                 methods: GET,PUT
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
                 backoff:
-                  firstBackoff: 200ms
-                  maxBackoff: 2s
-                  factor: 2
+                  firstBackoff: ${GATEWAY_RETRY_FIRST_BACKOFF:500ms}
+                  maxBackoff: ${GATEWAY_RETRY_MAX_BACKOFF:15s}
+                  factor: ${GATEWAY_RETRY_FACTOR:2}
         - id: ai-service-recommendations
           uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
@@ -83,13 +83,13 @@ spring:
             - StripPrefix=1
             - name: Retry
               args:
-                retries: 3
+                retries: ${GATEWAY_ROUTE_RETRIES:10}
                 methods: GET
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
                 backoff:
-                  firstBackoff: 200ms
-                  maxBackoff: 2s
-                  factor: 2
+                  firstBackoff: ${GATEWAY_RETRY_FIRST_BACKOFF:500ms}
+                  maxBackoff: ${GATEWAY_RETRY_MAX_BACKOFF:15s}
+                  factor: ${GATEWAY_RETRY_FACTOR:2}
         - id: ai-service-recommendations-legacy
           uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
@@ -98,13 +98,13 @@ spring:
             - StripPrefix=2
             - name: Retry
               args:
-                retries: 3
+                retries: ${GATEWAY_ROUTE_RETRIES:10}
                 methods: GET
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
                 backoff:
-                  firstBackoff: 200ms
-                  maxBackoff: 2s
-                  factor: 2
+                  firstBackoff: ${GATEWAY_RETRY_FIRST_BACKOFF:500ms}
+                  maxBackoff: ${GATEWAY_RETRY_MAX_BACKOFF:15s}
+                  factor: ${GATEWAY_RETRY_FACTOR:2}
         - id: ai-service-daily-plans
           uri: ${AI_SERVICE_URL:https://fittrack-aiservice.onrender.com}
           predicates:
@@ -113,13 +113,13 @@ spring:
             - StripPrefix=2
             - name: Retry
               args:
-                retries: 3
+                retries: ${GATEWAY_ROUTE_RETRIES:10}
                 methods: GET
                 statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
                 backoff:
-                  firstBackoff: 200ms
-                  maxBackoff: 2s
-                  factor: 2
+                  firstBackoff: ${GATEWAY_RETRY_FIRST_BACKOFF:500ms}
+                  maxBackoff: ${GATEWAY_RETRY_MAX_BACKOFF:15s}
+                  factor: ${GATEWAY_RETRY_FACTOR:2}
 
   security: {}
 
