@@ -121,11 +121,7 @@ spring:
                   maxBackoff: 2s
                   factor: 2
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://${AUTH0_DOMAIN}/
+  security: {}
 
 management:
   endpoint:

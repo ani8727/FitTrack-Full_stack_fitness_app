@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -32,15 +35,23 @@ import com.fittrack.gateway.config.validators.AudienceValidator;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Value("${AUTH0_DOMAIN}")
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
+    @Value("${AUTH0_DOMAIN:}")
     private String auth0Domain;
 
-    @Value("${AUTH0_AUDIENCE}")
+    @Value("${AUTH0_AUDIENCE:}")
     private String auth0Audience;
 
     @Bean
+    @ConditionalOnProperty(name = { "AUTH0_DOMAIN", "AUTH0_AUDIENCE" })
     public ReactiveJwtDecoder jwtDecoder() {
-        String issuer = "https://" + auth0Domain + "/";
+        String normalizedDomain = normalizeAuth0Domain(auth0Domain);
+        if (normalizedDomain.isBlank() || auth0Audience == null || auth0Audience.isBlank()) {
+            throw new IllegalStateException("Missing Auth0 configuration. Please set AUTH0_DOMAIN and AUTH0_AUDIENCE.");
+        }
+
+        String issuer = "https://" + normalizedDomain + "/";
         String jwkSetUri = issuer + ".well-known/jwks.json";
 
         NimbusReactiveJwtDecoder jwtDecoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
@@ -57,6 +68,21 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(auth0AuthoritiesConverter());
+
+        String normalizedDomain = normalizeAuth0Domain(auth0Domain);
+        boolean auth0Configured = !normalizedDomain.isBlank() && auth0Audience != null && !auth0Audience.isBlank();
+        if (!auth0Configured) {
+            log.warn("Auth0 is not configured (AUTH0_DOMAIN/AUTH0_AUDIENCE missing or invalid). "
+                + "Gateway will start in degraded mode: only /actuator/** and /public/** are permitted; /api/** is denied.");
+            http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .authorizeExchange(exchanges -> exchanges
+                    .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                    .pathMatchers("/actuator/**", "/public/**").permitAll()
+                    .anyExchange().denyAll()
+                );
+            return http.build();
+        }
 
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -75,6 +101,20 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    private static String normalizeAuth0Domain(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+        if (s.isEmpty()) {
+            return "";
+        }
+        // Accept either "dev-xyz.us.auth0.com" or "https://dev-xyz.us.auth0.com/"
+        s = s.replaceFirst("^https?://", "");
+        s = s.replaceAll("/+$", "");
+        return s.trim();
     }
 
     private static Converter<Jwt, Collection<GrantedAuthority>> auth0AuthoritiesConverter() {
