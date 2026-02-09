@@ -20,4 +20,4 @@ COPY --from=build /workspace/target/*.jar app.jar
 # Render dynamically maps the port – DO NOT hardcode
 EXPOSE 8082
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8082} -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar"]

@@ -7,9 +7,8 @@ RUN mvn -B -DskipTests clean package
 
 FROM eclipse-temurin:21-jre
 ENV SPRING_PROFILES_ACTIVE=prod \
-    JAVA_OPTS="-Xmx384m -Xms256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:CompressedClassSpaceSize=32m -Xss512k -XX:+TieredCompilation -XX:TieredStopAtLevel=1" \
-    PORT=8083
+    JAVA_OPTS="-Xmx384m -Xms256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:CompressedClassSpaceSize=32m -Xss512k -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
 WORKDIR /app
 COPY --from=build /workspace/target/*.jar app.jar
 EXPOSE 8083
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -Dserver.port=${PORT} -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -Dserver.port=${PORT:-8083} -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar"]
